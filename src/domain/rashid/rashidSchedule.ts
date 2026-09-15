@@ -1,5 +1,5 @@
-import { RASHID_WEEKLY_SCHEDULE, type RashidLocation } from '../../data/rashid/schedule';
-import { computeTibiaDayBoundary } from '../tibiaDay';
+import { RASHID_WEEKLY_SCHEDULE, type RashidLocation } from '../../data/rashid/schedule.ts';
+import { computeTibiaDayBoundary } from '../tibiaDay.ts';
 
 export interface RashidState {
   /** 0 = Sunday ... 6 = Saturday, matching RASHID_WEEKLY_SCHEDULE's indexing. */
