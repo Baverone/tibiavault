@@ -27,6 +27,25 @@ com os spots livres do Celesta, a stamina e as flechas.
 > as funcionalidades que existiam e não se usavam. O que ficou é o que se usa
 > mesmo. Ver o histórico do git se alguma delas fizer falta.
 
+## Duas armadilhas a não pisar
+
+Não há `CLAUDE.md` neste repositório — este README faz esse papel. As duas
+coisas que já causaram confusão e não podem voltar a acontecer:
+
+1. **O site corre no Vercel, não no GitHub Pages.**
+   `https://calculadora-tibia.vercel.app/` (o Vercel sobreviveu ao rename de
+   15/09/2026). O `vite.config.ts` **não tem** `base` e não pode passar a
+   ter — o Vercel serve a partir da raiz (`/assets/...`); definir
+   `base: '/tibiavault/'` (como seria preciso para GitHub Pages) parte o
+   site. Se vires documentação a falar de Pages ou a mandar definir `base`,
+   está errada — corrige-a.
+2. **O prefixo `'calculadora-hunt:'` do `localStorage`
+   (`src/storage/huntPlannerStorage.ts`) não se muda sem migração testada.**
+   É a chave sob a qual os inputs da calculadora de hunt já estão guardados
+   nos dispositivos do André. Mudar o prefixo sem ler a chave antiga e
+   escrever na nova (com teste a provar isso) apaga esses dados aos olhos da
+   app.
+
 ## Ligação ao GitHub
 
 O repositório é público e serve de base de dados só-leitura: a app lê
