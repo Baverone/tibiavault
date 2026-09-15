@@ -27,7 +27,15 @@ dist-ssr
 scripts/celesta/tmp/
 scripts/celesta/runs.jsonl
 
-# Publicacao automatica (scripts/publicar-agendado.ps1)
+# Publicacao automatica via ficheiro-sinal: mecanismo nunca chegou a ficar
+# ativo (a tarefa CalculadoraTibia-Publicar de que dependia nunca existiu
+# neste PC, confirmado com schtasks em 2026-09-15) e hoje o codigo publica-se
+# pelo canal direto (worktree + git, ver knowledge/projectos.md do ai-pc).
+# Continua tambem a abrir uma segunda porta de push, o que contraria a regra
+# de uma so porta de saida (so o push-hunts.ps1 publica). Os scripts ficam no
+# disco para referencia mas fora do git, para nao sugerir que e o fluxo atual.
+scripts/instalar-publicacao.ps1
+scripts/publicar-agendado.ps1
 scripts/.publicar-agora
 scripts/.publicar-vivo
 PUBLICACAO-FALHOU.txt
