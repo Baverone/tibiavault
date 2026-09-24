@@ -1,0 +1,50 @@
+# Publica o TibiaVault no GitHub Pages (tibia.baverone.com).
+# Substitui o Vercel desde 24/09/2026 (decisão do André: tudo no GitHub).
+#
+# Só faz build quando o CÓDIGO muda. Os dados (XP e hunts) não passam por
+# aqui: a app lê-os em directo do raw.githubusercontent.com (src/config.ts),
+# por isso os commits diários de XP não precisam de novo deploy.
+name: pages
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'data/**'
+      - 'public/celesta-hunts.json'
+      - '**.md'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
