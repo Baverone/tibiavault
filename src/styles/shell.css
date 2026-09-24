@@ -704,9 +704,17 @@ h1.pgt {
 
 /* ------------------------------------------------------------- atalhos */
 
+/* A grelha dos atalhos (24/09/2026). Era `auto-fit` com um mínimo de 190 px:
+   nos 1200 px de conteúdo cabiam CINCO por linha, e os seis atalhos saíam
+   5 + 1 — o «Rashid e Tibiadrome» ficava sozinho na segunda linha, esticado a
+   toda a largura. Os seis numa linha só ficavam com ~190 px cada, o que corta
+   «Rashid e Tibiadrome»; três colunas fixas (duas no telemóvel) dão 3 × 2 com
+   os seis de hoje, e 3 × 3 se alguma vez forem nove. `stretch` para as
+   alturas de cada linha serem iguais com notas de uma ou de duas linhas. */
 .atalhos {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
   gap: 10px;
 }
 
@@ -1008,6 +1016,16 @@ h1.pgt {
 
   .casa {
     min-height: 32px;
+  }
+
+  .atalhos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 359px) {
+  .atalhos {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
