@@ -21,11 +21,7 @@ export function ArrowsCalculator() {
   const highlightRate = rate !== null ? closestArrowRate(rate) : null;
 
   return (
-    <div className="tibiadrome-section">
-      <div className="rotation-card__header">
-        <h3>Flechas</h3>
-      </div>
-
+    <div className="card">
       <div className="hunt-form">
         <div className="hunt-form__field">
           <label htmlFor="arrows-total">Número de flechas</label>

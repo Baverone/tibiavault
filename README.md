@@ -9,8 +9,15 @@ Aplicação web para acompanhar o progresso de XP de dois personagens —
 **Baverone** (Royal Paladin) e **Bluey The Cat** (Exalted Monk) — com
 recolha diária automática do guildstats.eu, gráfico de progressão com
 período à escolha, previsão de níveis com janela simétrica, timers de hunt
-sempre visíveis, calculadora de varinhas de treino, e uma aba de utilitários
+sempre visíveis, calculadora de varinhas de treino, e páginas de utilitários
 com os spots livres do Celesta, a stamina e as flechas.
+
+> **Setembro de 2026 — a casca comum.** A app era uma página só, com uma fila
+> de três separadores no topo e uma segunda fila dentro do terceiro. Passou a
+> ter a mesma casca do `mtgvault` e do `riftvault`: barra lateral fixa agrupada
+> por secções (a mesma num painel ☰ no telemóvel), cabeçalho de página com
+> migalhas, e um endereço por página. Ver [A casca](#a-casca-a-identidade-comum-baverone)
+> mais abaixo.
 
 > **Setembro de 2026 — grande limpeza.** A app tinha 6 personagens em 3
 > equipas, uma calculadora de hunt, uma checklist de Quests & Bosses, um
@@ -47,7 +54,17 @@ npm test          # testes dos scripts .mjs e do domínio .ts (node --test, sem 
 
 Os testes cobrem a lógica pura dos scripts — o parser da tabela do guildstats
 e o cálculo das janelas livres do Celesta — e, desde setembro de 2026, também
-o domínio TypeScript da app, com fixtures locais e sem um único pedido de rede.
+o domínio TypeScript da app, com fixtures locais e sem um único pedido de rede:
+o resumo do Início (`homeSummary.test.ts`) e a **navegação**
+(`navigation/pages.test.ts`, que é o que garante que nenhuma página fica fora
+do menu, que nenhum atalho aponta para lado nenhum e que os separadores antigos
+guardados no browser não voltam a abrir um ecrã vazio).
+
+Os módulos que os testes alcançam escrevem os imports locais **com extensão**
+(`'./experienceTable.ts'`): o `node --test` corre sem passo de build e exige-a,
+e o Vite resolve-a na mesma. Pela mesma razão o `IconName` vive num `.ts`
+(`components/shell/iconPaths.ts`) e não no `.tsx` do componente — o
+`tsconfig.node.json` não sabe de JSX.
 
 O `npm test` corre com `--experimental-strip-types`, que é o que permite ao
 `node --test` executar um `.test.ts` sem passo de build nem dependências
@@ -60,40 +77,58 @@ verificação é o `tsc` do `npm run build`.
 
 - **React + Vite + TypeScript** — arranque e HMR rápidos, tipos para manter os
   cálculos (níveis, XP, hunt) com contratos claros à medida que o projeto crescer.
-- **Recharts** para o gráfico de progressão de XP.
-- **A app abre no separador onde ficou** (`src/storage/activeTab.ts`,
-  setembro de 2026). Abria sempre no Baverone, e quem a abre no telemóvel
-  antes de ir caçar abre-a para ver os spots — dois toques de cada vez. O id
-  guardado é confrontado com os que existem hoje, para um boneco que saia da
-  app não deixar ninguém num painel que já não existe. Sem `localStorage`
-  (janela privada) abre como sempre abriu.
-- Sem backend próprio: persistência local via `localStorage` (inputs manuais)
-  + um repositório GitHub público como "base de dados" partilhada só-leitura
-  (histórico recolhido automaticamente — ver secção abaixo).
-- Sem framework CSS — tema próprio em `src/styles/theme.css` (dourado/escuro,
-  sem assets oficiais do Tibia). Uma media query aos 560px trata do telemóvel
-  (ver "Telemóvel" abaixo).
-- **O gráfico carrega à parte.** O Recharts sozinho eram dois terços do
-  JavaScript da app (604 KB → 250 KB no arranque, 180 KB → 78 KB gzipped) e
-  estava no caminho crítico de quem só quer ver os timers e os spots livres.
-  `PlayerPanel` importa-o com `React.lazy`.
+- **Recharts** para os gráficos de XP.
+- **Cada página tem endereço** (`#inicio`, `#baverone`, `#celesta`, …). Sem
+  hash nenhum, abre onde ficou da última vez (`src/storage/activeTab.ts`): quem
+  a abre no telemóvel antes de ir caçar abre-a para ver a mesma coisa que viu
+  ontem. O id guardado é confrontado com as páginas que existem hoje, para um
+  separador antigo guardado no browser não deixar ninguém num ecrã vazio. Sem
+  `localStorage` (janela privada) abre no Início.
+- Sem backend próprio: persistência local via `localStorage` (os campos das
+  calculadoras, o filtro de spots) + um repositório GitHub público como "base
+  de dados" partilhada só-leitura (histórico recolhido automaticamente — ver
+  secção abaixo).
+- Sem framework CSS — `src/styles/tokens.css` (as variáveis),
+  `src/styles/shell.css` (a casca) e `src/styles/theme.css` (os componentes
+  desta app). Sem assets oficiais do Tibia.
+- **Os gráficos carregam à parte.** O Recharts sozinho eram dois terços do
+  JavaScript da app e estava no caminho crítico de quem só quer ver os timers.
+  Tanto o `CharacterPage` como o `HomePage` o importam com `React.lazy` — o
+  arranque fica nos ~270 KB (84 KB gzipped) e o Recharts vai num pedaço à parte.
+
+## A casca: a identidade comum Baverone
+
+Pedido do André (24/09/2026): o tibiavault passa a usar **a mesma casca** do
+`mtgvault` e do `riftvault`. A referência é o
+`mtgvault/site_shell.py`; aqui é React, mas os nomes de classe, os tamanhos e
+os cortes de media query são os mesmos.
+
+- **Barra lateral fixa** à esquerda a partir dos 900 px, agrupada por secções,
+  com o link `← baverone.com` no topo e o logótipo quadrado com a inicial na
+  cor do projeto (verde `#38d39f`). No telemóvel, **a mesma navegação** num
+  painel que abre no botão ☰.
+- **Cabeçalho de página** com migalhas, título, subtítulo e área de ações.
+- **Nada de filas de botões com scroll lateral.** As páginas compridas (as das
+  personagens) têm um índice vertical que no telemóvel vira um `<select>`; os
+  onze botões de Loyalty do treino de skills passaram a um seletor curto.
+- **Ícones SVG em linha** (`src/components/shell/iconPaths.ts`), traço 1.8,
+  `currentColor` — nunca emojis na navegação. Um emoji é desenhado pelo
+  sistema, tem cor própria e não acende com o rótulo quando o item fica ativo.
+- **Zero scroll horizontal a 1440 e a 390 px**, medido num Chrome a sério (ver
+  "Como se mede o layout", abaixo).
+- Textos explicativos longos vivem num `<details>` **"Como ler esta página"**,
+  no rodapé (`src/pages/ajuda.tsx`), e não à frente dos números.
+
+Quem manda na navegação é `src/navigation/pages.ts` — uma página nova é uma
+linha nessa lista, e é essa mesma lista que os testes usam para garantir que
+não há páginas fora do menu nem atalhos partidos.
 
 ## Telemóvel
 
-O tema não tinha uma única media query, e o ecrã de referência é um telemóvel
-de 390px — é aí que a app se abre para ver se dá para caçar. O que estava mal
-e ficou corrigido em setembro de 2026, tudo em `@media (max-width: 560px)`:
-
-- Os três separadores lado a lado espremiam "Bluey The Cat"; passam a ícone
-  por cima do nome.
-- Os três timers caíam em coluna (o `minmax(160px, 1fr)` não dava duas colunas
-  com 34px de padding), e com anéis de 120px isso era um ecrã inteiro de
-  timers antes de se ver seja o que for. Agora são duas colunas fixas com
-  anéis de 96px.
-- Botões de 24px de altura — metade do alvo de toque recomendado — passam a
-  ter 40px mínimos.
-- O cartão de nível punha dois números de 11 dígitos lado a lado; passam a
-  ficar um por linha.
+O ecrã de referência é um telemóvel de 390 px — é aí que a app se abre para ver
+se dá para caçar. O corte da casca fica nos 899 px (barra lateral → painel ☰) e
+há um segundo aos 560 px para o que é desta app. Alvos de toque de 40 px
+mínimos em tudo o que se carrega.
 
 ## Recolha automática diária de XP
 
@@ -255,37 +290,73 @@ scripts/
 .github/workflows/
   scrape-experience.yml   # rede de segurança: tenta a recolha e corre o alarme
 src/
-  config.ts               # GITHUB_REPO
-  constants/players.tsx   # os dois bonecos — manter igual a scripts/lib/trackedPlayers.mjs
+  config.ts               # GITHUB_REPO e o estado da recolha do Celesta
+  constants/players.ts    # os dois bonecos — manter igual a scripts/lib/trackedPlayers.mjs
+  navigation/pages.ts     # A NAVEGAÇÃO: secções, páginas, atalhos, âncoras
+  pages/                  # uma página por entrada do menu (+ ajuda.tsx)
+  components/shell/       # a casca comum: barra lateral, cabeçalho, ícones, índice
   components/             # UI por área (xp, charts, hunt, timers, skillTraining, ...)
   domain/                 # cálculos puros, sem React
-  hooks/                  # estado com ciclo de vida (relógios, fetch)
+  hooks/                  # estado com ciclo de vida (relógios, fetch, rota)
   storage/                # localStorage e fetch do histórico partilhado
-  styles/                 # tema próprio, sem framework CSS
+  styles/                 # tokens.css + shell.css + theme.css
 ```
+
+### Como se mede o layout
+
+O "zero scroll horizontal" não é uma opinião: mede-se com um Chrome a sério,
+pelo DevTools Protocol, em `C:\Users\Catarina\Desktop\ai-pc\work\rebrand-tibia\foto.mjs`
+(o mesmo caminho do riftvault e do mtgvault). Com o `npm run dev` de pé:
+
+```bash
+node foto.mjs http://localhost:5199/ <pasta> alvos-depois-desktop.json
+node foto.mjs http://localhost:5199/ <pasta> alvos-depois-telemovel.json
+```
+
+Tira a captura de página inteira de cada página a 1440 e a 390 px e compara o
+`scrollWidth` com o `clientWidth` — mais: procura contentores com conteúdo
+escondido para o lado, que é o que o `scrollWidth` do documento não apanha
+quando alguém põe um `overflow-x: auto` a meio.
 
 ## Onde adicionar novas funcionalidades
 
 - **Nova lógica de cálculo** (ex: tempo até um nível X, taxa média de XP/h):
   adiciona uma função pura em `src/domain/`. Não depende de React, por isso é
   fácil de testar e reutilizar.
-- **Comparação entre os dois bonecos**: reutiliza `useCharacterState` para
-  cada um (já usado em `PlayerPanel`) e cria um componente novo que itera
-  sobre `PLAYERS` — não precisa de tocar no domínio.
+- **Página nova**: uma linha em `src/navigation/pages.ts` e um componente em
+  `src/pages/`. A barra lateral, as migalhas e o título saem daí sozinhos.
+- **Comparação entre os dois bonecos**: usa `useAllCharacters` (um efeito só,
+  os dois históricos em paralelo) — nunca um `useCharacterState` dentro de um
+  `map`, que seria um hook dentro de um ciclo.
 - **Gráfico de curva de XP por nível**: `domain/experienceTable.ts` já expõe
   `experienceForLevel`; um novo componente em `components/charts/` pode gerar
   os pontos diretamente a partir daí.
-- **Novo boneco**: acrescenta-o em `src/constants/players.tsx` **e** em
-  `scripts/lib/trackedPlayers.mjs`. Se só o meteres num dos dois, a app pede
-  um ficheiro que o robô nunca escreve.
+- **Novo boneco**: acrescenta-o em `src/constants/players.ts` (com `slug`, que
+  é o id da página) **e** em `src/navigation/pages.ts` **e** em
+  `scripts/lib/trackedPlayers.mjs`. Se o esqueceres no último, a app pede um
+  ficheiro que o robô nunca escreve; se o esqueceres no do meio, ele existe mas
+  não há como lá chegar. O `pages.test.ts` apanha o segundo caso.
 - **Persistência diferente** (ex: backend, IndexedDB): só os ficheiros em
   `src/storage/` precisam de mudar — o resto da app não sabe onde os dados
   são guardados.
 
 ## Spots livres do Celesta
 
-Painel em Utilitários → Spots (`src/components/hunt/CelestaHuntsPanel.tsx`),
-alimentado por `data/celesta-hunts.json`. As janelas não trazem data: são
+> **A recolha está desligada desde 15/09/2026**, por ordem do André («tira a
+> pesquisa de hunts pelo discord, para já não quero a funcionar»). As tarefas
+> `tibia-celesta` e `tibia-reservas` ficaram sem horário e desativadas. O
+> código fica todo onde está — o «para já» dele é para respeitar nos dois
+> sentidos — e a página diz-o, com calma, num aviso próprio
+> (`CELESTA_COLLECTION_OFF_SINCE`, em `src/config.ts`).
+>
+> Por causa disso, o vermelho de «Dados parados há Xh — a recolha do Discord
+> pode ter parado» está **calado** nesta página (`collectionOff`): essa frase é
+> para uma avaria, e aqui não há nenhuma. Um aviso que grita por uma coisa que
+> está certa é um aviso que se aprende a ignorar.
+
+Página própria (`#celesta`), no painel
+`src/components/hunt/CelestaHuntsPanel.tsx`, alimentada por
+`data/celesta-hunts.json`. As janelas não trazem data: são
 "HH:MM - HH:MM" numa volta de 24h que começa no `referenceTime` (o footer do
 summary do bot, em hora de Berlim).
 
@@ -326,9 +397,13 @@ decidir — obrigava a trazer o `destaques` do `gaps.mjs` para o domínio.
 
 ## Timers de hunt
 
-Painel global (`src/components/timers/TimersPanel.tsx`), visível por cima
-das abas independentemente de qual está ativa — não é específico de um
-boneco. Três timers regressivos independentes: **Pot Skills** (10 min),
+Faixa da **casca** (`src/components/timers/TimersPanel.tsx`), por baixo do
+cabeçalho e visível em **todas** as páginas — não são uma página, e é de
+propósito: são a única coisa da app com contagem a correr, e são para estar à
+vista enquanto se caça. Em setembro de 2026 passaram de um painel de ~250 px
+com anéis de 120 px para uma faixa de uma linha com anéis de 48 px; no
+telemóvel são três linhas de 42 px em vez de duas colunas de 96.
+Três timers regressivos independentes: **Pot Skills** (10 min),
 **Food ML** (1 hora) e **Plasmas** (29m40s, com aviso por voz quando faltam
 10 segundos no relógio — ou seja, 30 segundos antes de os 30 minutos de
 plasma acabarem), cada um com anel de progresso SVG, botão Iniciar/Pausar e Reiniciar, mais um

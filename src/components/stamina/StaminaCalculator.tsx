@@ -72,9 +72,7 @@ export function StaminaCalculator() {
     current !== null && current >= PENALTY_MIN && staminaAfterHunt !== null && staminaAfterHunt < PENALTY_MIN;
 
   return (
-    <div className="character-panel__block">
-      <h3>Calculadora de Stamina</h3>
-
+    <div className="card">
       <div className="hunt-form__field" style={{ maxWidth: 220 }}>
         <label htmlFor="stamina-current">Stamina atual (HH:MM)</label>
         <input
@@ -186,10 +184,12 @@ export function StaminaCalculator() {
         )}
       </div>
 
+      {/* As regras do TibiaWiki (1 min por cada 3 até às 39h, por cada 6 entre
+          as 39h e as 42h, 10 min de espera) passaram para o «Como ler esta
+          página»: são quatro linhas que se leem uma vez e depois são só
+          distância até ao fim. O que fica é o que muda — a hora do relógio. */}
       <p className="daily-simulation-note" style={{ marginTop: 14 }}>
-        Regras (TibiaWiki): a regenerar offline ganhas 1 min de stamina por cada 3 min até 39h, e por cada 6 min entre 39h e
-        42h, começando só após 10 min offline. Caçar gasta 1:1. As horas usam o relógio do teu dispositivo (agora:{' '}
-        {clockFormatter.format(now)}).
+        As horas usam o relógio do teu dispositivo — agora são {clockFormatter.format(now)}.
       </p>
     </div>
   );

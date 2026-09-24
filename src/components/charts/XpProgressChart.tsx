@@ -3,6 +3,7 @@ import { Bar, BarChart, CartesianGrid, Rectangle, ReferenceLine, ResponsiveConta
 import type { RectangleProps } from 'recharts';
 import type { HistoryEntry } from '../../domain/types';
 import { computeDailyGains } from '../../domain/historyStats';
+import { CHART_AXIS, CHART_GRID, CHART_NEGATIVE, CHART_TOOLTIP, CHART_ZERO, compactXp } from './chartTheme';
 
 interface XpProgressChartProps {
   history: HistoryEntry[];
@@ -19,11 +20,7 @@ const PERIODS: { days: number | null; label: string }[] = [
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
-const GAIN_NEGATIVE = '#e74c3c';
-const tooltipStyle = { backgroundColor: '#241a12', border: '1px solid #5a4630', color: '#f0e0b8' } as const;
-
 const dateFormatter = new Intl.DateTimeFormat('pt-PT', { day: '2-digit', month: '2-digit' });
-const numberFormatter = new Intl.NumberFormat('pt-PT');
 const signedNumberFormatter = new Intl.NumberFormat('pt-PT', { signDisplay: 'exceptZero' });
 
 /**
@@ -51,7 +48,7 @@ export function XpProgressChart({ history, accentColor }: XpProgressChartProps) 
   const dailyData = useMemo(() => computeDailyGains(visibleHistory), [visibleHistory]);
 
   const periodToggle = (
-    <div className="chart-mode-toggle" role="tablist" aria-label="Período">
+    <div className="seg" role="tablist" aria-label="Período">
       {PERIODS.map((period) => {
         const isActive = periodDays === period.days;
         return (
@@ -60,8 +57,7 @@ export function XpProgressChart({ history, accentColor }: XpProgressChartProps) 
             type="button"
             role="tab"
             aria-selected={isActive}
-            className={isActive ? 'chart-mode-toggle__btn chart-mode-toggle__btn--active' : 'chart-mode-toggle__btn'}
-            style={isActive ? { color: accentColor, borderColor: accentColor } : undefined}
+            className={isActive ? 'on' : undefined}
             onClick={() => setPeriodDays(period.days)}
           >
             {period.label}
@@ -76,35 +72,38 @@ export function XpProgressChart({ history, accentColor }: XpProgressChartProps) 
       <div className="chart-controls">{periodToggle}</div>
 
       {dailyData.length === 0 ? (
-        <div className="chart-empty-state">
+        <div className="vazio">
           {history.length < 2
             ? 'São precisas pelo menos 2 leituras de XP para desenhar a progressão.'
             : 'Não há leituras suficientes neste período. Experimenta um período maior.'}
         </div>
       ) : (
         <ResponsiveContainer width="100%" height={260}>
-          <BarChart data={dailyData} margin={{ top: 8, right: 16, left: 8, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#4a3a2a" />
+          <BarChart data={dailyData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} vertical={false} />
             <XAxis
               dataKey="dayTimestamp"
               tickFormatter={(ts) => dateFormatter.format(ts)}
-              stroke="#c9a86a"
+              stroke={CHART_AXIS}
               fontSize={11}
+              tickLine={false}
             />
-            <YAxis tickFormatter={(v) => numberFormatter.format(v)} stroke="#c9a86a" fontSize={11} width={70} />
+            <YAxis tickFormatter={compactXp} stroke={CHART_AXIS} fontSize={11} width={52} tickLine={false} />
             <Tooltip
-              cursor={{ fill: 'rgba(201, 168, 106, 0.12)' }}
-              contentStyle={tooltipStyle}
+              cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+              contentStyle={CHART_TOOLTIP}
               labelFormatter={(ts) => dateFormatter.format(ts as number)}
               formatter={(value) => [signedNumberFormatter.format(Number(value)), 'XP nesse dia']}
             />
-            <ReferenceLine y={0} stroke="#5a4630" />
+            <ReferenceLine y={0} stroke={CHART_ZERO} />
             <Bar
               dataKey="experienceGained"
               isAnimationActive={false}
               shape={(props: RectangleProps & { payload?: { experienceGained: number } }) => {
                 const gained = props.payload?.experienceGained ?? 0;
-                return <Rectangle {...props} radius={[3, 3, 0, 0]} fill={gained >= 0 ? accentColor : GAIN_NEGATIVE} />;
+                return (
+                  <Rectangle {...props} radius={[3, 3, 0, 0]} fill={gained >= 0 ? accentColor : CHART_NEGATIVE} />
+                );
               }}
             />
           </BarChart>

@@ -14,6 +14,7 @@ import type { PlayerMeta } from '../../constants/players';
 import { useCharacterVocation } from '../../hooks/useCharacterVocation';
 import { useSkillTrainingConfig } from '../../hooks/useSkillTrainingConfig';
 import type { SkillEntryInput } from '../../storage/skillTrainingStorage';
+import { Icon } from '../shell/icons';
 import { SkillTrainingRow } from './SkillTrainingRow';
 
 interface SkillTrainingCalculatorProps {
@@ -84,33 +85,34 @@ export function SkillTrainingCalculator({ player }: SkillTrainingCalculatorProps
     : [];
 
   return (
-    <div className="character-panel__block">
-      <h3>Calculadora de Varinhas de Treino</h3>
-
+    <div>
       <div className="hunt-form__field" style={{ marginBottom: 14 }}>
         <label>Vocação</label>
-        {loading && <p className="chart-empty-state">A detetar vocação de {player.name}...</p>}
+        {loading && <p className="vazio">A detetar a vocação do {player.name}…</p>}
 
         {!loading && vocation && (
           <p className="skill-training-vocation">
             <span style={{ color: accentColor, fontWeight: 'bold' }}>{VOCATION_LABELS[vocation]}</span>
-            <button type="button" className="skill-training-vocation__refresh" onClick={() => detect()} title="Voltar a detetar">
-              🔄
+            <button
+              type="button"
+              className="btn sm skill-training-vocation__refresh"
+              onClick={() => detect()}
+              title="Voltar a detetar"
+            >
+              <Icon name="atualizar" size={14} />
+              <span>Detetar</span>
             </button>
           </p>
         )}
 
         {!loading && !vocation && (
           <>
-            <p className="field-error">Não foi possível detetar a vocação de {player.name} automaticamente. Escolhe manualmente:</p>
-            <div className="vocation-selector">
+            <p className="field-error">
+              Não foi possível detetar a vocação do {player.name} automaticamente. Escolhe manualmente:
+            </p>
+            <div className="seg">
               {VOCATIONS.map((v) => (
-                <button
-                  key={v}
-                  type="button"
-                  className="vocation-selector__option"
-                  onClick={() => setManualVocation(v)}
-                >
+                <button key={v} type="button" onClick={() => setManualVocation(v)}>
                   {VOCATION_LABELS[v]}
                 </button>
               ))}
@@ -122,17 +124,13 @@ export function SkillTrainingCalculator({ player }: SkillTrainingCalculatorProps
       {vocation === 'knight' && (
         <div className="hunt-form__field" style={{ marginBottom: 14 }}>
           <label>Arma(s) a treinar</label>
-          <div className="vocation-selector">
+          <div className="seg">
             {KNIGHT_WEAPONS.map((weapon) => (
               <button
                 key={weapon}
                 type="button"
-                className={
-                  config.knightWeapons.includes(weapon)
-                    ? 'vocation-selector__option vocation-selector__option--active'
-                    : 'vocation-selector__option'
-                }
-                style={config.knightWeapons.includes(weapon) ? { borderColor: accentColor, color: accentColor } : undefined}
+                aria-pressed={config.knightWeapons.includes(weapon)}
+                className={config.knightWeapons.includes(weapon) ? 'on' : undefined}
                 onClick={() => toggleKnightWeapon(weapon)}
               >
                 {weapon === 'axe' ? 'Axe' : weapon === 'sword' ? 'Sword' : 'Club'}
@@ -149,31 +147,29 @@ export function SkillTrainingCalculator({ player }: SkillTrainingCalculatorProps
             Dummy especial (Monk/Demon/Ferumbras Exercise Dummy, +10% eficiência)
           </label>
 
+          {/* Onze botões numa fila que dava três linhas. Um seletor curto diz a
+              mesma coisa numa linha — é o que a identidade comum pede em vez
+              de filas de botões. */}
           <div className="hunt-form__field" style={{ marginBottom: 14, maxWidth: 260 }}>
-            <label>Loyalty da conta</label>
-            <div className="vocation-selector">
+            <label htmlFor={`loyalty-${player.id}`}>Loyalty da conta</label>
+            <select
+              id={`loyalty-${player.id}`}
+              className="selc"
+              value={config.loyaltyBonusPercent}
+              onChange={(event) => setLoyaltyBonus(Number(event.target.value))}
+            >
               {LOYALTY_BONUS_OPTIONS.map((bonus) => (
-                <button
-                  key={bonus}
-                  type="button"
-                  className={
-                    bonus === config.loyaltyBonusPercent
-                      ? 'vocation-selector__option vocation-selector__option--active'
-                      : 'vocation-selector__option'
-                  }
-                  style={bonus === config.loyaltyBonusPercent ? { borderColor: accentColor, color: accentColor } : undefined}
-                  onClick={() => setLoyaltyBonus(bonus)}
-                >
+                <option key={bonus} value={bonus}>
                   {bonus}%
-                </button>
+                </option>
               ))}
-            </div>
+            </select>
           </div>
         </>
       )}
 
       {vocation === 'knight' && skills.length === 0 && (
-        <p className="chart-empty-state">Seleciona pelo menos uma arma para o Knight treinar.</p>
+        <p className="vazio">Seleciona pelo menos uma arma para o Knight treinar.</p>
       )}
 
       {vocation && skills.length > 0 && (
@@ -195,7 +191,8 @@ export function SkillTrainingCalculator({ player }: SkillTrainingCalculatorProps
 
       {cheapestBase.length >= 2 && (
         <p className="skill-training-cheapest">
-          💡 Mais barato de subir primeiro (o nível base, sem Loyalty):{' '}
+          <Icon name="dica" size={16} />
+          Mais barato de subir primeiro (o nível base, sem Loyalty):{' '}
           <strong style={{ color: accentColor }}>{SKILL_LABELS[cheapestBase[0].skill]}</strong> —{' '}
           {cheapestBase[0].wands} Lasting Exercise ({cheapestBase
             .slice(1)

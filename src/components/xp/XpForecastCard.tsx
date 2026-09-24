@@ -59,7 +59,7 @@ export function XpForecastCard({ history, currentExperience, accentColor }: XpFo
 
   return (
     <div className="xp-forecast">
-      <div className="chart-mode-toggle" role="tablist" aria-label="Horizonte da previsão">
+      <div className="seg" role="tablist" aria-label="Horizonte da previsão">
         {FORECAST_HORIZONS.map((days) => {
           const isActive = horizon === days;
           return (
@@ -68,8 +68,7 @@ export function XpForecastCard({ history, currentExperience, accentColor }: XpFo
               type="button"
               role="tab"
               aria-selected={isActive}
-              className={isActive ? 'chart-mode-toggle__btn chart-mode-toggle__btn--active' : 'chart-mode-toggle__btn'}
-              style={isActive ? { color: accentColor, borderColor: accentColor } : undefined}
+              className={isActive ? 'on' : undefined}
               onClick={() => setHorizon(days)}
             >
               {days} dias
@@ -93,7 +92,7 @@ export function XpForecastCard({ history, currentExperience, accentColor }: XpFo
       </div>
 
       {!rate || !projection ? (
-        <p className="chart-empty-state">
+        <p className="vazio">
           Ainda não há leituras suficientes nos últimos {horizon} dias para calcular um ritmo.
         </p>
       ) : (
@@ -111,7 +110,7 @@ export function XpForecastCard({ history, currentExperience, accentColor }: XpFo
           </p>
 
           {rate.averageDailyXp <= 0 ? (
-            <p className="chart-empty-state">
+            <p className="vazio">
               O ritmo nesta janela é nulo ou negativo — não há previsão de níveis para mostrar.
             </p>
           ) : (

@@ -13,9 +13,6 @@ import { RotationCard } from './RotationCard';
 export function TibiadromeSection() {
   const state = useRotationClock(ROTATION_ANCHOR);
 
-  return (
-    <section className="tibiadrome-section">
-      <RotationCard state={state} now={Date.now()} />
-    </section>
-  );
+  // A caixa (o `.card`) é da página; aqui fica só o conteúdo.
+  return <RotationCard state={state} now={Date.now()} />;
 }

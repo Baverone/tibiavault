@@ -1,0 +1,125 @@
+/* Os TOKENS da identidade Baverone — os mesmos do mtgvault e do riftvault.
+ *
+ * Pedido do André (24/09/2026): o tibiavault passa a usar a mesma casca dos
+ * outros dois vaults, com a cor do projeto a verde #38d39f e o logótipo "T".
+ *
+ * O que estava aqui antes era um tema "pergaminho" dourado sobre castanho, com
+ * Georgia como tipo de letra. Bonito à parte, discordava dos outros dois sítios
+ * do mesmo dono e não tinha nenhuma das variáveis que a casca comum usa.
+ *
+ * Duas notas que valem a pena não se perderem:
+ *
+ *   * o `--dim` é o cinzento do texto pequeno que EXPLICA as coisas. Fica em
+ *     #8c93a8 (o secundário da identidade), que sobre o `--card` dá 5,5:1 —
+ *     acima do mínimo do WCAG AA. Não o escureças "para ficar discreto";
+ *   * quem escreve texto POR CIMA do verde usa `--accent-ink` (quase preto):
+ *     branco sobre #38d39f é 1,9:1 e não se lê.
+ */
+
+:root {
+  --bg: #07080d;
+  --card: #12151f;
+  --card2: #0e1018;
+  --card3: #171b28;
+
+  --ink: #eef0f6;
+  --ink2: #c8cede;
+  --muted: #8c93a8;
+  --dim: #8c93a8;
+
+  --line: rgba(255, 255, 255, 0.07);
+  --line2: rgba(255, 255, 255, 0.13);
+
+  /* A cor do projeto. */
+  --accent: #38d39f;
+  --accent-ink: #04130e;
+  --accent-soft: #0d2a22;
+  --accent-line: #1f5f4c;
+  --accent-hi: #6ee7bd;
+
+  /* As cores com significado. Nenhuma delas é o verde da marca: o verde quer
+     dizer "isto é o tibiavault", e usá-lo também para "está bom" punha dois
+     significados na mesma cor. */
+  --info: #6f9bff;
+  --info-soft: #131c31;
+  --ok: #4fd08a;
+  --warn: #f0a35a;
+  --warn-soft: #2a1d10;
+  --err: #ff7b7b;
+  --err-soft: #2c1417;
+
+  /* As cores das personagens. O roxo do Bluey era #8e44ad — 2,4:1 sobre o
+     painel, ilegível no escuro, e ainda por cima usado como cor de texto. */
+  --baverone: #38d39f;
+  --bluey: #b08cff;
+
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-hd: 'Space Grotesk', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-num: 'Inter', system-ui, sans-serif;
+
+  --maxw: 1200px;
+  --side: 258px;
+  /* Altura ocupada no topo por barras fixas da casca: zero no PC, a barra de
+     topo no telemóvel. É o que o `scroll-margin-top` usa para uma âncora não
+     nascer por baixo do botão de menu. */
+  --sticky: 0px;
+  --r: 12px;
+  --r2: 16px;
+  --sombra: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.6 var(--font);
+  -webkit-font-smoothing: antialiased;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-hd);
+  letter-spacing: -0.01em;
+}
+
+a {
+  color: var(--accent);
+  text-underline-offset: 2px;
+}
+
+img,
+svg,
+video,
+canvas,
+table,
+pre {
+  max-width: 100%;
+}
+
+/* A app tinha inputs `type="number"` com a largura intrínseca do browser
+   (~200px) dentro de campos de 140px: a 390px o documento ficava com 404px de
+   largura e a página inteira corria para o lado. */
+input,
+select,
+textarea {
+  min-width: 0;
+  max-width: 100%;
+  font-family: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

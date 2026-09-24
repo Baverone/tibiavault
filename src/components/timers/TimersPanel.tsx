@@ -1,9 +1,13 @@
 import { useRef } from 'react';
 import { TimerCard, type TimerCardHandle } from './TimerCard';
 
-const POT_SKILLS_COLOR = '#3498db';
-const FOOD_ML_COLOR = '#e67e22';
-const PLASMAS_COLOR = '#9b59b6';
+// As cores dos tokens da identidade (`--info`, `--warn`, `--bluey`). São
+// literais e não `var(...)` porque vão parar ao atributo `stroke` do anel SVG,
+// onde uma variável CSS não é resolvida. O roxo estava em #9b59b6 — 3,8:1
+// sobre o painel, e ainda por cima usado como cor do NOME do timer.
+const POT_SKILLS_COLOR = '#6f9bff';
+const FOOD_ML_COLOR = '#f0a35a';
+const PLASMAS_COLOR = '#b08cff';
 
 const PLASMAS_DURATION_SECONDS = 29 * 60 + 40;
 const PLASMAS_ALERTS = [{ atSeconds: 10, message: 'Faltam 30 segundos de plasma, reiniciar contagem' }];

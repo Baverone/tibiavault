@@ -14,6 +14,7 @@ import {
   type HuntSpotStatus,
   type SpotAvailability,
 } from '../../domain/celestaHunts';
+import { Icon } from '../shell/icons';
 import '../../styles/celestaHunts.css';
 
 /** "livre agora, até às 17:00" / "ocupado, livre às 20:00" — em texto curto. */
@@ -146,7 +147,17 @@ const OUTCOME_TEXT: Record<string, string> = {
   failed: '✗ Não consegui chegar aos dados',
 };
 
-export function CelestaHuntsPanel() {
+interface CelestaHuntsPanelProps {
+  /**
+   * A recolha está desligada por ordem, não avariada.
+   *
+   * Cala o vermelho de «a recolha do Discord pode ter parado» — a página já diz,
+   * com calma, que está desligada. Ver `pages/CelestaPage.tsx`.
+   */
+  collectionOff?: boolean;
+}
+
+export function CelestaHuntsPanel({ collectionOff = false }: CelestaHuntsPanelProps) {
   const { data, status, refreshing, outcome, reload } = useCelestaHunts();
   const [showLisbon, setShowLisbon] = useState(() => loadShowLisbon());
   const [now, setNow] = useState(() => Date.now());
@@ -196,12 +207,12 @@ export function CelestaHuntsPanel() {
 
   return (
     <div className="hunts-panel">
-      <div className="hunts-panel__header">
-        <h3>Spots livres — Celesta</h3>
+      <div className="cardh">
+        <h2>Spots</h2>
         <div className="hunts-panel__actions">
           {status === 'ready' && (
             <button
-              className="hunts-panel__choose"
+              className={choosing ? 'btn sm on' : 'btn sm'}
               onClick={() => setChoosing((open) => !open)}
               type="button"
               aria-expanded={choosing}
@@ -209,7 +220,7 @@ export function CelestaHuntsPanel() {
               {choosing ? 'Fechar' : 'Escolher spots'}
             </button>
           )}
-          <button className="hunts-panel__reload" onClick={reload} type="button" disabled={refreshing}>
+          <button className="btn sm" onClick={reload} type="button" disabled={refreshing}>
             {refreshing ? 'A verificar…' : 'Atualizar'}
           </button>
         </div>
@@ -243,15 +254,21 @@ export function CelestaHuntsPanel() {
 
           {/* Dois avisos, e só um de cada vez. "Mais de hora e meia" é um
               cuidado a ter; "parados há Xh" é uma avaria do outro lado, e
-              dizer as duas coisas ao mesmo tempo escondia a segunda. */}
-          {isCollectionStalled(data, now) ? (
-            <p className="hunts-panel__banner hunts-panel__banner--stalled">
-              ⛔ Dados parados {formatAge(data, now)} — a recolha do Discord pode ter parado.
+              dizer as duas coisas ao mesmo tempo escondia a segunda.
+              Com a recolha desligada por ordem não há avaria nenhuma: quem o
+              diz é a página, uma vez, com calma. */}
+          {collectionOff ? null : isCollectionStalled(data, now) ? (
+            <p className="aviso err">
+              <Icon name="aviso" size={17} />
+              <span>
+                <b>Dados parados {formatAge(data, now)}</b> — a recolha do Discord pode ter parado.
+              </span>
             </p>
           ) : (
             isStale(data, now) && (
-              <p className="hunts-panel__banner">
-                ⚠️ Estes dados já têm mais de hora e meia — pode haver reservas novas desde então.
+              <p className="aviso warn">
+                <Icon name="aviso" size={17} />
+                <span>Estes dados já têm mais de hora e meia — pode haver reservas novas desde então.</span>
               </p>
             )
           )}
@@ -291,7 +308,7 @@ export function CelestaHuntsPanel() {
                   {name}
                 </label>
               ))}
-              <button type="button" className="hunts-panel__chooser-reset" onClick={showAllSpots}>
+              <button type="button" className="btn sm hunts-panel__chooser-reset" onClick={showAllSpots}>
                 Mostrar todos
               </button>
             </fieldset>

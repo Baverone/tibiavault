@@ -1,4 +1,6 @@
-import type { HistoryEntry } from './types';
+// Extensão explícita: o `homeSummary.test.ts` chega aqui pelo `node --test`,
+// que corre com o `tsconfig.node.json` (`moduleResolution: nodenext`).
+import type { HistoryEntry } from './types.ts';
 
 export interface ExperienceGain {
   from: HistoryEntry;

@@ -11,7 +11,9 @@ export function RashidCard() {
       <div className="rashid-card__info">
         <span className="rashid-card__city">{state.location.city}</span>
         <span className="rashid-card__location">{state.location.location}</span>
-        <span className="rashid-card__countdown">muda às 9:00 — dentro de {formatDuration(remainingMs)}</span>
+        {/* «muda às 9:00» já está na nota do cartão, na página. Aqui fica só o
+            que conta ao segundo. */}
+        <span className="rashid-card__countdown">muda dentro de {formatDuration(remainingMs)}</span>
       </div>
     </div>
   );

@@ -14,20 +14,9 @@
  */
 export type CharacterId = 'royal-paladin' | 'exalted-monk';
 
-/** Separador do topo: um boneco, ou os utilitários. */
-export type AppTabId = CharacterId | 'utilities';
-
-/**
- * Os separadores dentro de Utilitários, por ordem.
- *
- * A lista vive aqui (e não no `UtilityTabsBar`) porque o `App` também precisa
- * dela para validar o separador guardado no `localStorage` — e um ficheiro de
- * componentes que exporta constantes tira o fast refresh ao Vite. Os rótulos
- * ficam do lado do componente; isto são só os ids.
- */
-export const UTILITY_TAB_IDS = ['hunts', 'stamina', 'arrows'] as const;
-
-export type UtilityTabId = (typeof UTILITY_TAB_IDS)[number];
+// Os separadores (`AppTabId`, `UTILITY_TAB_IDS`) saíram daqui a 24/09/2026:
+// a app deixou de ter duas filas de separadores e passou a ter páginas com
+// endereço. Quem manda na navegação é agora `src/navigation/pages.ts`.
 
 export interface ExperienceTableEntry {
   level: number;

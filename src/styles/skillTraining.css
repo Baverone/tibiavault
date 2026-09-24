@@ -1,32 +1,35 @@
-/* Objetivo de treino — o bloco que responde a "quantas varinhas faltam
-   para chegar ao nível X". Segue o mesmo vocabulário dos outros cartões:
-   fundo alternativo, borda dourada, cantos suaves. */
+/* Objetivo de treino — o bloco que responde a "quantas varinhas faltam para
+   chegar ao nível X". Segue o vocabulário da identidade comum. */
 
 .skill-training-target {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  margin-top: 12px;
-  padding: 10px 14px;
-  background: var(--bg-panel-alt);
-  border: 1px solid var(--gold);
-  border-radius: 6px;
+  gap: 3px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: var(--card3);
+  border: 1px solid var(--line2);
+  border-radius: var(--r);
 }
 
 .skill-training-target__label {
-  font-size: 0.78rem;
-  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--dim);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.11em;
 }
 
 .skill-training-target__value {
-  font-size: 1.15rem;
-  font-weight: bold;
+  font-family: var(--font-hd);
+  font-size: 17px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .skill-training-target__detail {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5;
 }

@@ -10,17 +10,14 @@ export function RotationCard({ state, now }: RotationCardProps) {
 
   return (
     <div className="rotation-card">
-      <div className="rotation-card__header">
-        <h3>Tibiadrome</h3>
-        <span className="rotation-card__number">Rotação Número #{state.number}</span>
+      <div className="rotation-card__column">
+        <span className="rotulo">Rotação</span>
+        <span className="rotation-card__number">#{state.number}</span>
       </div>
-
-      <div className="rotation-card__columns">
-        <div className="rotation-card__column">
-          <span className="rotation-card__label">Fim</span>
-          <span className="rotation-card__date">{formatRotationDate(state.endAt)}</span>
-          <span className="rotation-card__relative">dentro de {formatDuration(remainingMs)}</span>
-        </div>
+      <div className="rotation-card__column">
+        <span className="rotulo">Acaba a</span>
+        <span className="rotation-card__date">{formatRotationDate(state.endAt)}</span>
+        <span className="rotation-card__relative">dentro de {formatDuration(remainingMs)}</span>
       </div>
     </div>
   );

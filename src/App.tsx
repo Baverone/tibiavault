@@ -1,75 +1,80 @@
-import { useState } from 'react';
-import { UTILITY_TAB_IDS, type AppTabId, type UtilityTabId } from './domain/types';
-import { PLAYERS } from './constants/players';
-import { TabsBar } from './components/layout/TabsBar';
-import { PlayerPanel } from './components/layout/PlayerPanel';
-import { UtilityTabsBar } from './components/layout/UtilityTabsBar';
-import { loadTab, saveTab } from './storage/activeTab';
+import { PLAYERS, playerBySlug } from './constants/players';
+import { useHashRoute } from './hooks/useHashRoute';
+import { useAllCharacters } from './hooks/useAllCharacters';
+import { summarizeCharacter } from './domain/homeSummary';
+import { AppShell } from './components/shell/AppShell';
 import { TimersPanel } from './components/timers/TimersPanel';
-import { TibiadromeSection } from './components/tibiadrome/TibiadromeSection';
-import { RashidCard } from './components/rashid/RashidCard';
+import { HomePage } from './pages/HomePage';
+import { CharacterPage } from './pages/CharacterPage';
+import { CelestaPage } from './pages/CelestaPage';
+import { MundoPage } from './pages/MundoPage';
 import { StaminaCalculator } from './components/stamina/StaminaCalculator';
-import { CelestaHuntsPanel } from './components/hunt/CelestaHuntsPanel';
 import { ArrowsCalculator } from './components/arrows/ArrowsCalculator';
+import { PAGE_AJUDA } from './pages/ajuda';
 
-const APP_TAB_IDS: readonly AppTabId[] = [...PLAYERS.map((player) => player.id), 'utilities'];
+const hoje = new Intl.DateTimeFormat('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
+/**
+ * A app: a casca comum, e dentro dela a página que o endereço pedir.
+ *
+ * Era um ficheiro com dois `useState` de separador, um `localStorage` por cada
+ * um e três painéis montados ao mesmo tempo com `display:none` — «para que um
+ * filtro meio preenchido não se perca ao trocar de separador». Isso deixou de
+ * ser preciso: o que tinha de sobreviver à troca de página já sobrevive ao
+ * recarregar, porque está no `localStorage` (o filtro de spots, os campos da
+ * calculadora de hunt, os do treino de skills).
+ *
+ * O que continua montado em permanência são os TIMERS, e de propósito: são a
+ * única coisa da app com contagem a correr, e são para estar à vista enquanto
+ * se caça, seja qual for a página aberta.
+ */
 function App() {
-  // A app abre onde ficou da última vez. Sem nada guardado (primeira visita,
-  // ou localStorage bloqueado) abre no primeiro boneco, como sempre abriu.
-  const [activeTab, setActiveTab] = useState<AppTabId>(() => loadTab('main', APP_TAB_IDS) ?? PLAYERS[0].id);
-  const [activeUtilityTab, setActiveUtilityTab] = useState<UtilityTabId>(
-    () => loadTab('utility', UTILITY_TAB_IDS) ?? 'hunts'
-  );
+  const [page, navigate] = useHashRoute();
+  const { histories, loading } = useAllCharacters();
 
-  function changeTab(id: AppTabId) {
-    setActiveTab(id);
-    saveTab('main', id);
+  const player = playerBySlug(page);
+
+  let subtitle: string | undefined;
+  let content = null;
+
+  if (player) {
+    content = <CharacterPage player={player} />;
+    subtitle = `${player.vocation} — a XP, a previsão, a calculadora de hunt e as varinhas de treino.`;
+  } else if (page === 'inicio') {
+    content = <HomePage histories={histories} loading={loading} onNavigate={navigate} />;
+    const niveis = PLAYERS.map((p) => {
+      const resumo = summarizeCharacter(histories[p.id] ?? [], Date.now());
+      return resumo.level !== null ? `${p.name} no nível ${resumo.level}` : `${p.name} ainda sem dados`;
+    });
+    subtitle = loading
+      ? `O que a XP diz hoje (${hoje.format(new Date())}).`
+      : `O que a XP diz hoje (${hoje.format(new Date())}): ${niveis.join(', ')}.`;
+  } else if (page === 'stamina') {
+    content = <StaminaCalculator />;
+  } else if (page === 'flechas') {
+    content = <ArrowsCalculator />;
+  } else if (page === 'celesta') {
+    content = <CelestaPage />;
+  } else {
+    content = <MundoPage />;
   }
-
-  function changeUtilityTab(id: UtilityTabId) {
-    setActiveUtilityTab(id);
-    saveTab('utility', id);
-  }
-
-  const showingUtilities = activeTab === 'utilities';
 
   return (
-    <div className="app-shell">
-      <header className="app-header">
-        <h1>TibiaVault</h1>
-      </header>
-
-      <TimersPanel />
-
-      <RashidCard />
-
-      <TibiadromeSection />
-
-      <TabsBar activeId={activeTab} onChange={changeTab} />
-
-      {showingUtilities && <UtilityTabsBar activeId={activeUtilityTab} onChange={changeUtilityTab} />}
-
-      {/* Os painéis ficam todos montados (só escondidos) para que um filtro ou
-          um campo meio preenchido não se perca ao trocar de separador. */}
-      <section className={showingUtilities ? 'app-utilities' : 'app-utilities app-utilities--hidden'}>
-        <div className={activeUtilityTab === 'hunts' ? 'app-utilities__pane' : 'app-utilities__pane app-utilities__pane--hidden'}>
-          <CelestaHuntsPanel />
+    <AppShell
+      page={page}
+      onNavigate={navigate}
+      subtitle={subtitle}
+      timers={
+        <div className="timers-host">
+          <div className="pghin">
+            <TimersPanel />
+          </div>
         </div>
-        <div className={activeUtilityTab === 'stamina' ? 'app-utilities__pane' : 'app-utilities__pane app-utilities__pane--hidden'}>
-          <StaminaCalculator />
-        </div>
-        <div className={activeUtilityTab === 'arrows' ? 'app-utilities__pane' : 'app-utilities__pane app-utilities__pane--hidden'}>
-          <ArrowsCalculator />
-        </div>
-      </section>
-
-      <main className="app-main">
-        {PLAYERS.map((player) => (
-          <PlayerPanel key={player.id} player={player} isActive={player.id === activeTab} />
-        ))}
-      </main>
-    </div>
+      }
+      help={PAGE_AJUDA[page]}
+    >
+      {content}
+    </AppShell>
   );
 }
 

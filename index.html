@@ -3,13 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- A barra do browser no telemovel acompanha o tema escuro em vez de
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- A barra do browser no telemóvel acompanha o tema escuro em vez de
          ficar branca por cima de um site preto. -->
-    <meta name="theme-color" content="#17120c" />
+    <meta name="theme-color" content="#07080d" />
     <meta
       name="description"
       content="XP, timers de hunt, spots livres do Celesta, Rashid e stamina para os bonecos do Tibia."
+    />
+    <!-- Space Grotesk nos títulos, Inter no texto — os mesmos do mtgvault e do
+         riftvault. Com `display=swap` e uma pilha de sistema por trás (ver
+         `--font` em src/styles/tokens.css): se o Google Fonts não responder,
+         ou se isto abrir sem rede, a página lê-se na mesma, só com outra letra. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
     />
     <title>TibiaVault</title>
   </head>

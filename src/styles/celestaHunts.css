@@ -1,40 +1,11 @@
-/* Spots livres de hunt no Celesta — segue o mesmo vocabulário visual
-   dos cartões do Tibiadrome (var(--bg-panel), borda dourada, cantos 10px). */
+/* Spots livres de hunt no Celesta — no vocabulário da identidade comum
+   (`tokens.css` + `shell.css`). A caixa é o `.card` da página; aqui fica só o
+   que é do painel. */
 
-.hunts-panel {
-  background: var(--bg-panel);
-  border: 1px solid var(--border-gold);
-  border-radius: 10px;
-  padding: 18px 20px;
-}
-
-.hunts-panel__header {
+.hunts-panel__actions {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 12px;
-}
-
-.hunts-panel__header h3 {
-  margin: 0;
-  color: var(--gold);
-}
-
-.hunts-panel__reload {
-  background: var(--bg-panel-alt);
-  border: 1px solid var(--border-gold);
-  color: var(--text-parchment);
-  border-radius: 6px;
-  padding: 5px 12px;
-  cursor: pointer;
-  font-size: 0.85rem;
-}
-
-.hunts-panel__reload:hover {
-  border-color: var(--gold);
-  color: var(--gold);
+  flex-wrap: wrap;
 }
 
 .hunts-panel__meta {
@@ -43,63 +14,51 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
 }
 
 .hunts-panel__age {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  font-family: 'Courier New', monospace;
+  font-size: 12.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
 }
 
 .hunts-panel__age--stale {
-  color: var(--error);
+  color: var(--warn);
 }
 
 .hunts-panel__toggle {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.8rem;
-  color: var(--text-muted);
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--muted);
   cursor: pointer;
-}
-
-.hunts-panel__banner {
-  background: var(--bg-panel-alt);
-  border: 1px solid var(--error);
-  border-radius: 6px;
-  padding: 8px 12px;
-  color: var(--text-parchment);
-  font-size: 0.85rem;
-  margin: 0 0 14px;
-}
-
-/* A recolha parada não é o mesmo que dados com hora e meia: aqui não há
-   reservas novas a caminho, há uma tarefa avariada. Por isso o vermelho
-   cheio, e não só o contorno. */
-.hunts-panel__banner--stalled {
-  background: var(--error);
-  border-color: var(--error);
-  color: #1a1206;
-  font-weight: 600;
+  min-height: 32px;
 }
 
 .hunts-panel__note {
-  color: var(--text-muted);
-  font-size: 0.9rem;
+  color: var(--muted);
+  font-size: 13px;
   margin: 0;
 }
 
 .hunts-panel__note code {
-  color: var(--text-parchment);
+  background: var(--bg);
+  padding: 1px 5px;
+  border-radius: 5px;
+  color: var(--ink2);
 }
 
 .hunts-panel__label {
-  font-size: 0.78rem;
-  color: var(--text-muted);
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--dim);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.11em;
 }
 
 /* O carimbo de quando o bloco foi calculado. Minúsculas de propósito: é uma
@@ -108,22 +67,24 @@
   text-transform: none;
   letter-spacing: 0;
   font-style: normal;
-  opacity: 0.8;
+  font-weight: 500;
+  opacity: 0.85;
 }
 
 .hunts-panel__highlights {
-  background: var(--bg-panel-alt);
-  border: 1px solid var(--gold);
-  border-radius: 6px;
-  padding: 10px 14px;
+  background: var(--card2);
+  border: 1px solid var(--line2);
+  border-radius: var(--r);
+  padding: 12px 14px;
   margin-bottom: 16px;
 }
 
 .hunts-panel__highlights ul {
-  margin: 6px 0 0;
+  margin: 8px 0 0;
   padding-left: 18px;
-  color: var(--gold);
-  font-size: 0.9rem;
+  color: var(--ink2);
+  font-size: 13px;
+  line-height: 1.6;
 }
 
 /* --- Livres agora ------------------------------------------------------
@@ -132,53 +93,38 @@
    da noite) e de manhã não serve para nada. */
 
 .hunts-panel__now {
-  background: var(--bg-panel-alt);
-  border: 1px solid var(--gold);
-  border-left-width: 4px;
-  border-radius: 6px;
-  padding: 10px 14px;
-  margin-bottom: 12px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-line);
+  border-left-width: 3px;
+  border-radius: var(--r);
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+
+.hunts-panel__now .hunts-panel__label {
+  color: var(--accent);
 }
 
 .hunts-panel__now-list {
   margin: 6px 0 0;
-  font-size: 0.9rem;
+  font-size: 13.5px;
   line-height: 1.6;
-  color: var(--text-parchment);
+  color: var(--ink2);
 }
 
 .hunts-panel__now-list strong {
-  color: var(--gold);
-}
-
-.hunts-spot__now {
-  margin: 0 0 6px;
-  font-size: 0.82rem;
-  color: var(--text-muted);
-}
-
-.hunts-spot__now--open {
-  color: var(--gold);
-}
-
-.hunts-spot--open .hunts-spot__name {
-  color: var(--gold);
-}
-
-.hunts-spot__window--current {
-  border-color: var(--gold);
-  color: var(--gold);
+  color: var(--accent);
 }
 
 .hunts-panel__spots {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 0;
 }
 
 .hunts-spot {
-  border-top: 1px dashed var(--border-gold);
-  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  padding: 14px 0;
 }
 
 .hunts-spot:first-child {
@@ -196,22 +142,37 @@
 }
 
 .hunts-spot__name {
-  color: var(--text-parchment);
-  font-weight: bold;
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 13.5px;
+}
+
+.hunts-spot--open .hunts-spot__name {
+  color: var(--accent);
 }
 
 .hunts-spot__badge {
-  font-size: 0.78rem;
-  color: var(--text-muted);
+  font-size: 11.5px;
+  color: var(--dim);
   white-space: nowrap;
 }
 
 .hunts-spot__badge--free {
-  color: var(--gold);
+  color: var(--accent);
 }
 
 .hunts-spot__badge--packed {
-  color: var(--error);
+  color: var(--warn);
+}
+
+.hunts-spot__now {
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.hunts-spot__now--open {
+  color: var(--accent);
 }
 
 .hunts-spot__windows {
@@ -223,114 +184,82 @@
 .hunts-spot__window {
   display: inline-flex;
   flex-direction: column;
-  background: var(--bg-panel-alt);
-  border: 1px solid var(--border-gold);
+  background: var(--card2);
+  border: 1px solid var(--line2);
   border-radius: 999px;
-  padding: 4px 12px;
-  font-family: 'Courier New', monospace;
-  font-size: 0.85rem;
-  color: var(--text-parchment);
+  padding: 5px 12px;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink2);
+}
+
+.hunts-spot__window--current {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 .hunts-spot__window-alt {
-  font-size: 0.72rem;
+  font-size: 10.5px;
   font-style: normal;
-  color: var(--text-muted);
+  color: var(--dim);
 }
 
 .hunts-spot__none {
   margin: 0;
-  font-size: 0.85rem;
-  color: var(--error);
+  font-size: 12.5px;
+  color: var(--warn);
 }
 
 .hunts-panel__footnote {
-  margin: 14px 0 0;
-  padding-top: 10px;
-  border-top: 1px dashed var(--border-gold);
-  font-size: 0.78rem;
-  color: var(--text-muted);
-}
-
-.hunts-panel__reload:disabled {
-  opacity: 0.6;
-  cursor: default;
+  margin: 16px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 11.5px;
+  color: var(--dim);
 }
 
 .hunts-panel__outcome {
-  font-size: 0.78rem;
-  color: var(--text-muted);
+  font-size: 11.5px;
+  color: var(--dim);
 }
 
 .hunts-panel__outcome--ok {
-  color: var(--gold);
+  color: var(--ok);
 }
 
 /* --- Escolher que spots aparecem -------------------------------------- */
-
-.hunts-panel__actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.hunts-panel__choose {
-  padding: 5px 12px;
-  background: var(--bg-panel-alt);
-  border: 1px solid var(--border-gold);
-  border-radius: 999px;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 0.8rem;
-}
-
-.hunts-panel__choose:hover {
-  color: var(--gold);
-  border-color: var(--gold);
-}
 
 .hunts-panel__chooser {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin: 0 0 14px;
-  padding: 12px 14px;
-  border: 1px solid var(--border-gold);
-  border-radius: 6px;
-  background: var(--bg-panel-alt);
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--line2);
+  border-radius: var(--r);
+  background: var(--card2);
 }
 
 .hunts-panel__chooser legend {
   padding: 0 6px;
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
+  color: var(--dim);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
   text-transform: uppercase;
 }
 
 .hunts-panel__chooser-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.85rem;
+  gap: 9px;
+  font-size: 13px;
   cursor: pointer;
+  min-height: 34px;
 }
 
 .hunts-panel__chooser-reset {
   align-self: flex-start;
   margin-top: 4px;
-  padding: 4px 10px;
-  background: none;
-  border: 1px solid var(--border-gold);
-  border-radius: 999px;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 0.75rem;
-}
-
-.hunts-panel__chooser-reset:hover {
-  color: var(--gold);
-  border-color: var(--gold);
 }
