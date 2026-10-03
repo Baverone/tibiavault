@@ -1,5 +1,5 @@
-import { experienceForLevel, levelForExperience } from './experienceTable';
-import type { HistoryEntry } from './types';
+import { experienceForLevel, levelForExperience } from './experienceTable.ts';
+import type { HistoryEntry } from './types.ts';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 

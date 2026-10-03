@@ -1,5 +1,5 @@
-import { experienceForLevel, levelForExperience } from './experienceTable';
-import type { LevelProgress } from './types';
+import { experienceForLevel, levelForExperience } from './experienceTable.ts';
+import type { LevelProgress } from './types.ts';
 
 /**
  * Given the total experience a character has, works out the current level,

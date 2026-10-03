@@ -218,6 +218,12 @@ if (-not $node) {
 Write-Host ''
 Write-Host '== 4/4  Agendar a recolha de hora a hora ==' -ForegroundColor Cyan
 
+# Nota de 2026-09-15: a recolha de XP ja nao depende desta tarefa do
+# Agendador do Windows. Passou para a tarefa 'tibia-xp' do runner do ai-pc
+# (30 em 30 min), e a CalculadoraTibia-RecolhaXP criada abaixo ficou
+# desativada (ver knowledge/projectos.md). Este passo so mexe se a tarefa
+# ainda nao existir, por isso nao reativa nada sozinho -- fica so como
+# registo de como a recolha era agendada antes do runner existir.
 $tarefa = 'CalculadoraTibia-RecolhaXP'
 schtasks /Query /TN $tarefa 2>&1 | Out-Null
 if ($LASTEXITCODE -eq 0) {

@@ -1,4 +1,4 @@
-import { experienceForLevel, levelForExperience } from './experienceTable';
+import { experienceForLevel, levelForExperience } from './experienceTable.ts';
 
 /**
  * Como os bónus de experiência do Tibia se combinam.
