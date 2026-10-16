@@ -4,7 +4,13 @@
 // celula, a segunda com a abreviatura para telemovel).
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { experienceForLevel, levelForExperience, parseExperienceRows } from './guildstatsHistory.mjs';
+import {
+  USER_AGENT,
+  experienceForLevel,
+  fetchExperienceRows,
+  levelForExperience,
+  parseExperienceRows,
+} from './guildstatsHistory.mjs';
 
 const linha = (data, curta, nivel, xp, xpCurta) => `
   <tr>
@@ -52,6 +58,64 @@ test('linhas com data ou nivel ilegiveis sao ignoradas', () => {
 test('uma tabela sem linhas parseaveis grita em vez de devolver vazio', () => {
   assert.throws(() => parseExperienceRows(tabela(linha('Total', '', '', '999', ''))), /layout pode ter mudado/);
   assert.throws(() => parseExperienceRows('<p>403 Forbidden</p>'), /layout pode ter mudado/);
+});
+
+// Substitui o fetch global durante um teste e guarda os pedidos feitos.
+async function comFetchFalso(responder, corpo) {
+  const original = globalThis.fetch;
+  const pedidos = [];
+  globalThis.fetch = async (url, init = {}) => {
+    pedidos.push({ url: String(url), headers: new Headers(init.headers) });
+    return responder();
+  };
+  try {
+    await corpo(pedidos);
+  } finally {
+    globalThis.fetch = original;
+  }
+}
+
+test('todos os pedidos ao guildstats levam User-Agent', async () => {
+  // O fetch do node nao manda UA de browser por si; se REQUEST_HEADERS deixar
+  // de ser passado, isto apanha antes de o guildstats o apanhar.
+  const html = tabela(linha('2026-10-14', '10-14', '1174', '26,885,267,055', '26.9B'));
+  await comFetchFalso(
+    () => new Response(html, { status: 200 }),
+    async (pedidos) => {
+      await fetchExperienceRows('Bluey The Cat', { attempts: 1 });
+      assert.equal(pedidos.length, 1);
+      assert.match(pedidos[0].url, /^https:\/\/guildstats\.eu\//);
+      assert.ok(pedidos[0].headers.get('user-agent'), 'pedido saiu sem User-Agent');
+      assert.equal(pedidos[0].headers.get('user-agent'), USER_AGENT);
+    }
+  );
+});
+
+test('403 do challenge do Cloudflare diz o que e e nao repete', async () => {
+  await comFetchFalso(
+    () => new Response('<title>Just a moment...</title>', { status: 403, headers: { 'cf-mitigated': 'challenge' } }),
+    async (pedidos) => {
+      await assert.rejects(fetchExperienceRows('Baverone', { attempts: 3, retryDelayMs: 0 }), (error) => {
+        assert.match(error.message, /403 — challenge do Cloudflare/);
+        assert.doesNotMatch(error.message, /IP do runner|GitHub Actions/);
+        return true;
+      });
+      assert.equal(pedidos.length, 1);
+    }
+  );
+});
+
+test('403 simples aponta para os cabecalhos, nao para o IP', async () => {
+  await comFetchFalso(
+    () => new Response('Forbidden', { status: 403 }),
+    async (pedidos) => {
+      await assert.rejects(
+        fetchExperienceRows('Baverone', { attempts: 2, retryDelayMs: 0 }),
+        /403 — o guildstats recusou o pedido, provavelmente por causa dos cabeçalhos/
+      );
+      assert.equal(pedidos.length, 2);
+    }
+  );
 });
 
 test('a formula de experiencia bate certo com a tabela oficial', () => {

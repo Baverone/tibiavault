@@ -46,13 +46,18 @@ export function isAfterLisbonServerSave() {
   return hour >= 9;
 }
 
+// UA de browser desde 7a9bdb8 (agosto de 2026): o guildstats.eu recusava o
+// UA por omissão do node. A 16/10/2026 testou-se trocar por um honesto
+// ("TibiaVault/1.0 (+https://github.com/Baverone/tibiavault)") e não deu para
+// decidir: desde 14/10 o tab.php está atrás de um challenge do Cloudflare e
+// leva 403 com QUALQUER cabeçalho (sem UA, honesto, Chrome 124, Chrome 141).
+// Fica este até o endpoint voltar a responder e se poder testar o honesto.
+// O guildstatsHistory.test.mjs falha se o pedido sair sem User-Agent.
+export const USER_AGENT =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+
 const REQUEST_HEADERS = {
-  // guildstats.eu intermittently answers datacenter/CI IPs (like GitHub
-  // Actions runners) with 403 for a plain bot User-Agent — a browser-like UA
-  // plus these headers get through far more reliably. Combined with the
-  // retries in fetchExperienceRows, a run rarely loses a player to a 403.
-  'User-Agent':
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+  'User-Agent': USER_AGENT,
   Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
   'Accept-Language': 'en-US,en;q=0.9',
   Referer: 'https://guildstats.eu/',
@@ -116,6 +121,34 @@ export function parseExperienceRows(html) {
   return parsed;
 }
 
+/**
+ * O texto do erro é o que aparece no scrape-xp.log e no runner, por isso tem
+ * de apontar para a causa certa. A mensagem antiga mandava procurar o IP do
+ * GitHub Actions e fez perder tempo em outubro de 2026, quando o pedido saía
+ * do PC e o problema era outro.
+ */
+export function httpErrorFor(response) {
+  const { status } = response;
+  let message = `HTTP ${status}`;
+  let retry = true;
+  if (status === 403 && response.headers.get('cf-mitigated') === 'challenge') {
+    // Repetir não adianta: o challenge só se resolve num browser com JS.
+    message =
+      'HTTP 403 — challenge do Cloudflare (cf-mitigated: challenge): o guildstats exige um browser ' +
+      'neste endpoint. Não é o IP nem o User-Agent — mudar cabeçalhos não resolve.';
+    retry = false;
+  } else if (status === 403) {
+    message = 'HTTP 403 — o guildstats recusou o pedido, provavelmente por causa dos cabeçalhos (User-Agent).';
+  }
+  const httpError = new Error(message);
+  httpError.status = status;
+  httpError.retry = retry;
+  // 403, 429 e 5xx são do lado do guildstats, não um bug do scraper; um 404
+  // (nick errado) etc. fica não-transitório.
+  httpError.transient = status === 403 || status === 429 || status >= 500;
+  return httpError;
+}
+
 async function fetchAndParse(nick) {
   const encodedNick = encodeURIComponent(nick).replace(/%20/g, '+');
   const url = `https://guildstats.eu/include/character/tab.php?nick=${encodedNick}&tab=experience`;
@@ -129,12 +162,7 @@ async function fetchAndParse(nick) {
     throw networkError;
   }
   if (!response.ok) {
-    const httpError = new Error(`HTTP ${response.status}`);
-    // 403 (guildstats blocking a CI IP), 429 and 5xx are transient upstream
-    // conditions, not a bug in this scraper — flagged so the job can skip
-    // instead of failing red. A 404 (bad nick) etc. stays non-transient.
-    httpError.transient = response.status === 403 || response.status === 429 || response.status >= 500;
-    throw httpError;
+    throw httpErrorFor(response);
   }
 
   return parseExperienceRows(await response.text());
@@ -159,10 +187,12 @@ export async function fetchExperienceRows(nick, { attempts = 3, retryDelayMs = 4
       return await fetchAndParse(nick);
     } catch (error) {
       lastError = error;
+      if (error.retry === false) break;
       if (attempt < attempts) await sleep(retryDelayMs * attempt);
     }
   }
-  const wrapped = new Error(`falhou após ${attempts} tentativas para "${nick}": ${lastError.message}`);
+  const tried = lastError.retry === false ? '1 tentativa (sem repetir)' : `${attempts} tentativas`;
+  const wrapped = new Error(`falhou após ${tried} para "${nick}": ${lastError.message}`);
   wrapped.transient = lastError.transient === true;
   throw wrapped;
 }
@@ -271,10 +301,7 @@ export async function runScraper({ players, dataDir }) {
 
   if (failureCount > 0) {
     if (successCount === 0) {
-      console.error(
-        'Nenhum jogador foi recolhido. Se isto correu no GitHub Actions, a causa mais provável é o ' +
-          'guildstats.eu devolver 403 ao IP do runner — a recolha fiável corre no PC (scripts/scrape-xp-local.ps1).'
-      );
+      console.error('Nenhum jogador foi recolhido — ver a causa nas linhas "falhou:" acima.');
     }
     process.exitCode = 1;
   }
