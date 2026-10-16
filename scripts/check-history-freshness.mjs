@@ -60,13 +60,20 @@ function newestDateIn(file) {
 const today = lisbonToday();
 const stale = [];
 const ok = [];
+const waiting = [];
 
 // Percorre a lista de rastreados, e não a pasta: um ficheiro que lá tenha
 // ficado de um boneco que já não se segue não é um alarme.
 {
   const label = 'bonecos';
-  for (const { id } of CHARACTERS) {
+  for (const { id, waiting: reason } of CHARACTERS) {
     const newest = newestDateIn(join(DATA_DIR, `${id}.json`));
+    // Sem fonte de recolha (limitação conhecida e aceite): não é um atraso
+    // por que valha a pena acordar alguém, mas é dito sempre.
+    if (reason) {
+      waiting.push({ id, label, newest: newest ?? '(vazio/ilegível)', reason });
+      continue;
+    }
     if (!newest) {
       stale.push({ id, label, newest: '(vazio/ilegível)', age: Infinity });
       continue;
@@ -78,6 +85,9 @@ const ok = [];
 
 for (const entry of ok) {
   console.log(`  ok   [${entry.label}] ${entry.id}: último dia ${entry.newest} (há ${entry.age} dia(s)).`);
+}
+for (const entry of waiting) {
+  console.log(`  À ESPERA  [${entry.label}] ${entry.id}: último dia ${entry.newest} — NÃO recolhido: ${entry.reason}`);
 }
 
 if (stale.length === 0) {
@@ -94,7 +104,7 @@ for (const entry of stale) {
 }
 console.error(
   `\n${stale.length} ficheiro(s) com mais de ${MAX_AGE_DAYS} dia(s) de atraso (hoje em Lisboa: ${today}).\n` +
-    'A recolha do PC (scripts/scrape-xp-local.ps1) não está a correr, ou o guildstats.eu mudou outra vez.\n' +
-    'Ver scripts/scrape-xp.log e o Agendador de Tarefas do Windows.'
+    'A recolha do PC (tarefa tibia-xp do ai-pc) não está a correr, ou a API do TibiaData mudou/está em baixo.\n' +
+    'Correr node scripts/scrape-experience.mjs e ler as linhas "falhou".'
 );
 process.exit(1);

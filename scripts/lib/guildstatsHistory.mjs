@@ -2,9 +2,13 @@
 //
 // Nasceu partilhada porque havia dois scrapers (os bonecos principais e os
 // jogadores da aba "Equipa") byte a byte iguais tirando a lista de jogadores e
-// a pasta de saída. A aba Equipa saiu na limpeza de setembro de 2026 e hoje só
-// o scrape-experience.mjs chama isto — o `runScraper({ players, dataDir })`
-// fica parametrizado à mesma, que é o que torna estas funções testáveis.
+// a pasta de saída. A aba Equipa saiu na limpeza de setembro de 2026.
+//
+// Desde 16/10/2026 o scrape-experience.mjs já não chama o `runScraper`: o
+// tab.php está atrás do Cloudflare e a recolha passou para os highscores
+// (tibiaDataHighscores.mjs), que usa daqui a fórmula e o load/save do
+// histórico. O resto fica para a recolha por browser do Bluey, que vai
+// precisar do parser.
 //
 // Endpoint discovered by inspecting guildstats.eu's own front-end JS: the
 // character page loads its "Experience" tab via this internal AJAX route,

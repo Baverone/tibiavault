@@ -1,5 +1,10 @@
 # Rede de seguranca da recolha de XP -- ja nao e a fonte principal.
 #
+# 16/10/2026: a fonte passou do guildstats (atras do Cloudflare desde 14/10)
+# para os highscores oficiais via api.tibiadata.com, que tambem responde aos
+# runners -- por isso a recolha aqui pode voltar a entrar dados. O historico
+# abaixo e do tempo do guildstats.
+#
 # A recolha a serio corre no PC (scripts/scrape-xp-local.ps1), porque o
 # guildstats.eu responde 403 a todos os IPs dos runners do GitHub. Entre 21 e
 # 31 de agosto de 2026 este workflow correu todos os dias, ficou verde todos
