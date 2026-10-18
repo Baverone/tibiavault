@@ -22,7 +22,7 @@
 export const ICON_PATHS = {
   inicio: 'M3 9.5 12 2l9 7.5V20a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM9 22V12.5h6V22',
   // O arco do Baverone e a flor do Bluey vêm dos ícones que estavam em
-  // `constants/players.tsx`. Ficam aqui para o conjunto ser mesmo um só.
+  // `constants/players.ts`. Ficam aqui para o conjunto ser mesmo um só.
   arco: 'M3 21 21 3M21 3h-7M21 3v7M7 13l4 4',
   lotus: 'M12 21s-8-4-8-11c0-4 4-7 8-2 4-5 8-2 8 2 0 7-8 11-8 11zM12 12.6v.01',
   timer: 'M12 22a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 8v5l3 2M9 2h6',

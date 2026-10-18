@@ -6,7 +6,7 @@
 // rastreia. Um alarme que está sempre a tocar é um alarme que se ignora, e
 // era exatamente esse o problema a resolver.
 //
-// Manter igual a src/constants/players.tsx: se os ids não baterem certo, a
+// Manter igual a src/constants/players.ts: se os ids não baterem certo, a
 // app pede um ficheiro que o robô nunca escreve e mostra um painel vazio sem
 // dizer porquê.
 import { dirname, join } from 'path';
