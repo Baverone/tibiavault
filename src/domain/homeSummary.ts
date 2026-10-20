@@ -67,13 +67,29 @@ export function summarizeCharacter(history: HistoryEntry[], now: number): Charac
     lastDayGain: lastDayEntry?.experienceGained ?? null,
     weekGain: week.length > 0 ? week.reduce((total, day) => total + day.experienceGained, 0) : null,
     weekDays: week.length,
-    daysSinceLastReading: last ? Math.floor((now - last.timestamp) / MS_PER_DAY) : null,
+    daysSinceLastReading: last ? calendarDaysSince(last.timestamp, now) : null,
   };
 }
 
 // Os timestamps do histórico são o meio-dia UTC da data da linha
 // (storage/sharedHistory.ts): lidos em UTC dão sempre o dia certo.
 const readingDay = new Intl.DateTimeFormat('pt-PT', { timeZone: 'UTC', day: '2-digit', month: '2-digit' });
+const isoDayUtc = new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC' });
+const isoDayLisbon = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Lisbon' });
+
+/**
+ * Quantos dias de calendário vão do dia da leitura a «hoje» em Lisboa.
+ *
+ * 20/10/2026: era `(now - timestamp) / 24h`, e o meio-dia UTC inventado do
+ * timestamp entrava na conta — às 09:00 de 20/10 uma leitura de 19/10 dava
+ * «hoje». Conta-se como o `scripts/check-history-freshness.mjs`: a data da
+ * linha contra a data de hoje em Europe/Lisbon, sem horas.
+ */
+export function calendarDaysSince(timestamp: number, now: number): number {
+  const reading = Date.parse(`${isoDayUtc.format(timestamp)}T00:00:00Z`);
+  const today = Date.parse(`${isoDayLisbon.format(now)}T00:00:00Z`);
+  return Math.round((today - reading) / MS_PER_DAY);
+}
 
 /**
  * O pedaço de um boneco no cabeçalho do Início («O que a XP diz hoje …»).
@@ -105,8 +121,7 @@ export function levelHeadline(name: string, history: HistoryEntry[], now: number
 export function lastReadingNote(history: HistoryEntry[], now: number): string {
   const last = history.findLast((entry) => Number.isFinite(entry.timestamp));
   if (!last) return 'sem leituras';
-  const days = Math.floor((now - last.timestamp) / MS_PER_DAY);
-  return `última leitura a ${readingDay.format(last.timestamp)} (${agoText(days)})`;
+  return `última leitura a ${readingDay.format(last.timestamp)} (${agoText(calendarDaysSince(last.timestamp, now))})`;
 }
 
 export interface CombinedDailyPoint {

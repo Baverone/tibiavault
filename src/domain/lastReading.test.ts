@@ -7,7 +7,7 @@ import { copyFileSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from '
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { lastReadingNote } from './homeSummary.ts';
+import { lastReadingNote, summarizeCharacter } from './homeSummary.ts';
 import { scrapedRecordsToHistory } from './scrapedHistory.ts';
 
 const DADOS = fileURLToPath(new URL('../../data/scraped-history/', import.meta.url));
@@ -47,6 +47,21 @@ test('a nota leva só o dia e o mês, nunca uma hora', () => {
   assert.doesNotMatch(nota, /\d{1,2}:\d{2}|\d{1,2}h/);
 });
 
+test('a idade conta dias de calendário, não o meio-dia UTC inventado', () => {
+  const historia = scrapedRecordsToHistory([
+    { date: '2026-10-19', level: 650, experience: 4_500_000_000, scrapedAt: '2026-10-20T08:00:00.000Z' },
+  ]);
+  // Antes do meio-dia UTC dava «hoje»: só tinham passado 21 h desde o timestamp.
+  assert.equal(lastReadingNote(historia, new Date('2026-10-20T09:00:00Z').getTime()), 'última leitura a 19/10 (há 1 dia)');
+  assert.equal(lastReadingNote(historia, new Date('2026-10-20T15:00:00Z').getTime()), 'última leitura a 19/10 (há 1 dia)');
+  // No próprio dia, de manhã cedo e já de noite, é sempre «hoje».
+  assert.equal(lastReadingNote(historia, new Date('2026-10-19T00:30:00Z').getTime()), 'última leitura a 19/10 (hoje)');
+  assert.equal(lastReadingNote(historia, new Date('2026-10-19T22:30:00Z').getTime()), 'última leitura a 19/10 (hoje)');
+  // O dia vira à meia-noite de Lisboa (23:00 UTC em horário de verão), como no check-history-freshness.
+  assert.equal(lastReadingNote(historia, new Date('2026-10-19T23:30:00Z').getTime()), 'última leitura a 19/10 (há 1 dia)');
+  assert.equal(summarizeCharacter(historia, new Date('2026-10-20T09:00:00Z').getTime()).daysSinceLastReading, 1);
+});
+
 test('linhas sem data ou sem XP não contam como leitura e não rebentam a data', () => {
   const historia = scrapedRecordsToHistory([
     { date: '2026-10-10', level: 600, experience: 3_500_000_000, scrapedAt: '2026-10-11T09:00:00.000Z' },
@@ -68,11 +83,12 @@ test('dados antigos: a cópia do histórico do Bluey dá a data da última linha
     const historia = lerCopia(pasta, 'exalted-monk.json');
     const brutas = JSON.parse(readFileSync(join(pasta, 'exalted-monk.json'), 'utf8')) as Array<{ date: string }>;
     assert.equal(historia.length, brutas.length);
-    const [, mes, dia] = brutas.at(-1)!.date.split('-');
-    const ultima = new Date(`${brutas.at(-1)!.date}T12:00:00Z`).getTime();
-    const dias = Math.floor((AGORA - ultima) / (24 * 60 * 60 * 1000));
-    assert.match(lastReadingNote(historia, AGORA), new RegExp(`^última leitura a ${dia}/${mes} \\(`));
-    assert.ok(dias >= 0);
+    // O relógio sai da última data copiada, não de um dia fixo: o scraper vai
+    // acrescentando linhas e o teste não pode envelhecer com o ficheiro.
+    const ultimaData = brutas.at(-1)!.date;
+    const [, mes, dia] = ultimaData.split('-');
+    const tresDiasDepois = new Date(`${ultimaData}T09:00:00Z`).getTime() + 3 * 24 * 60 * 60 * 1000;
+    assert.equal(lastReadingNote(historia, tresDiasDepois), `última leitura a ${dia}/${mes} (há 3 dias)`);
   } finally {
     limpar();
   }
