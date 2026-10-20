@@ -222,23 +222,56 @@ export function saveHistory(dataDir, id, history) {
 }
 
 /**
+ * Junta ao histórico todas as linhas da fonte cuja data ainda lá não está —
+ * as do fim e as dos BURACOS no meio (T2 da auditoria de 20/10/2026: o
+ * Baverone ficou sem o 14/10). O que já está guardado nunca é sobrescrito.
+ * Pura: não mexe nos arrays que recebe.
+ */
+export function mergeRows(history, rows, scrapedAt) {
+  const knownDates = new Set(history.map((entry) => entry.date));
+  const added = rows
+    .filter((row) => !knownDates.has(row.date))
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .map((row) => ({ ...row, scrapedAt }));
+  const merged = [...history, ...added].sort((a, b) => a.date.localeCompare(b.date));
+  return { history: merged, added };
+}
+
+/**
+ * Os dias que faltam entre o primeiro e o último do histórico. É o que o
+ * alarme de frescura mostra: um buraco no meio não atrasa o «último dia» e,
+ * sem isto, ficava calado.
+ */
+export function missingDates(history) {
+  const dates = new Set(history.map((entry) => entry.date));
+  const sorted = [...dates].sort();
+  const out = [];
+  if (sorted.length < 2) return out;
+  const day = new Date(`${sorted[0]}T00:00:00Z`);
+  const last = sorted[sorted.length - 1];
+  for (;;) {
+    day.setUTCDate(day.getUTCDate() + 1);
+    const key = day.toISOString().slice(0, 10);
+    if (key >= last) break;
+    if (!dates.has(key)) out.push(key);
+  }
+  return out;
+}
+
+/**
  * Scrapes one player and appends every day guildstats knows about that isn't
  * already in their history file. Existing entries are never overwritten —
  * the stored date wins — so re-running is always a safe no-op once caught up.
  */
 async function syncPlayer({ id, nick, dataDir }) {
   const rows = await fetchExperienceRows(nick);
-  const history = loadExistingHistory(dataDir, id);
-  const knownDates = new Set(history.map((entry) => entry.date));
-
-  const missing = rows.filter((row) => !knownDates.has(row.date)).sort((a, b) => a.date.localeCompare(b.date));
+  const { history, added: missing } = mergeRows(loadExistingHistory(dataDir, id), rows, new Date().toISOString());
 
   if (missing.length === 0) {
     console.log(`[${id}] já está em dia (mais recente disponível: ${rows[0].date}) — nada a fazer.`);
     return 0;
   }
 
-  const scrapedAt = new Date().toISOString();
   for (const row of missing) {
     const expectedLevel = levelForExperience(row.experience);
     if (expectedLevel !== row.level) {
@@ -246,10 +279,8 @@ async function syncPlayer({ id, nick, dataDir }) {
         `[${id}] aviso: nível reportado pelo guildstats (${row.level}) difere do calculado pela fórmula (${expectedLevel}) para ${row.experience} XP.`
       );
     }
-    history.push({ ...row, scrapedAt });
   }
 
-  history.sort((a, b) => a.date.localeCompare(b.date));
   saveHistory(dataDir, id, history);
 
   // Report the range, not the last appended entry's level — when backfilling

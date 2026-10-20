@@ -5,7 +5,7 @@
 // (inverno, UTC+0) atraves do Intl.DateTimeFormat.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { computeTibiaDayBoundary, SERVER_SAVE_HOUR } from './tibiaDay.ts';
+import { computeTibiaDayBoundary, SERVER_SAVE_HOUR, serverSaveAt } from './tibiaDay.ts';
 
 test('antes das 9h em Lisboa (verao, WEST/UTC+1), o dia de Tibia ainda e o de ontem', () => {
   const antesDasNove = Date.UTC(2026, 8, 15, 7, 59); // 08:59 em Lisboa
@@ -42,4 +42,54 @@ test('nextChangeAt aponta sempre para a proxima mudanca de dia no futuro, nunca 
 
 test('SERVER_SAVE_HOUR e 9 (a hora oficial do server save em Lisboa)', () => {
   assert.equal(SERVER_SAVE_HOUR, 9);
+});
+
+// 20/10/2026: o nextChangeAt era calculado com o desvio de Lisboa de AGORA. Na
+// vespera da mudanca de hora o proximo save ja esta do outro lado e ficava uma
+// hora errado. Os dois lados das duas mudancas (25/10/2026 e 28/03/2027).
+const HORA = 60 * 60 * 1000;
+
+test('outubro: a 24/10 (WEST) o proximo save e 25/10 09:00 WET = 09:00 UTC', () => {
+  const agora = Date.UTC(2026, 9, 24, 21, 0); // 22:00 em Lisboa, ainda de verao
+  const boundary = computeTibiaDayBoundary(agora);
+  assert.equal(boundary.dateKey, '2026-10-24');
+  assert.equal(boundary.nextChangeAt, Date.UTC(2026, 9, 25, 9, 0));
+});
+
+test('outubro: a 24/10 antes do save, o proximo e nesse dia as 09:00 WEST = 08:00 UTC', () => {
+  const agora = Date.UTC(2026, 9, 24, 6, 0); // 07:00 em Lisboa
+  assert.equal(computeTibiaDayBoundary(agora).nextChangeAt, Date.UTC(2026, 9, 24, 8, 0));
+});
+
+test('outubro: a 26/10 (WET) o proximo save e 27/10 09:00 = 09:00 UTC', () => {
+  const agora = Date.UTC(2026, 9, 26, 10, 0);
+  const boundary = computeTibiaDayBoundary(agora);
+  assert.equal(boundary.dateKey, '2026-10-26');
+  assert.equal(boundary.nextChangeAt, Date.UTC(2026, 9, 27, 9, 0));
+});
+
+test('outubro: no proprio dia da mudanca (25/10) o dia de Tibia muda as 09:00 WET', () => {
+  assert.equal(computeTibiaDayBoundary(Date.UTC(2026, 9, 25, 8, 59)).dateKey, '2026-10-24');
+  assert.equal(computeTibiaDayBoundary(Date.UTC(2026, 9, 25, 9, 0)).dateKey, '2026-10-25');
+});
+
+test('marco: a 27/03/2027 (WET) o proximo save e 28/03 09:00 WEST = 08:00 UTC', () => {
+  const agora = Date.UTC(2027, 2, 27, 22, 0);
+  const boundary = computeTibiaDayBoundary(agora);
+  assert.equal(boundary.dateKey, '2027-03-27');
+  assert.equal(boundary.nextChangeAt, Date.UTC(2027, 2, 28, 8, 0));
+  assert.equal(boundary.nextChangeAt - agora, 10 * HORA);
+});
+
+test('marco: a 29/03/2027 (WEST) o proximo save e 30/03 09:00 WEST = 08:00 UTC', () => {
+  const agora = Date.UTC(2027, 2, 29, 12, 0);
+  assert.equal(computeTibiaDayBoundary(agora).nextChangeAt, Date.UTC(2027, 2, 30, 8, 0));
+});
+
+test('serverSaveAt: o save e as 10:00 de Berlim, todo o ano', () => {
+  assert.equal(serverSaveAt('2026-10-24'), Date.UTC(2026, 9, 24, 8, 0));
+  assert.equal(serverSaveAt('2026-10-25'), Date.UTC(2026, 9, 25, 9, 0));
+  assert.equal(serverSaveAt('2026-10-26'), Date.UTC(2026, 9, 26, 9, 0));
+  assert.equal(serverSaveAt('2027-03-27'), Date.UTC(2027, 2, 27, 9, 0));
+  assert.equal(serverSaveAt('2027-03-28'), Date.UTC(2027, 2, 28, 8, 0));
 });

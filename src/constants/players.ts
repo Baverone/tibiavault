@@ -24,6 +24,13 @@ export interface PlayerMeta {
    * também em `styles/tokens.css`, para o CSS as poder usar.
    */
   accentColor: string;
+  /**
+   * Porque é que a recolha não o cobre, dito ao André. Só existe para quem
+   * está `source: null` em scripts/lib/trackedPlayers.mjs (o pages.test.ts
+   * confronta as duas listas). Com isto, os dados velhos deixam de ser «uma
+   * avaria — vê a tarefa no PC» e passam a ser o que são.
+   */
+  noSource?: string;
 }
 
 /**
@@ -54,6 +61,11 @@ export const PLAYERS: PlayerMeta[] = [
     tagline: 'Exalted Monk — Disciplina',
     icon: 'lotus',
     accentColor: '#b08cff',
+    // 20/10/2026: fora do top 1000 dos highscores desde 14/10. Procurou-se outra
+    // fonte permitida: o histórico do guildstats está atrás do Cloudflare, a
+    // API do TibiaData recusa o filtro por vocação, o tibia.com proíbe
+    // /community/ no robots.txt e o tibia-statistic proíbe o Claude.
+    noSource: 'o Bluey saiu do top 1000 do Celesta e não há fonte para a XP dele',
   },
 ];
 

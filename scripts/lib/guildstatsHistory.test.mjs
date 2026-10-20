@@ -9,6 +9,8 @@ import {
   experienceForLevel,
   fetchExperienceRows,
   levelForExperience,
+  mergeRows,
+  missingDates,
   parseExperienceRows,
 } from './guildstatsHistory.mjs';
 
@@ -127,4 +129,31 @@ test('a formula de experiencia bate certo com a tabela oficial', () => {
   assert.equal(levelForExperience(100), 2);
   assert.equal(levelForExperience(experienceForLevel(1150)), 1150);
   assert.equal(levelForExperience(experienceForLevel(1150) - 1), 1149);
+});
+
+// 20/10/2026 (T2 da auditoria): o Baverone ficou sem o dia 14/10 entre 13/10 e
+// 15/10. Um buraco no MEIO da série tem de ser preenchido quando a fonte o
+// traz, e não só os dias depois do último — sem tocar nos que já lá estão.
+test('mergeRows preenche buracos no meio da série e nunca sobrescreve', () => {
+  const ja = [
+    { date: '2026-10-13', level: 1174, experience: 100, scrapedAt: 'a' },
+    { date: '2026-10-15', level: 1174, experience: 300, scrapedAt: 'b' },
+  ];
+  const fonte = [
+    { date: '2026-10-16', level: 1175, experience: 400 },
+    { date: '2026-10-15', level: 1174, experience: 999 },
+    { date: '2026-10-14', level: 1174, experience: 200 },
+  ];
+  const { history, added } = mergeRows(ja, fonte, 'agora');
+  assert.deepEqual(added.map((row) => row.date), ['2026-10-14', '2026-10-16']);
+  assert.deepEqual(history.map((row) => row.date), ['2026-10-13', '2026-10-14', '2026-10-15', '2026-10-16']);
+  assert.equal(history[2].experience, 300, 'o 15/10 que já estava não pode ser sobrescrito');
+  assert.equal(history[1].scrapedAt, 'agora');
+  assert.equal(ja.length, 2, 'não mexe no array de entrada');
+});
+
+test('missingDates aponta os buracos do meio da série', () => {
+  const serie = ['2026-10-12', '2026-10-13', '2026-10-15', '2026-10-16', '2026-10-19'].map((date) => ({ date }));
+  assert.deepEqual(missingDates(serie), ['2026-10-14', '2026-10-17', '2026-10-18']);
+  assert.deepEqual(missingDates([]), []);
 });

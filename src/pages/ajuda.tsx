@@ -93,7 +93,7 @@ export const PAGE_AJUDA: Partial<Record<PageId, ReactNode>> = {
       <p>
         <b>Como funcionava.</b> Um robô lia o canal do Discord onde os spots são reservados com <code>/book</code>,
         calculava as janelas livres de 30 minutos ou mais e escrevia-as num ficheiro no repositório. As janelas não
-        trazem data: são «HH:MM - HH:MM» numa volta de 24 horas que começa na hora do summary.
+        trazem data: são «HH:MM - HH:MM» numa volta de 24 horas que começa na hora do resumo do bot.
       </p>
       <p>
         <b>«Livre agora»</b> compara o relógio com o desvio de cada janela dentro dessa volta. Recusa-se a responder

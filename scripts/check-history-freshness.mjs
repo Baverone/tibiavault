@@ -15,6 +15,7 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { CHARACTERS, DATA_DIR } from './lib/trackedPlayers.mjs';
+import { loadExistingHistory, missingDates } from './lib/guildstatsHistory.mjs';
 
 // Duas margens de folga: o guildstats só publica o dia anterior por volta das
 // 10:50 UTC (por isso "ontem" é o normal, não um atraso), e um dia perdido é
@@ -88,6 +89,16 @@ for (const entry of ok) {
 }
 for (const entry of waiting) {
   console.log(`  À ESPERA  [${entry.label}] ${entry.id}: último dia ${entry.newest} — NÃO recolhido: ${entry.reason}`);
+}
+// 20/10/2026 (T2 da auditoria): o 14/10 do Baverone faltava e ninguém o
+// disse, porque um buraco no meio não atrasa o último dia. Não pinta de
+// vermelho — os highscores só dão o dia corrente e não há como o recuperar —
+// mas fica escrito em cada corrida.
+for (const { id } of CHARACTERS) {
+  const holes = missingDates(loadExistingHistory(DATA_DIR, id));
+  if (holes.length > 0) {
+    console.log(`  BURACO  ${id}: falta(m) ${holes.join(', ')} — só se preenche se uma fonte tiver esse dia.`);
+  }
 }
 
 if (stale.length === 0) {

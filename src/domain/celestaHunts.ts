@@ -52,6 +52,10 @@ export function formatAge(data: CelestaHuntsData, now: number): string {
   if (minutes === 1) return 'há 1 minuto';
   if (minutes < 60) return `há ${minutes} minutos`;
 
+  // 20/10/2026: com a recolha desligada desde 15/09 isto dizia «há 959h37».
+  // Passadas as 48 h a hora já não interessa — conta-se em dias.
+  if (minutes > 48 * 60) return `há ${Math.floor(minutes / (24 * 60))} dias`;
+
   const hours = Math.floor(minutes / 60);
   const rest = minutes % 60;
   if (hours === 1 && rest === 0) return 'há 1 hora';

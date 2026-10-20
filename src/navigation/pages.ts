@@ -111,6 +111,15 @@ export function isPageId(value: string): value is PageId {
   return BY_ID.has(value as PageId);
 }
 
+/**
+ * O título do separador. 20/10/2026: era «TibiaVault» nas 13 rotas, e os
+ * separadores, o histórico e os favoritos ficavam todos com o mesmo nome. O
+ * formato é o do rift e do mtg: «Rótulo · projecto».
+ */
+export function pageTitle(id: PageId): string {
+  return `${pageById(id).label} · TibiaVault`;
+}
+
 /** As secções pela ordem em que aparecem, cada uma com as suas páginas. */
 export function sections(): { name: string; pages: PageMeta[] }[] {
   const out: { name: string; pages: PageMeta[] }[] = [];
@@ -154,3 +163,40 @@ export const CHARACTER_SECTIONS: { id: string; label: string; icon: IconName }[]
   { id: 'hunt', label: 'Calculadora de hunt', icon: 'calculadora' },
   { id: 'treino', label: 'Varinhas de treino', icon: 'varinha' },
 ];
+
+const SECTION_IDS = new Set(CHARACTER_SECTIONS.map((section) => section.id));
+const CHARACTER_PAGES = new Set<string>(PLAYERS.map((player) => player.slug));
+
+export interface Route {
+  page: PageId;
+  /** Uma das `CHARACTER_SECTIONS`, para descer até ela ao abrir. */
+  section: string | null;
+}
+
+/** O endereço de uma secção: leva a personagem, para o link valer sozinho. */
+export function sectionHref(page: string, section: string): string {
+  return `#${page}/${section}`;
+}
+
+/**
+ * O que está depois do `#`, como rota.
+ *
+ * 20/10/2026: o índice «Nesta página» apontava para `#progressao`, `#treino`,
+ * … — que funcionavam com um clique, mas abertos num separador novo (ou
+ * partilhados) não eram página nenhuma e caíam no Início. Agora são rotas:
+ * `#bluey/treino` diz tudo; um `#treino` sozinho (os links antigos) abre a
+ * personagem onde se estava (`current`), senão a primeira.
+ */
+export function parseRoute(raw: string, current?: string | null): Route | null {
+  const [head, tail, ...rest] = raw.replace(/^\/+/, '').trim().split('/');
+  if (rest.length > 0) return null;
+  if (tail !== undefined) {
+    return CHARACTER_PAGES.has(head) && SECTION_IDS.has(tail) ? { page: head as PageId, section: tail } : null;
+  }
+  if (isPageId(head)) return { page: head, section: null };
+  if (SECTION_IDS.has(head)) {
+    const page = current && CHARACTER_PAGES.has(current) ? current : PLAYERS[0].slug;
+    return { page: page as PageId, section: head };
+  }
+  return null;
+}

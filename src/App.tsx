@@ -1,7 +1,7 @@
 import { PLAYERS, playerBySlug } from './constants/players';
 import { useHashRoute } from './hooks/useHashRoute';
 import { useAllCharacters } from './hooks/useAllCharacters';
-import { summarizeCharacter } from './domain/homeSummary';
+import { levelHeadline } from './domain/homeSummary';
 import { AppShell } from './components/shell/AppShell';
 import { TimersPanel } from './components/timers/TimersPanel';
 import { HomePage } from './pages/HomePage';
@@ -29,7 +29,7 @@ const hoje = new Intl.DateTimeFormat('pt-PT', { day: '2-digit', month: '2-digit'
  * se caça, seja qual for a página aberta.
  */
 function App() {
-  const [page, navigate] = useHashRoute();
+  const [page, navigate, section] = useHashRoute();
   const { histories, loading } = useAllCharacters();
 
   const player = playerBySlug(page);
@@ -38,14 +38,11 @@ function App() {
   let content = null;
 
   if (player) {
-    content = <CharacterPage player={player} />;
+    content = <CharacterPage player={player} section={section} />;
     subtitle = `${player.vocation} — a XP, a previsão, a calculadora de hunt e as varinhas de treino.`;
   } else if (page === 'inicio') {
     content = <HomePage histories={histories} loading={loading} onNavigate={navigate} />;
-    const niveis = PLAYERS.map((p) => {
-      const resumo = summarizeCharacter(histories[p.id] ?? [], Date.now());
-      return resumo.level !== null ? `${p.name} no nível ${resumo.level}` : `${p.name} ainda sem dados`;
-    });
+    const niveis = PLAYERS.map((p) => levelHeadline(p.name, histories[p.id] ?? [], Date.now()));
     subtitle = loading
       ? `O que a XP diz hoje (${hoje.format(new Date())}).`
       : `O que a XP diz hoje (${hoje.format(new Date())}): ${niveis.join(', ')}.`;

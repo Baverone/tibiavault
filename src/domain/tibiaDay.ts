@@ -1,39 +1,79 @@
 const LISBON_TIMEZONE = 'Europe/Lisbon';
 
+/**
+ * The server save is at 10:00 Berlin time (CET/CEST) — which is 09:00 in
+ * Lisbon all year, because both switch DST at the same instant (EU rule).
+ *
+ * 20/10/2026: the instants used to be built from Lisbon's offset *now*. On the
+ * eve of a DST change the next save is already on the other side, and it came
+ * out an hour wrong (the Tibiadrome showed «acaba a 28/10/2026, 08:00»). Every
+ * save instant is now built from the Berlin wall clock of its own day.
+ */
+const SERVER_SAVE_TIMEZONE = 'Europe/Berlin';
+const SERVER_SAVE_HOUR_BERLIN = 10;
+
 /** The Tibia server save happens at 09:00 Lisbon time — the "Tibia day" only advances after this, not at midnight. */
 export const SERVER_SAVE_HOUR = 9;
 
-const offsetFormatter = new Intl.DateTimeFormat('en-US', {
-  timeZone: LISBON_TIMEZONE,
-  hourCycle: 'h23',
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit',
-  hour: '2-digit',
-  minute: '2-digit',
-  second: '2-digit',
-});
+const formatters = new Map<string, Intl.DateTimeFormat>();
 
-/** How far ahead of UTC Lisbon's wall clock reads at this instant (0 for WET, 1h for WEST) — auto-adjusts for DST. */
-function getLisbonOffsetMs(date: Date): number {
-  const parts = offsetFormatter.formatToParts(date).reduce<Record<string, string>>((acc, p) => {
-    if (p.type !== 'literal') acc[p.type] = p.value;
-    return acc;
-  }, {});
-  const asUTC = Date.UTC(
-    Number(parts.year),
-    Number(parts.month) - 1,
-    Number(parts.day),
-    Number(parts.hour),
-    Number(parts.minute),
-    Number(parts.second)
-  );
-  return asUTC - date.getTime();
+function wallClockParts(timeZone: string, ms: number): Record<string, number> {
+  let formatter = formatters.get(timeZone);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      hourCycle: 'h23',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+    formatters.set(timeZone, formatter);
+  }
+  const parts: Record<string, number> = {};
+  for (const part of formatter.formatToParts(new Date(ms))) {
+    if (part.type !== 'literal') parts[part.type] = Number(part.value);
+  }
+  return parts;
 }
 
-/** A Date whose UTC getters (getUTCDay, getUTCHours, ...) read as Lisbon's local wall-clock time. */
-function toLisbonWallClock(date: Date): Date {
-  return new Date(date.getTime() + getLisbonOffsetMs(date));
+/** How far ahead of UTC the wall clock of `timeZone` reads at this instant. */
+function offsetMs(timeZone: string, ms: number): number {
+  const p = wallClockParts(timeZone, ms);
+  return Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second) - Math.floor(ms / 1000) * 1000;
+}
+
+/**
+ * The instant at which the wall clock of `timeZone` reads this date and time.
+ * Two passes: the offset is looked up at a first guess and then again at the
+ * corrected instant, which is what gets the days of a DST change right.
+ */
+export function zonedTimeToInstant(
+  timeZone: string,
+  year: number,
+  month: number,
+  day: number,
+  hour: number,
+  minute = 0
+): number {
+  const asUTC = Date.UTC(year, month - 1, day, hour, minute);
+  const first = asUTC - offsetMs(timeZone, asUTC);
+  return asUTC - offsetMs(timeZone, first);
+}
+
+/** Calendar arithmetic on "YYYY-MM-DD" keys (no time zone involved). */
+export function addDaysToKey(dateKey: string, days: number): string {
+  const [y, m, d] = dateKey.split('-').map(Number);
+  const date = new Date(Date.UTC(y, m - 1, d + days));
+  return `${date.getUTCFullYear()}-${pad2(date.getUTCMonth() + 1)}-${pad2(date.getUTCDate())}`;
+}
+
+/** The instant of the server save on this calendar day ("YYYY-MM-DD"). */
+export function serverSaveAt(dateKey: string): number {
+  const [y, m, d] = dateKey.split('-').map(Number);
+  return zonedTimeToInstant(SERVER_SAVE_TIMEZONE, y, m, d, SERVER_SAVE_HOUR_BERLIN);
 }
 
 function pad2(n: number): string {
@@ -53,31 +93,17 @@ export interface TibiaDayBoundary {
  * Before 09:00 Lisbon time, the "Tibia day" is still yesterday's — used by
  * both the Rashid Tracker (weekly schedule lookup) and the Mini World
  * Changes Tracker (daily history key), so both agree on what "today" means
- * without duplicating the DST-aware Lisbon time math.
+ * without duplicating the DST-aware time math.
  */
 export function computeTibiaDayBoundary(now: number): TibiaDayBoundary {
-  const wallClock = toLisbonWallClock(new Date(now));
-  const hasPassedServerSave = wallClock.getUTCHours() >= SERVER_SAVE_HOUR;
+  const p = wallClockParts(LISBON_TIMEZONE, now);
+  const lisbonDate = `${p.year}-${pad2(p.month)}-${pad2(p.day)}`;
+  const dateKey = p.hour >= SERVER_SAVE_HOUR ? lisbonDate : addDaysToKey(lisbonDate, -1);
+  const [y, m, d] = dateKey.split('-').map(Number);
+  const weekdayIndex = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
 
-  const tibiaDate = new Date(wallClock.getTime());
-  if (!hasPassedServerSave) {
-    tibiaDate.setUTCDate(tibiaDate.getUTCDate() - 1);
-  }
-  const dateKey = `${tibiaDate.getUTCFullYear()}-${pad2(tibiaDate.getUTCMonth() + 1)}-${pad2(tibiaDate.getUTCDate())}`;
-  const weekdayIndex = tibiaDate.getUTCDay();
-
-  let nextChangeWallClockMs = Date.UTC(
-    wallClock.getUTCFullYear(),
-    wallClock.getUTCMonth(),
-    wallClock.getUTCDate(),
-    SERVER_SAVE_HOUR,
-    0,
-    0
-  );
-  if (wallClock.getTime() >= nextChangeWallClockMs) {
-    nextChangeWallClockMs += 24 * 60 * 60 * 1000;
-  }
-  const nextChangeAt = nextChangeWallClockMs - getLisbonOffsetMs(new Date(now));
+  // The Tibia day `dateKey` began at that day's save and ends at the next one.
+  const nextChangeAt = serverSaveAt(addDaysToKey(dateKey, 1));
 
   return { dateKey, weekdayIndex, nextChangeAt };
 }

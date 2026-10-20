@@ -143,7 +143,7 @@ function FreeNowStrip({ entries }: { entries: SpotWithNow[] }) {
 
 const OUTCOME_TEXT: Record<string, string> = {
   updated: '✓ Dados novos',
-  unchanged: 'Sem novidades — é o summary mais recente que existe',
+  unchanged: 'Sem novidades — é o resumo mais recente que existe',
   failed: '✗ Não consegui chegar aos dados',
 };
 
@@ -239,7 +239,7 @@ export function CelestaHuntsPanel({ collectionOff = false }: CelestaHuntsPanelPr
         <>
           <div className="hunts-panel__meta">
             <span className={isStale(data, now) ? 'hunts-panel__age hunts-panel__age--stale' : 'hunts-panel__age'}>
-              Summary das {data.referenceTime} ({formatAge(data, now)})
+              Resumo das {data.referenceTime} ({formatAge(data, now)})
             </span>
             {outcome && (
               <span className={outcome === 'updated' ? 'hunts-panel__outcome hunts-panel__outcome--ok' : 'hunts-panel__outcome'}>

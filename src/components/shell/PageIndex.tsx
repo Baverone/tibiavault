@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Icon, type IconName } from './icons';
+import { sectionHref } from '../../navigation/pages';
 
 export interface IndexEntry {
   /** O `id` do elemento na página. */
@@ -12,6 +13,12 @@ interface PageIndexProps {
   entries: readonly IndexEntry[];
   /** O título da coluna. */
   title?: string;
+  /**
+   * A página dona das secções. Com ela, o href é `#<página>/<secção>` e o link
+   * aberto num separador novo vai dar à secção — sem ela, `#progressao` não
+   * dizia de quem era e caía no Início (20/10/2026).
+   */
+  page?: string;
 }
 
 /**
@@ -22,7 +29,7 @@ interface PageIndexProps {
  * A página da personagem tem cinco blocos e ~2 800 px de altura — sem isto,
  * chegar à «Calculadora de hunt» era rolar até lá e esperar reconhecê-la.
  */
-export function PageIndex({ entries, title = 'Nesta página' }: PageIndexProps) {
+export function PageIndex({ entries, title = 'Nesta página', page }: PageIndexProps) {
   const [active, setActive] = useState(entries[0]?.id ?? '');
 
   // Qual o bloco que está a ser lido. O `rootMargin` de cima empurra a linha de
@@ -77,7 +84,7 @@ export function PageIndex({ entries, title = 'Nesta página' }: PageIndexProps) 
         {entries.map((entry) => (
           <a
             key={entry.id}
-            href={`#${entry.id}`}
+            href={page ? sectionHref(page, entry.id) : `#${entry.id}`}
             className={entry.id === active ? 'on' : undefined}
             onClick={(event) => {
               event.preventDefault();

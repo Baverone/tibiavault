@@ -70,6 +70,11 @@ function SummaryTiles({ summary, name, color }: { summary: CharacterSummary; nam
   );
 }
 
+/** Primeira letra em maiúscula, para a frase do `noSource` abrir um aviso. */
+function sentence(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 interface HomePageProps {
   histories: HistoriesByCharacter;
   loading: boolean;
@@ -90,9 +95,12 @@ export function HomePage({ histories, loading, onNavigate }: HomePageProps) {
     summary: summarizeCharacter(histories[player.id] ?? [], now),
   }));
 
-  const stale = summaries.filter(
+  const old = summaries.filter(
     ({ summary }) => summary.daysSinceLastReading !== null && summary.daysSinceLastReading >= STALE_AFTER_DAYS
   );
+  // Quem não tem fonte não é uma avaria: diz-se porquê, e não «vê a tarefa».
+  const stale = old.filter(({ player }) => !player.noSource);
+  const sourceless = old.filter(({ player }) => player.noSource);
 
   if (loading) return <p className="vazio">A carregar o histórico dos dois bonecos…</p>;
 
@@ -113,6 +121,16 @@ export function HomePage({ histories, loading, onNavigate }: HomePageProps) {
           </span>
         </p>
       )}
+
+      {sourceless.map(({ player, summary }) => (
+        <p className="aviso warn" key={player.id}>
+          <Icon name="aviso" size={17} />
+          <span>
+            {sentence(player.noSource as string)} — a última leitura é de{' '}
+            {agoText(summary.daysSinceLastReading as number)}.
+          </span>
+        </p>
+      ))}
 
       <div className="stats">
         {summaries.map(({ player, summary }) => (

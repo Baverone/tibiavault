@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { CASA, pageById, sections, type PageId } from '../../navigation/pages';
+import { CASA, pageById, pageTitle, sections, type PageId } from '../../navigation/pages';
 import { Icon } from './icons';
 
 interface AppShellProps {
@@ -38,6 +38,11 @@ export function AppShell({ page, onNavigate, subtitle, actions, timers, help, ch
     document.body.classList.toggle('menu-on', menuOpen);
     return () => document.body.classList.remove('menu-on');
   }, [menuOpen]);
+
+  // Um título por página no separador (T4 da auditoria de 20/10/2026).
+  useEffect(() => {
+    document.title = pageTitle(page);
+  }, [page]);
 
   useEffect(() => {
     if (!menuOpen) return;

@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import type { PlayerMeta } from '../constants/players';
 import { getLevelProgress } from '../domain/levelProgress';
 import { agoText, STALE_AFTER_DAYS, summarizeCharacter } from '../domain/homeSummary';
@@ -26,6 +26,37 @@ const [NIVEL, PROGRESSAO, PREVISAO, HUNT, TREINO] = CHARACTER_SECTIONS;
 
 interface CharacterPageProps {
   player: PlayerMeta;
+  /** A secção pedida no endereço (`#bluey/treino`), para descer até ela ao abrir. */
+  section?: string | null;
+}
+
+/**
+ * Desce até à secção pedida no endereço quando a página fica pronta.
+ *
+ * O gráfico de Progressão chega depois (é carregado à parte) e empurra o que
+ * está por baixo — por isso volta a alinhar enquanto o conteúdo mudar de
+ * altura, durante uns segundos, e pára logo que a pessoa mexa na página.
+ */
+function useScrollToSection(section: string | null | undefined, ready: boolean) {
+  useEffect(() => {
+    if (!ready || !section) return;
+    const target = document.getElementById(section);
+    if (!target) return;
+    const align = () => target.scrollIntoView({ block: 'start' });
+    align();
+    const observer = new ResizeObserver(align);
+    const content = document.getElementById('conteudo');
+    if (content) observer.observe(content);
+    const stop = () => observer.disconnect();
+    const timer = window.setTimeout(stop, 3000);
+    const events = ['wheel', 'touchstart', 'keydown', 'mousedown'] as const;
+    for (const name of events) window.addEventListener(name, stop, { passive: true });
+    return () => {
+      stop();
+      window.clearTimeout(timer);
+      for (const name of events) window.removeEventListener(name, stop);
+    };
+  }, [section, ready]);
 }
 
 /**
@@ -37,11 +68,12 @@ interface CharacterPageProps {
  * índice vertical — a página tem ~2 800 px e chegar à calculadora de hunt era
  * rolar até lá e esperar reconhecê-la.
  */
-export function CharacterPage({ player }: CharacterPageProps) {
+export function CharacterPage({ player, section }: CharacterPageProps) {
   const { history, loading } = useCharacterState(player.id);
   const summary = summarizeCharacter(history, Date.now());
   const progress = summary.experience !== null ? getLevelProgress(summary.experience) : null;
   const isStale = summary.daysSinceLastReading !== null && summary.daysSinceLastReading >= STALE_AFTER_DAYS;
+  useScrollToSection(section, !loading && progress !== null);
 
   if (loading) return <p className="vazio">A carregar o histórico do {player.name}…</p>;
 
@@ -56,16 +88,23 @@ export function CharacterPage({ player }: CharacterPageProps) {
 
   return (
     <div className="comidx">
-      <PageIndex entries={CHARACTER_SECTIONS} />
+      <PageIndex entries={CHARACTER_SECTIONS} page={player.slug} />
 
       <div>
         {isStale && (
           <p className="aviso warn">
             <Icon name="aviso" size={17} />
-            <span>
-              A leitura mais recente é de {agoText(summary.daysSinceLastReading as number)}. A recolha diária pode
-              estar parada — vê a tarefa <b>tibia-xp</b> no PC.
-            </span>
+            {player.noSource ? (
+              <span>
+                A leitura mais recente é de {agoText(summary.daysSinceLastReading as number)}:{' '}
+                {player.noSource}.
+              </span>
+            ) : (
+              <span>
+                A leitura mais recente é de {agoText(summary.daysSinceLastReading as number)}. A recolha diária pode
+                estar parada — vê a tarefa <b>tibia-xp</b> no PC.
+              </span>
+            )}
           </p>
         )}
 

@@ -102,7 +102,10 @@ verificação é o `tsc` do `npm run build`.
   a abre no telemóvel antes de ir caçar abre-a para ver a mesma coisa que viu
   ontem. O id guardado é confrontado com as páginas que existem hoje, para um
   separador antigo guardado no browser não deixar ninguém num ecrã vazio. Sem
-  `localStorage` (janela privada) abre no Início.
+  `localStorage` (janela privada) abre no Início. As secções da página de uma
+  personagem também têm endereço (`#bluey/treino`; o antigo `#treino` sozinho
+  abre a personagem onde se estava) — `parseRoute` em `navigation/pages.ts`.
+  Cada página põe o seu título no separador («Stamina · TibiaVault»).
 - Sem backend próprio: persistência local via `localStorage` (os campos das
   calculadoras, o filtro de spots) + um repositório GitHub público como "base
   de dados" partilhada só-leitura (histórico recolhido automaticamente — ver
@@ -444,8 +447,12 @@ Cartão global (`src/components/rashid/RashidCard.tsx`) com o ícone do NPC
 a cidade/local de hoje e um countdown até à próxima mudança.
 
 Horário fixo por dia da semana em `src/data/rashid/schedule.ts`. O "dia de
-Tibia" só avança no server save, às 9:00 hora de Lisboa (`Europe/Lisbon`,
-ajusta-se sozinho a WEST/WET) — antes disso o dia ainda é o anterior. Essa
+Tibia" só avança no server save, às 10:00 de Berlim = 9:00 de Lisboa todo o
+ano — antes disso o dia ainda é o anterior. Desde 20/10/2026 cada instante de
+save (o countdown do Rashid, o início e o fim das rotações do Tibiadrome) é
+construído a partir do relógio de Berlim desse dia (`serverSaveAt`), e não com
+o desvio de agora nem com 14×24 h fixas: na véspera da mudança de hora isso
+dava uma hora a mais ou a menos (a rotação de 28/10 aparecia a acabar às 08:00). Essa
 lógica de "que dia é hoje em Tibia" vive em `src/domain/tibiaDay.ts`;
 `src/domain/rashid/rashidSchedule.ts` só faz o lookup na tabela semanal a
 partir daí. Reutiliza o `formatDuration` do Tibiadrome Tracker para o

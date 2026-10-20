@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import {
   calculateSkillTraining,
   calculateTrainingToTarget,
@@ -34,6 +35,10 @@ export function SkillTrainingRow({
   accentColor,
 }: SkillTrainingRowProps) {
   const minLevel = minSkillLevel(skill);
+  // 20/10/2026: os <label> não estavam ligados aos <input> e um leitor de ecrã
+  // lia só «ex: 10». O `useId` dá ids únicos com as duas personagens e as
+  // várias skills na mesma página.
+  const fieldId = useId();
 
   const levelResult = parseNonNegativeInteger(entry.level, 'o nível');
   const percentMissingResult = parsePercentMissing(entry.percent);
@@ -103,8 +108,9 @@ export function SkillTrainingRow({
 
       <div className="hunt-form" style={{ marginTop: 10 }}>
         <div className="hunt-form__field">
-          <label>Nível atual</label>
+          <label htmlFor={`${fieldId}-level`}>Nível atual</label>
           <input
+            id={`${fieldId}-level`}
             type="text"
             inputMode="numeric"
             placeholder={`ex: ${minLevel}`}
@@ -113,8 +119,9 @@ export function SkillTrainingRow({
           />
         </div>
         <div className="hunt-form__field">
-          <label>% que falta para o próximo nível</label>
+          <label htmlFor={`${fieldId}-percent`}>% que falta para o próximo nível</label>
           <input
+            id={`${fieldId}-percent`}
             type="text"
             inputMode="decimal"
             placeholder="ex: 67.5"
@@ -123,8 +130,9 @@ export function SkillTrainingRow({
           />
         </div>
         <div className="hunt-form__field">
-          <label>Nível objetivo — base, sem Loyalty (opcional)</label>
+          <label htmlFor={`${fieldId}-target`}>Nível objetivo — base, sem Loyalty (opcional)</label>
           <input
+            id={`${fieldId}-target`}
             type="text"
             inputMode="numeric"
             placeholder={result ? `ex: ${result.baseLevel + 10}` : 'ex: 100'}

@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { isPageId, type PageId } from '../navigation/pages';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { parseRoute, type PageId, type Route } from '../navigation/pages';
 import { loadTab, saveTab } from '../storage/activeTab';
 
 /**
@@ -14,20 +14,31 @@ import { loadTab, saveTab } from '../storage/activeTab';
  * da última vez, que é o que o `activeTab.ts` já fazia e é para continuar a
  * fazer: quem abre isto no telemóvel antes de ir caçar abre-o para ver a mesma
  * coisa que viu ontem. Sem `localStorage` (janela privada) abre no Início.
+ *
+ * Desde 20/10/2026 o hash também pode trazer uma secção da página de uma
+ * personagem (`#bluey/treino`, ou o antigo `#treino`) — ver `parseRoute`. A
+ * secção é devolvida para a página descer até ela ao abrir.
  */
-function readHash(): PageId | null {
+function readRoute(current?: string | null): Route | null {
   if (typeof window === 'undefined') return null;
-  const raw = window.location.hash.replace(/^#\/?/, '').trim();
-  return isPageId(raw) ? raw : null;
+  return parseRoute(window.location.hash.replace(/^#/, ''), current);
 }
 
-export function useHashRoute(): [PageId, (id: PageId) => void] {
-  const [page, setPage] = useState<PageId>(() => readHash() ?? loadTab('main') ?? 'inicio');
+export function useHashRoute(): [PageId, (id: PageId) => void, string | null] {
+  const [route, setRoute] = useState<Route>(() => {
+    const saved = loadTab('main');
+    return readRoute(saved) ?? { page: saved ?? 'inicio', section: null };
+  });
+  const page = route.page;
+  const pageRef = useRef(page);
+  useEffect(() => {
+    pageRef.current = page;
+  }, [page]);
 
   useEffect(() => {
     function onHashChange() {
-      const next = readHash();
-      if (next) setPage(next);
+      const next = readRoute(pageRef.current);
+      if (next) setRoute(next);
     }
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
@@ -38,7 +49,7 @@ export function useHashRoute(): [PageId, (id: PageId) => void] {
   // e copiar esse endereço não levava lá ninguém.
   useEffect(() => {
     saveTab('main', page);
-    if (readHash() !== page) {
+    if (readRoute(page)?.page !== page) {
       window.history.replaceState(null, '', `#${page}`);
     }
   }, [page]);
@@ -46,9 +57,9 @@ export function useHashRoute(): [PageId, (id: PageId) => void] {
   const navigate = useCallback((id: PageId) => {
     // `location.hash` e não `setPage`: assim o passo fica no histórico do
     // browser e o «voltar» do telemóvel volta à página anterior.
-    if (readHash() === id) setPage(id);
+    if (window.location.hash === `#${id}`) setRoute({ page: id, section: null });
     else window.location.hash = `#${id}`;
   }, []);
 
-  return [page, navigate];
+  return [page, navigate, route.section];
 }

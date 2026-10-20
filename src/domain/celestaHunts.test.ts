@@ -168,6 +168,15 @@ test('formatAge nao arrisca uma idade quando a data nao presta', () => {
   assert.equal(formatAge(dados([]), passados(94)), 'há 1h34');
 });
 
+// 20/10/2026: com a recolha desligada desde 15/09 o painel dizia «há 959h37».
+// Até às 48 h continua em horas (é quando a hora conta); depois, em dias.
+test('formatAge passa a dias quando passa das 48 h', () => {
+  assert.equal(formatAge(dados([]), passados(47 * 60 + 59)), 'há 47h59');
+  assert.equal(formatAge(dados([]), passados(48 * 60)), 'há 48 horas');
+  assert.equal(formatAge(dados([]), passados(48 * 60 + 1)), 'há 2 dias');
+  assert.equal(formatAge(dados([]), passados(959 * 60 + 37)), 'há 39 dias');
+});
+
 /* --- Alarme de frescura ------------------------------------------------
  *
  * Os instantes estao escritos em UTC de proposito: setembro em Lisboa e WEST

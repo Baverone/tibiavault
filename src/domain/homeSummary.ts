@@ -71,6 +71,26 @@ export function summarizeCharacter(history: HistoryEntry[], now: number): Charac
   };
 }
 
+// Os timestamps do histórico são o meio-dia UTC da data da linha
+// (storage/sharedHistory.ts): lidos em UTC dão sempre o dia certo.
+const readingDay = new Intl.DateTimeFormat('pt-PT', { timeZone: 'UTC', day: '2-digit', month: '2-digit' });
+
+/**
+ * O pedaço de um boneco no cabeçalho do Início («O que a XP diz hoje …»).
+ *
+ * 20/10/2026: dizia «Bluey The Cat no nível 600» com a última leitura a 13/10
+ * — um dado de há uma semana apresentado como de hoje. Uma leitura velha
+ * (o mesmo limiar do aviso, `STALE_AFTER_DAYS`) leva a data com ela.
+ */
+export function levelHeadline(name: string, history: HistoryEntry[], now: number): string {
+  const summary = summarizeCharacter(history, now);
+  const last = history.at(-1);
+  if (summary.level === null || !last) return `${name} ainda sem dados`;
+  const base = `${name} no nível ${summary.level}`;
+  if ((summary.daysSinceLastReading ?? 0) < STALE_AFTER_DAYS) return base;
+  return `${base} (última leitura a ${readingDay.format(last.timestamp)})`;
+}
+
 export interface CombinedDailyPoint {
   /** Meia-noite local do dia, em ms. */
   dayTimestamp: number;

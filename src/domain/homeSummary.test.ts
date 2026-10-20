@@ -2,7 +2,7 @@
 // bonecos lado a lado. Tudo contas puras, sem rede e sem browser.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { agoText, combineDailyGains, summarizeCharacter, WEEK_DAYS } from './homeSummary.ts';
+import { agoText, combineDailyGains, levelHeadline, summarizeCharacter, WEEK_DAYS } from './homeSummary.ts';
 import type { HistoryEntry } from './types.ts';
 
 const DIA = 24 * 60 * 60 * 1000;
@@ -18,6 +18,17 @@ function historico(inicio: string, base: number, ganhos: number[]): HistoryEntry
   });
   return entradas;
 }
+
+// 20/10/2026: o cabeçalho do Início dizia «O que a XP diz hoje (20/10/2026):
+// … Bluey The Cat no nível 600» com a última leitura do Bluey a 13/10.
+test('o cabeçalho não dá como de hoje uma leitura velha', () => {
+  const agora = new Date('2026-10-20T13:00:00Z').getTime();
+  const fresco = historico('2026-10-18', 26_885_267_055, [57_899_764]);
+  assert.match(levelHeadline('Baverone', fresco, agora), /^Baverone no nível \d+$/);
+  const velho = historico('2026-10-12', 3_581_151_352, [0]);
+  assert.equal(levelHeadline('Bluey The Cat', velho, agora), 'Bluey The Cat no nível 600 (última leitura a 13/10)');
+  assert.equal(levelHeadline('Bluey The Cat', [], agora), 'Bluey The Cat ainda sem dados');
+});
 
 test('sem histórico não há resumo nenhum, e nada rebenta', () => {
   const resumo = summarizeCharacter([], Date.now());
