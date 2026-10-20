@@ -91,6 +91,24 @@ export function levelHeadline(name: string, history: HistoryEntry[], now: number
   return `${base} (última leitura a ${readingDay.format(last.timestamp)})`;
 }
 
+/**
+ * A nota ao lado do Nível na página do boneco: «última leitura a 13/10 (há 7
+ * dias)», ou «sem leituras» quando não há nenhuma que se possa datar.
+ *
+ * 20/10/2026: só dizia «última leitura há N dias», e só quando havia dois dias
+ * para comparar — com uma leitura só, a nota ficava em branco. Vai só o dia e
+ * nunca a hora: o guildstats dá precisão ao dia e o meio-dia UTC do timestamp
+ * é inventado por nós (storage/sharedHistory.ts). Uma linha sem data (timestamp
+ * `NaN`, um ficheiro antigo ou estragado) não conta como leitura — o
+ * `Intl.DateTimeFormat` rebentava com ela.
+ */
+export function lastReadingNote(history: HistoryEntry[], now: number): string {
+  const last = history.findLast((entry) => Number.isFinite(entry.timestamp));
+  if (!last) return 'sem leituras';
+  const days = Math.floor((now - last.timestamp) / MS_PER_DAY);
+  return `última leitura a ${readingDay.format(last.timestamp)} (${agoText(days)})`;
+}
+
 export interface CombinedDailyPoint {
   /** Meia-noite local do dia, em ms. */
   dayTimestamp: number;

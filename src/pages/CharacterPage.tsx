@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect } from 'react';
 import type { PlayerMeta } from '../constants/players';
 import { getLevelProgress } from '../domain/levelProgress';
-import { agoText, STALE_AFTER_DAYS, summarizeCharacter } from '../domain/homeSummary';
+import { agoText, lastReadingNote, STALE_AFTER_DAYS, summarizeCharacter } from '../domain/homeSummary';
 import { useCharacterState } from '../hooks/useCharacterState';
 import { CHARACTER_SECTIONS } from '../navigation/pages';
 import { Icon } from '../components/shell/icons';
@@ -70,7 +70,8 @@ function useScrollToSection(section: string | null | undefined, ready: boolean) 
  */
 export function CharacterPage({ player, section }: CharacterPageProps) {
   const { history, loading } = useCharacterState(player.id);
-  const summary = summarizeCharacter(history, Date.now());
+  const now = Date.now();
+  const summary = summarizeCharacter(history, now);
   const progress = summary.experience !== null ? getLevelProgress(summary.experience) : null;
   const isStale = summary.daysSinceLastReading !== null && summary.daysSinceLastReading >= STALE_AFTER_DAYS;
   useScrollToSection(section, !loading && progress !== null);
@@ -80,7 +81,7 @@ export function CharacterPage({ player, section }: CharacterPageProps) {
   if (!progress) {
     return (
       <p className="vazio">
-        Ainda não há histórico para o {player.name}. A recolha corre no PC e publica em{' '}
+        Sem leituras do {player.name}: ainda não há histórico. A recolha corre no PC e publica em{' '}
         <code>data/scraped-history/{player.id}.json</code>.
       </p>
     );
@@ -114,9 +115,7 @@ export function CharacterPage({ player, section }: CharacterPageProps) {
               <Icon name={NIVEL.icon} size={16} />
               {NIVEL.label}
             </h2>
-            <span className="nota">
-              {summary.lastDay !== null && `última leitura ${agoText(summary.daysSinceLastReading as number)}`}
-            </span>
+            <span className="nota">{lastReadingNote(history, now)}</span>
           </div>
           <LevelProgressCard progress={progress} accentColor={player.accentColor} />
         </section>
