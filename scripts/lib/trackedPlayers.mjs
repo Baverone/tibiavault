@@ -28,7 +28,8 @@ export const CHARACTERS = [
   { id: 'royal-paladin', nick: 'Baverone', world: 'Celesta', source: 'tibiadata' },
   // 21/10/2026: volta a ser recolhido. Esteve à espera de 14/10 a 20/10
   // (fora do top 1000, nível 600 com o corte no ~670; o histórico do
-  // guildstats atrás do Cloudflare). Os dias 14/10 a 19/10 ficam em buraco.
+  // guildstats atrás do Cloudflare). Os dias 14/10 a 19/10 foram preenchidos
+  // a 21/10 com a tabela Experience do guildstats lida à mão no browser.
   { id: 'exalted-monk', nick: 'Bluey The Cat', world: 'Celesta', source: 'guildstats' },
 ];
 

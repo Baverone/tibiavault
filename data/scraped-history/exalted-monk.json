@@ -700,5 +700,47 @@
     "level": 600,
     "experience": 3581151352,
     "scrapedAt": "2026-10-14T09:05:19.348Z"
+  },
+  {
+    "date": "2026-10-14",
+    "level": 600,
+    "experience": 3581151352,
+    "source": "guildstats",
+    "scrapedAt": "2026-10-21T06:55:00.000Z"
+  },
+  {
+    "date": "2026-10-15",
+    "level": 600,
+    "experience": 3581151352,
+    "source": "guildstats",
+    "scrapedAt": "2026-10-21T06:55:00.000Z"
+  },
+  {
+    "date": "2026-10-16",
+    "level": 600,
+    "experience": 3581151352,
+    "source": "guildstats",
+    "scrapedAt": "2026-10-21T06:55:00.000Z"
+  },
+  {
+    "date": "2026-10-17",
+    "level": 600,
+    "experience": 3581151352,
+    "source": "guildstats",
+    "scrapedAt": "2026-10-21T06:55:00.000Z"
+  },
+  {
+    "date": "2026-10-18",
+    "level": 600,
+    "experience": 3581151352,
+    "source": "guildstats",
+    "scrapedAt": "2026-10-21T06:55:00.000Z"
+  },
+  {
+    "date": "2026-10-19",
+    "level": 600,
+    "experience": 3581151352,
+    "source": "guildstats",
+    "scrapedAt": "2026-10-21T06:55:00.000Z"
   }
 ]
