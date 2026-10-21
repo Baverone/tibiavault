@@ -162,7 +162,13 @@ test(
     const saved = JSON.parse(readFileSync(join(dir, 'royal-paladin.json'), 'utf-8'));
     assert.deepEqual(saved, [
       ...antigo,
-      { date: '2026-10-15', level: 1174, experience: 26_900_000_000, scrapedAt: '2026-10-16T10:05:00.000Z' },
+      {
+        date: '2026-10-15',
+        level: 1174,
+        experience: 26_900_000_000,
+        scrapedAt: '2026-10-16T10:05:00.000Z',
+        source: 'highscores',
+      },
     ]);
 
     // segunda corrida no mesmo dia: não mexe
@@ -214,7 +220,7 @@ test('quem está à espera é dito no output e não pinta a corrida de vermelho'
   assert.deepEqual(result.covered.map((p) => p.nick), ['Baverone']);
   assert.deepEqual(result.waiting.map((p) => p.nick), ['Bluey The Cat']);
   const output = lines.join('\n');
-  assert.match(output, /Cobertos .*: Baverone/);
+  assert.match(output, /Cobertos: Baverone \(highscores oficiais via TibiaData\)/);
   assert.match(output, /À ESPERA — Bluey The Cat \(exalted-monk\) NÃO está a ser recolhido: fora do top 1000/);
 });
 
@@ -233,5 +239,60 @@ test(
 
     assert.equal(exitCode, 1);
     assert.deepEqual(result.failed.map((p) => p.nick), ['Baverone']);
+  })
+);
+
+// 21/10/2026: os dois bonecos têm fontes diferentes. Um a falhar não pode
+// esconder-se atrás do outro estar verde — a corrida sai 1 e diz qual e porquê.
+test('com dois recolhedores, um a falhar pinta a corrida de vermelho e diz qual e porquê', async (t) => {
+  const dir = tempDir(t);
+  const { impl } = fakeFetch({ 1: page(1, [BAVERONE], { totalPages: 1 }) });
+  const lines = [];
+  const { log, error } = console;
+  console.log = console.error = (...args) => lines.push(args.join(' '));
+  let result;
+  let exitCode;
+  try {
+    result = await runCollection({
+      players: [
+        { id: 'royal-paladin', nick: 'Baverone', world: 'Celesta', source: 'tibiadata' },
+        { id: 'exalted-monk', nick: 'Bluey The Cat', world: 'Celesta', source: 'guildstats' },
+      ],
+      syncers: {
+        tibiadata: syncFromHighscores,
+        guildstats: async () => {
+          throw Object.assign(new Error('HTTP 503'), { transient: true });
+        },
+      },
+      dataDir: dir, fetchImpl: impl, now, force: true,
+    });
+  } finally {
+    exitCode = process.exitCode;
+    process.exitCode = 0;
+    Object.assign(console, { log, error });
+  }
+
+  assert.equal(exitCode, 1);
+  assert.deepEqual(result.covered.map((p) => p.nick), ['Baverone']);
+  assert.deepEqual(result.failed.map((p) => p.nick), ['Bluey The Cat']);
+  const output = lines.join('\n');
+  assert.match(output, /\[exalted-monk\] falhou \(temporário\): HTTP 503/);
+  assert.match(output, /FALHOU — Bluey The Cat \(exalted-monk\): HTTP 503/);
+});
+
+test(
+  'uma fonte sem recolhedor é uma falha, não uma espera',
+  quiet(async (t) => {
+    const dir = tempDir(t);
+    let exitCode;
+    const result = await runCollection({
+      players: [{ id: 'exalted-monk', nick: 'Bluey The Cat', world: 'Celesta', source: 'guildstats' }],
+      dataDir: dir, now, force: true,
+    }).finally(() => {
+      exitCode = process.exitCode;
+    });
+
+    assert.equal(exitCode, 1);
+    assert.match(result.failed[0].reason, /não há recolhedor para a fonte "guildstats"/);
   })
 );

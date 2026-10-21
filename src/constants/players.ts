@@ -61,11 +61,10 @@ export const PLAYERS: PlayerMeta[] = [
     tagline: 'Exalted Monk — Disciplina',
     icon: 'lotus',
     accentColor: '#b08cff',
-    // 20/10/2026: fora do top 1000 dos highscores desde 14/10. Procurou-se outra
-    // fonte permitida: o histórico do guildstats está atrás do Cloudflare, a
-    // API do TibiaData recusa o filtro por vocação, o tibia.com proíbe
-    // /community/ no robots.txt e o tibia-statistic proíbe o Claude.
-    noSource: 'o Bluey saiu do top 1000 do Celesta e não há fonte para a XP dele',
+    // 20/10/2026: fora do top 1000 dos highscores desde 14/10, e estava aqui
+    // `noSource`. 21/10/2026: volta a ter fonte — a página de personagem do
+    // guildstats (scripts/lib/guildstatsCharacter.mjs). Os dias 14 a 19/10
+    // ficam em buraco no gráfico.
   },
 ];
 

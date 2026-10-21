@@ -184,18 +184,29 @@ nada. É de propósito — o guildstats só publica o dia anterior por volta das
 
 ### Como funciona a recolha
 
-1. Para cada personagem, pede a página de histórico de experiência do
-   guildstats.eu (`include/character/tab.php?nick=...&tab=experience` — o
-   endpoint interno que a própria página usa; é HTML estático, não precisa
-   de JavaScript/browser para ler).
-2. Lê a **tabela toda** (o guildstats serve ~30 dias), não só a linha mais
-   recente. É isto que torna a recolha auto-reparável: qualquer dia perdido
-   enquanto isto esteve parado é recuperado sozinho na corrida seguinte.
-3. Só acrescenta datas que ainda não estão em
+Até 14/10/2026 os dois vinham do histórico do guildstats.eu
+(`include/character/tab.php`), que passou a exigir browser (challenge do
+Cloudflare). Desde 21/10/2026 cada um tem a sua fonte (`source` em
+[`scripts/lib/trackedPlayers.mjs`](scripts/lib/trackedPlayers.mjs)):
+
+| Boneco | Fonte | Código |
+| --- | --- | --- |
+| Baverone | highscores oficiais do Celesta, pela API do TibiaData | [`tibiaDataHighscores.mjs`](scripts/lib/tibiaDataHighscores.mjs) |
+| Bluey The Cat | página de personagem do guildstats (`/character?nick=...`) — está abaixo do top 1000, por isso não aparece nos highscores | [`guildstatsCharacter.mjs`](scripts/lib/guildstatsCharacter.mjs) |
+
+1. Uma leitura por boneco e por dia, depois do server save das 09:00 de
+   Lisboa; a leitura de D+1 é a linha de D. Nenhuma das fontes guarda dias
+   passados: um dia que falhe fica em buraco (não se inventa).
+2. Só acrescenta datas que ainda não estão em
    `data/scraped-history/<personagem>.json` — nunca apaga nem sobrescreve.
-4. Cada personagem é independente: se um falhar, os outros continuam.
-5. Compara o nível reportado pelo guildstats com o calculado pela fórmula,
-   como validação cruzada (avisa no log se não bater certo).
+   Cada linha nova leva `source` (`highscores` ou `guildstats`).
+3. Na página do guildstats, o nível, o progresso e o total têm de bater com a
+   fórmula (`expDoNivel(nível) + progresso == total`); se não baterem, a
+   recolha falha com os números na mensagem e não grava nada. A página só
+   responde ao User-Agent honesto `TibiaVault/1.0` — o de Chrome leva o
+   challenge.
+4. Cada personagem é independente, mas a corrida só sai 0 se os dois forem
+   recolhidos; um que falhe sai 1, com o nome e o motivo.
 
 ### O alarme
 
@@ -293,8 +304,11 @@ data/
   celesta-hunts.json      # janelas livres dos spots, escritas a partir do Discord
 scripts/
   lib/
-    guildstatsHistory.mjs # scraping + merge de histórico
+    guildstatsHistory.mjs # histórico do guildstats (parado) + load/save/merge
     guildstatsHistory.test.mjs # parser da tabela, com HTML de fixture
+    tibiaDataHighscores.mjs  # recolha pelos highscores (Baverone) + runCollection
+    guildstatsCharacter.mjs  # recolha pela página de personagem (Bluey)
+    fixtures/             # páginas reais do guildstats, cortadas, para os testes
     trackedPlayers.mjs    # quem é rastreado e para que pasta
   scrape-experience.mjs   # recolha diária (corre no PC)
   scrape-xp-local.ps1     # corre o scraper + commit (tarefa agendada, de hora a hora)

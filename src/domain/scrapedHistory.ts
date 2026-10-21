@@ -9,6 +9,8 @@ export interface ScrapedRecord {
   level: number;
   experience: number;
   scrapedAt: string;
+  /** De onde veio o valor; só nas linhas a partir de 21/10/2026. */
+  source?: 'highscores' | 'guildstats';
 }
 
 /**

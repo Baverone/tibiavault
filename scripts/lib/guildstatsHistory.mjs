@@ -7,8 +7,9 @@
 // Desde 16/10/2026 o scrape-experience.mjs já não chama o `runScraper`: o
 // tab.php está atrás do Cloudflare e a recolha passou para os highscores
 // (tibiaDataHighscores.mjs), que usa daqui a fórmula e o load/save do
-// histórico. O resto fica para a recolha por browser do Bluey, que vai
-// precisar do parser.
+// histórico. O Bluey voltou a ser recolhido a 21/10/2026, mas pela página de
+// personagem (guildstatsCharacter.mjs), não por aqui. O parser do tab.php fica
+// para o dia em que o histórico deixar de estar atrás do Cloudflare.
 //
 // Endpoint discovered by inspecting guildstats.eu's own front-end JS: the
 // character page loads its "Experience" tab via this internal AJAX route,

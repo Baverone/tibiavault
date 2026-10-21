@@ -97,10 +97,10 @@ test('quem a recolha não cobre diz porquê, e só esses', () => {
     if (tracked.source) assert.equal(player.noSource, undefined, `${player.name} tem fonte`);
     else assert.ok(player.noSource, `${player.name} não tem fonte e a app não o diz`);
   }
-  assert.equal(
-    PLAYERS.find((p) => p.slug === 'bluey')?.noSource,
-    'o Bluey saiu do top 1000 do Celesta e não há fonte para a XP dele'
-  );
+  // 21/10/2026: o Bluey voltou a ser recolhido (página de personagem do
+  // guildstats), por isso a app deixa de dizer que não há fonte.
+  assert.equal(CHARACTERS.find((c) => c.id === 'exalted-monk')?.source, 'guildstats');
+  assert.equal(PLAYERS.find((p) => p.slug === 'bluey')?.noSource, undefined);
 });
 
 // 20/10/2026: o <title> era «TibiaVault» nas 13 rotas — separadores,

@@ -10,8 +10,12 @@
 // estiver abaixo do corte não aparece, e por isso não é recolhido por aqui —
 // ver `waiting` em trackedPlayers.mjs.
 //
-// Escreve exatamente o mesmo formato que o scraper do guildstats
-// ({ date, level, experience, scrapedAt }), para a app não ter de mudar.
+// Escreve o mesmo formato que o scraper do guildstats
+// ({ date, level, experience, scrapedAt }), para a app não ter de mudar, e
+// desde 21/10/2026 também `source: 'highscores'` — a página de personagem do
+// guildstats grava `source: 'guildstats'`, para se perceber mais tarde de onde
+// veio cada dia (e porque é que um tem buracos e o outro não). As linhas de
+// antes de 21/10 não têm `source`.
 import {
   isAfterLisbonServerSave,
   levelForExperience,
@@ -194,20 +198,36 @@ export async function syncFromHighscores({ id, nick, world, dataDir, fetchImpl, 
     );
   }
 
-  history.push({ date, level: found.level, experience: found.experience, scrapedAt: now().toISOString() });
+  history.push({
+    date,
+    level: found.level,
+    experience: found.experience,
+    scrapedAt: now().toISOString(),
+    source: 'highscores',
+  });
   history.sort((a, b) => a.date.localeCompare(b.date));
   saveHistory(dataDir, id, history);
   console.log(`[${id}] guardado ${date}: nível ${found.level}, ${found.experience} XP (${where}).`);
   return { added: 1, date, ...found };
 }
 
+const SOURCE_LABELS = { tibiadata: 'highscores oficiais via TibiaData', guildstats: 'página de personagem do guildstats' };
+
 /**
- * Recolhe quem tem fonte (`source: 'tibiadata'`) e diz, sem rodeios, quem
- * fica à espera (`waiting`). Quem está à espera é uma limitação conhecida e
- * aceite: não pinta a corrida de vermelho, mas aparece sempre no fim.
- * Qualquer falha num personagem coberto sai com código 1.
+ * Recolhe quem tem fonte (`source` em trackedPlayers.mjs, com o recolhedor em
+ * `syncers`) e diz, sem rodeios, quem fica à espera (`waiting`). Quem está à
+ * espera não pinta a corrida de vermelho, mas aparece sempre no fim.
+ * Qualquer falha num personagem coberto sai com código 1 e diz qual e porquê.
  */
-export async function runCollection({ players, dataDir, fetchImpl, retryDelayMs, now = () => new Date(), force = false }) {
+export async function runCollection({
+  players,
+  dataDir,
+  syncers = { tibiadata: syncFromHighscores },
+  fetchImpl,
+  retryDelayMs,
+  now = () => new Date(),
+  force = false,
+}) {
   if (!force && !isAfterLisbonServerSave()) {
     console.log('Ainda não passou o server save das 9h em Lisboa — a ignorar esta execução.');
     return { covered: [], waiting: [], failed: [] };
@@ -218,26 +238,31 @@ export async function runCollection({ players, dataDir, fetchImpl, retryDelayMs,
   const failed = [];
 
   for (const player of players) {
-    if (player.source !== 'tibiadata') {
+    if (!player.source) {
       waiting.push(player);
       continue;
     }
+    const sync = syncers[player.source];
     try {
-      await syncFromHighscores({ ...player, dataDir, fetchImpl, retryDelayMs, now });
+      if (!sync) {
+        throw Object.assign(new Error(`não há recolhedor para a fonte "${player.source}"`), { transient: false });
+      }
+      await sync({ ...player, dataDir, fetchImpl, retryDelayMs, now });
       covered.push(player);
     } catch (error) {
-      failed.push(player);
+      failed.push({ ...player, reason: error.message });
       console.error(`[${player.id}] falhou${error.transient ? ' (temporário)' : ''}: ${error.message}`);
     }
   }
 
   console.log('');
-  console.log(`Cobertos (highscores oficiais via TibiaData): ${covered.map((p) => p.nick).join(', ') || 'nenhum'}`);
+  const label = (p) => `${p.nick} (${SOURCE_LABELS[p.source] ?? p.source})`;
+  console.log(`Cobertos: ${covered.map(label).join(', ') || 'nenhum'}`);
   for (const player of waiting) {
     console.log(`À ESPERA — ${player.nick} (${player.id}) NÃO está a ser recolhido: ${player.waiting}`);
   }
   if (failed.length > 0) {
-    console.error(`Falharam: ${failed.map((p) => p.nick).join(', ')} — ver as linhas "falhou" acima.`);
+    for (const player of failed) console.error(`FALHOU — ${player.nick} (${player.id}): ${player.reason}`);
     process.exitCode = 1;
   }
   return { covered, waiting, failed };
