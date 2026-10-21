@@ -4,7 +4,7 @@ export interface TrackedCharacter {
   id: string;
   nick: string;
   world: string;
-  source: 'tibiadata' | 'guildstats' | null;
+  source: 'tibiadata' | 'chrome' | null;
   waiting?: string;
 }
 

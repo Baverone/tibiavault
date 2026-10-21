@@ -211,7 +211,11 @@ export async function syncFromHighscores({ id, nick, world, dataDir, fetchImpl, 
   return { added: 1, date, ...found };
 }
 
-const SOURCE_LABELS = { tibiadata: 'highscores oficiais via TibiaData', guildstats: 'página de personagem do guildstats' };
+const SOURCE_LABELS = {
+  tibiadata: 'highscores oficiais via TibiaData',
+  guildstats: 'página de personagem do guildstats',
+  chrome: 'guildstats no Chrome do André, tarefa tibia-xp-chrome',
+};
 
 /**
  * Recolhe quem tem fonte (`source` em trackedPlayers.mjs, com o recolhedor em

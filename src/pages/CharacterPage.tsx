@@ -103,7 +103,7 @@ export function CharacterPage({ player, section }: CharacterPageProps) {
             ) : (
               <span>
                 A leitura mais recente é de {agoText(summary.daysSinceLastReading as number)}. A recolha diária pode
-                estar parada — vê a tarefa <b>tibia-xp</b> no PC.
+                estar parada — vê a tarefa <b>{player.collectorTask ?? 'tibia-xp'}</b> no PC.
               </span>
             )}
           </p>

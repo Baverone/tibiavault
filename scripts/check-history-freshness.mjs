@@ -115,7 +115,8 @@ for (const entry of stale) {
 }
 console.error(
   `\n${stale.length} ficheiro(s) com mais de ${MAX_AGE_DAYS} dia(s) de atraso (hoje em Lisboa: ${today}).\n` +
-    'A recolha do PC (tarefa tibia-xp do ai-pc) não está a correr, ou a API do TibiaData mudou/está em baixo.\n' +
-    'Correr node scripts/scrape-experience.mjs e ler as linhas "falhou".'
+    'Baverone: a recolha do PC (tarefa tibia-xp do ai-pc) não está a correr, ou a API do TibiaData mudou/está em baixo —\n' +
+    'correr node scripts/scrape-experience.mjs e ler as linhas "falhou".\n' +
+    'Bluey: lido no Chrome do André pela tarefa tibia-xp-chrome do ai-pc (Chrome fechado, ou desafio do Cloudflare).'
 );
 process.exit(1);

@@ -31,6 +31,11 @@ export interface PlayerMeta {
    * avaria — vê a tarefa no PC» e passam a ser o que são.
    */
   noSource?: string;
+  /**
+   * A tarefa do ai-pc que o recolhe — é a que o aviso de dados velhos manda
+   * ver. Sem isto, `tibia-xp`.
+   */
+  collectorTask?: string;
 }
 
 /**
@@ -64,7 +69,11 @@ export const PLAYERS: PlayerMeta[] = [
     // 20/10/2026: fora do top 1000 dos highscores desde 14/10, e estava aqui
     // `noSource`. 21/10/2026: volta a ter fonte — a página de personagem do
     // guildstats (scripts/lib/guildstatsCharacter.mjs). Os dias 14 a 19/10
-    // ficam em buraco no gráfico.
+    // foram preenchidos à mão nesse dia. Mais tarde no mesmo dia, decisão do
+    // André: a tabela Experience do guildstats lida no Chrome dele, pela tarefa
+    // tibia-xp-chrome do ai-pc. O aviso só aparece com 3+ dias sem leitura
+    // (STALE_AFTER_DAYS) e manda ver essa tarefa.
+    collectorTask: 'tibia-xp-chrome',
   },
 ];
 

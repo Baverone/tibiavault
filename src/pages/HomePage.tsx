@@ -117,7 +117,13 @@ export function HomePage({ histories, loading, onNavigate }: HomePageProps) {
                   `${player.name} sem dados novos ${agoText(summary.daysSinceLastReading as number)}`
               )
               .join(' · ')}
-            . Vê a tarefa <b>tibia-xp</b> no PC.
+            . Vê no PC{' '}
+            {[...new Set(stale.map(({ player }) => player.collectorTask ?? 'tibia-xp'))].map((task, i) => (
+              <span key={task}>
+                {i > 0 && ' e '}a tarefa <b>{task}</b>
+              </span>
+            ))}
+            .
           </span>
         </p>
       )}

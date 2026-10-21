@@ -192,21 +192,29 @@ Cloudflare). Desde 21/10/2026 cada um tem a sua fonte (`source` em
 | Boneco | Fonte | Código |
 | --- | --- | --- |
 | Baverone | highscores oficiais do Celesta, pela API do TibiaData | [`tibiaDataHighscores.mjs`](scripts/lib/tibiaDataHighscores.mjs) |
-| Bluey The Cat | página de personagem do guildstats (`/character?nick=...`) — está abaixo do top 1000, por isso não aparece nos highscores | [`guildstatsCharacter.mjs`](scripts/lib/guildstatsCharacter.mjs) |
+| Bluey The Cat | tabela Experience do guildstats (`/character/<nome>#experience`), lida **no Chrome do André** pela tarefa `tibia-xp-chrome` do ai-pc — está abaixo do top 1000, por isso não aparece nos highscores | [`chromeReading.mjs`](scripts/lib/chromeReading.mjs) (aqui não faz pedido nenhum) |
 
-1. Uma leitura por boneco e por dia, depois do server save das 09:00 de
-   Lisboa; a leitura de D+1 é a linha de D. Nenhuma das fontes guarda dias
-   passados: um dia que falhe fica em buraco (não se inventa).
+**O guildstats só se lê pelo Chrome do André** (decisão de 21/10/2026): no
+máximo 2 páginas por dia, e qualquer desafio do Cloudflare faz parar a leitura
+desse dia. Nada de fetch, headless nem cabeçalhos — por isso o
+`guildstatsCharacter.mjs` (o fetch com User-Agent honesto da manhã de 21/10)
+ficou no repositório com os testes do parser, mas já ninguém o chama. A tarefa
+do ai-pc lê às 10:30 (reserva às 13:30) a tabela dos dois bonecos — a do
+Baverone é a reserva dos highscores — e junta ao histórico com o `mergeRows`
+de `guildstatsHistory.mjs`; faz commit, o push é do `tibia-push`.
+
+1. Os highscores dão uma leitura por dia, depois do server save das 09:00 de
+   Lisboa; a leitura de D+1 é a linha de D, e um dia que falhe fica em buraco.
+   A tabela do guildstats traz ~30 dias com a mesma convenção (a coluna
+   «When» é a data da linha), por isso preenche buracos dentro dessa janela.
 2. Só acrescenta datas que ainda não estão em
    `data/scraped-history/<personagem>.json` — nunca apaga nem sobrescreve.
    Cada linha nova leva `source` (`highscores` ou `guildstats`).
-3. Na página do guildstats, o nível, o progresso e o total têm de bater com a
-   fórmula (`expDoNivel(nível) + progresso == total`); se não baterem, a
-   recolha falha com os números na mensagem e não grava nada. A página só
-   responde ao User-Agent honesto `TibiaVault/1.0` — o de Chrome leva o
-   challenge.
-4. Cada personagem é independente, mas a corrida só sai 0 se os dois forem
-   recolhidos; um que falhe sai 1, com o nome e o motivo.
+3. Na tabela do guildstats, cada linha tem de bater com a fórmula do nível, e
+   os dias que já estão no ficheiro têm de ser iguais aos lidos; se não
+   baterem, nada desse boneco é gravado.
+4. Cada personagem é independente, mas a corrida só sai 0 se todos os de
+   fonte automática forem recolhidos; um que falhe sai 1, com o nome e o motivo.
 
 ### O alarme
 
@@ -307,7 +315,8 @@ scripts/
     guildstatsHistory.mjs # histórico do guildstats (parado) + load/save/merge
     guildstatsHistory.test.mjs # parser da tabela, com HTML de fixture
     tibiaDataHighscores.mjs  # recolha pelos highscores (Baverone) + runCollection
-    guildstatsCharacter.mjs  # recolha pela página de personagem (Bluey)
+    guildstatsCharacter.mjs  # fetch da página de personagem (parado desde 21/10)
+    chromeReading.mjs     # fonte do Bluey: a tarefa tibia-xp-chrome do ai-pc
     fixtures/             # páginas reais do guildstats, cortadas, para os testes
     trackedPlayers.mjs    # quem é rastreado e para que pasta
   scrape-experience.mjs   # recolha diária (corre no PC)

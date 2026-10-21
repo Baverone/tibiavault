@@ -98,8 +98,9 @@ test('quem a recolha não cobre diz porquê, e só esses', () => {
     else assert.ok(player.noSource, `${player.name} não tem fonte e a app não o diz`);
   }
   // 21/10/2026: o Bluey voltou a ser recolhido (página de personagem do
-  // guildstats), por isso a app deixa de dizer que não há fonte.
-  assert.equal(CHARACTERS.find((c) => c.id === 'exalted-monk')?.source, 'guildstats');
+  // guildstats), por isso a app deixa de dizer que não há fonte. Mais tarde no
+  // mesmo dia a fonte é o Chrome do André (tarefa tibia-xp-chrome do ai-pc).
+  assert.equal(CHARACTERS.find((c) => c.id === 'exalted-monk')?.source, 'chrome');
   assert.equal(PLAYERS.find((p) => p.slug === 'bluey')?.noSource, undefined);
 });
 
