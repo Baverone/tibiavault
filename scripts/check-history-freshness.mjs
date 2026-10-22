@@ -21,6 +21,8 @@ import { loadExistingHistory, missingDates } from './lib/guildstatsHistory.mjs';
 // 10:50 UTC (por isso "ontem" é o normal, não um atraso), e um dia perdido é
 // recuperado sozinho na recolha seguinte porque o guildstats serve ~30 dias.
 // Só a partir do terceiro dia é que há mesmo alguma coisa partida.
+// É o mesmo limiar do aviso da app (`isStaleReading` em
+// src/domain/homeSummary.ts, desde 22/10/2026): com mais de 3 dias, não com 3.
 //
 // O valor passado é validado: `--max-idade-dias` sem número (ou com lixo) dava
 // NaN, e como toda a comparação com NaN é falsa nenhum ficheiro contava como

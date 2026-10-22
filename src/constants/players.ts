@@ -71,8 +71,8 @@ export const PLAYERS: PlayerMeta[] = [
     // guildstats (scripts/lib/guildstatsCharacter.mjs). Os dias 14 a 19/10
     // foram preenchidos à mão nesse dia. Mais tarde no mesmo dia, decisão do
     // André: a tabela Experience do guildstats lida no Chrome dele, pela tarefa
-    // tibia-xp-chrome do ai-pc. O aviso só aparece com 3+ dias sem leitura
-    // (STALE_AFTER_DAYS) e manda ver essa tarefa.
+    // tibia-xp-chrome do ai-pc. O aviso só aparece com mais de 3 dias sem
+    // leitura (isStaleReading) e manda ver essa tarefa.
     collectorTask: 'tibia-xp-chrome',
   },
 ];
