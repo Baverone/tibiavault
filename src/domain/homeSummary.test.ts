@@ -2,7 +2,15 @@
 // bonecos lado a lado. Tudo contas puras, sem rede e sem browser.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { agoText, combineDailyGains, levelHeadline, summarizeCharacter, WEEK_DAYS } from './homeSummary.ts';
+import {
+  agoText,
+  combineDailyGains,
+  isStaleReading,
+  levelHeadline,
+  STALE_AFTER_DAYS,
+  summarizeCharacter,
+  WEEK_DAYS,
+} from './homeSummary.ts';
 import type { HistoryEntry } from './types.ts';
 
 const DIA = 24 * 60 * 60 * 1000;
@@ -28,6 +36,24 @@ test('o cabeçalho não dá como de hoje uma leitura velha', () => {
   const velho = historico('2026-10-12', 3_581_151_352, [0]);
   assert.equal(levelHeadline('Bluey The Cat', velho, agora), 'Bluey The Cat no nível 600 (última leitura a 13/10)');
   assert.equal(levelHeadline('Bluey The Cat', [], agora), 'Bluey The Cat ainda sem dados');
+});
+
+// 22/10/2026 (ronda): a página avisava com 3 dias (>=) e o alarme
+// check-history-freshness.mjs só com mais de 3 (>). Agora é um limiar só, o do
+// alarme: 3 dias ainda não são dados velhos, 4 já são.
+test('dados velhos: o mesmo limiar do alarme (mais de STALE_AFTER_DAYS dias)', () => {
+  const historia = historico('2026-10-12', 3_581_151_352, [0]);
+  // Última leitura a 13/10.
+  const aos = (dias: number) => new Date(`2026-10-${13 + dias}T13:00:00Z`).getTime();
+  assert.equal(summarizeCharacter(historia, aos(STALE_AFTER_DAYS)).daysSinceLastReading, STALE_AFTER_DAYS);
+  assert.equal(isStaleReading(summarizeCharacter(historia, aos(STALE_AFTER_DAYS)).daysSinceLastReading), false);
+  assert.equal(isStaleReading(summarizeCharacter(historia, aos(STALE_AFTER_DAYS + 1)).daysSinceLastReading), true);
+  assert.equal(isStaleReading(null), false);
+  assert.equal(levelHeadline('Bluey The Cat', historia, aos(STALE_AFTER_DAYS)), 'Bluey The Cat no nível 600');
+  assert.equal(
+    levelHeadline('Bluey The Cat', historia, aos(STALE_AFTER_DAYS + 1)),
+    'Bluey The Cat no nível 600 (última leitura a 13/10)'
+  );
 });
 
 test('sem histórico não há resumo nenhum, e nada rebenta', () => {

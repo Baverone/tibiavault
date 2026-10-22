@@ -5,7 +5,7 @@
 // — e o Node exige a extensão. O Vite resolve-a na mesma. Mesma razão por que
 // os testes escrevem `./homeSummary.ts`.
 import { levelForExperience } from './experienceTable.ts';
-import { computeDailyGains } from './historyStats.ts';
+import { addLocalDays, computeDailyGains } from './historyStats.ts';
 import type { HistoryEntry } from './types.ts';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -14,13 +14,22 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
 export const WEEK_DAYS = 7;
 
 /**
- * Passados estes dias sem leitura nova, a recolha diária está a falhar.
+ * Com MAIS do que estes dias sem leitura nova, a recolha diária está a falhar.
  *
- * O guildstats publica o dia anterior e um dia perdido recupera-se sozinho na
- * corrida seguinte — daí a folga de três dias. É o mesmo limiar do
- * `scripts/check-history-freshness.mjs`; se um lado mudar, o outro também.
+ * O normal é a linha mais recente ter um ou dois dias (a de ontem só existe
+ * depois do server save de hoje) — daí a folga. É o limiar do
+ * `scripts/check-history-freshness.mjs` (`age > MAX_AGE_DAYS`); se um lado
+ * mudar, o outro também. Compara-se sempre por `isStaleReading`.
+ *
+ * 22/10/2026: a página avisava já com 3 dias (`>=`) e o alarme só com 4 (`>`),
+ * e este comentário dizia que eram iguais. Ficou o do alarme.
  */
 export const STALE_AFTER_DAYS = 3;
+
+/** A leitura mais recente é velha de mais? `null` (sem leituras) não é. */
+export function isStaleReading(daysSinceLastReading: number | null): boolean {
+  return daysSinceLastReading !== null && daysSinceLastReading > STALE_AFTER_DAYS;
+}
 
 /** «hoje» / «há 1 dia» / «há 4 dias». */
 export function agoText(days: number): string {
@@ -57,7 +66,7 @@ export function summarizeCharacter(history: HistoryEntry[], now: number): Charac
   const days = computeDailyGains(history);
   const lastDayEntry = days.at(-1) ?? null;
 
-  const from = lastDayEntry ? lastDayEntry.dayTimestamp - (WEEK_DAYS - 1) * MS_PER_DAY : 0;
+  const from = lastDayEntry ? addLocalDays(lastDayEntry.dayTimestamp, -(WEEK_DAYS - 1)) : 0;
   const week = lastDayEntry ? days.filter((day) => day.dayTimestamp >= from) : [];
 
   return {
@@ -103,7 +112,7 @@ export function levelHeadline(name: string, history: HistoryEntry[], now: number
   const last = history.at(-1);
   if (summary.level === null || !last) return `${name} ainda sem dados`;
   const base = `${name} no nível ${summary.level}`;
-  if ((summary.daysSinceLastReading ?? 0) < STALE_AFTER_DAYS) return base;
+  if (!isStaleReading(summary.daysSinceLastReading)) return base;
   return `${base} (última leitura a ${readingDay.format(last.timestamp)})`;
 }
 
@@ -154,7 +163,7 @@ export function combineDailyGains(
     }
   }
 
-  const from = newest - (days - 1) * MS_PER_DAY;
+  const from = addLocalDays(newest, -(days - 1));
   return [...byDay.entries()]
     .filter(([dayTimestamp]) => dayTimestamp >= from)
     .sort((a, b) => a[0] - b[0])

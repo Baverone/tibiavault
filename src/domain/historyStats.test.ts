@@ -61,6 +61,29 @@ test('computeDailyGains omite o primeiro dia (nao ha anterior para comparar)', (
   assert.deepEqual(computeDailyGains([{ timestamp: dia1, experience: 100 }]), []);
 });
 
+// 22/10/2026 (ronda): depois de um dia sem leitura, a XP de dois dias saía
+// como a de um dia só — uma barra «XP nesse dia» com o dobro, e a média da
+// semana inflacionada. Um dia só tem ganho se o dia anterior tiver leitura.
+test('computeDailyGains nao junta a XP de varios dias num dia depois de um buraco', () => {
+  const dia1 = new Date(2026, 8, 1, 13, 0).getTime();
+  const dia2 = new Date(2026, 8, 2, 13, 0).getTime();
+  const dia4 = new Date(2026, 8, 4, 13, 0).getTime();
+  const dia5 = new Date(2026, 8, 5, 13, 0).getTime();
+  const ganhos = computeDailyGains([
+    { timestamp: dia1, experience: 100 },
+    { timestamp: dia2, experience: 150 },
+    { timestamp: dia4, experience: 400 },
+    { timestamp: dia5, experience: 450 },
+  ]);
+  assert.deepEqual(
+    ganhos.map((ganho) => [new Date(ganho.dayTimestamp).getDate(), ganho.experienceGained]),
+    [
+      [2, 50],
+      [5, 50],
+    ]
+  );
+});
+
 test('computeDailyGains aceita perdas de XP dia a dia', () => {
   const dia1 = new Date(2026, 8, 1, 9, 0).getTime();
   const dia2 = new Date(2026, 8, 2, 9, 0).getTime();

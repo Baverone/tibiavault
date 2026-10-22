@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect } from 'react';
 import type { PlayerMeta } from '../constants/players';
 import { getLevelProgress } from '../domain/levelProgress';
-import { agoText, lastReadingNote, STALE_AFTER_DAYS, summarizeCharacter } from '../domain/homeSummary';
+import { agoText, isStaleReading, lastReadingNote, summarizeCharacter } from '../domain/homeSummary';
 import { useCharacterState } from '../hooks/useCharacterState';
 import { CHARACTER_SECTIONS } from '../navigation/pages';
 import { Icon } from '../components/shell/icons';
@@ -73,7 +73,7 @@ export function CharacterPage({ player, section }: CharacterPageProps) {
   const now = Date.now();
   const summary = summarizeCharacter(history, now);
   const progress = summary.experience !== null ? getLevelProgress(summary.experience) : null;
-  const isStale = summary.daysSinceLastReading !== null && summary.daysSinceLastReading >= STALE_AFTER_DAYS;
+  const isStale = isStaleReading(summary.daysSinceLastReading);
   useScrollToSection(section, !loading && progress !== null);
 
   if (loading) return <p className="vazio">A carregar o histórico do {player.name}…</p>;

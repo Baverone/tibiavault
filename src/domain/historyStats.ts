@@ -37,8 +37,20 @@ export interface DailyExperienceGain {
   dayTimestamp: number;
   /** Cumulative XP at the end of this day (its last reading). */
   experience: number;
-  /** XP gained versus the previous calendar day that has a reading. */
+  /** XP gained versus the day before, which must have a reading too. */
   experienceGained: number;
+}
+
+/**
+ * Meia-noite local `days` dias de calendário depois (ou antes) de outra.
+ *
+ * 22/10/2026: somar `n * 24h` a uma meia-noite local perde-se na mudança de
+ * hora — a 25/10 o dia tem 25 h e a semana do Início ficava com seis dias. O
+ * `Date` com o dia do mês deslocado conta dias de calendário.
+ */
+export function addLocalDays(dayTimestamp: number, days: number): number {
+  const d = new Date(dayTimestamp);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate() + days).getTime();
 }
 
 function localDayKey(timestamp: number): string {
@@ -79,11 +91,16 @@ function collapseToDays(history: HistoryEntry[]): DayReading[] {
  * Day-over-day XP gained (the "XP feita por dia" series). The first day has no
  * previous day to compare against, so it is omitted (same convention as
  * computeExperienceGains). Gains can be negative (XP lost to deaths).
+ *
+ * 22/10/2026: o dia a seguir a um buraco também fica de fora. Comparava com o
+ * último dia com leitura, fosse ele qual fosse, e a XP de dois dias saía como
+ * a de um só — no gráfico («XP nesse dia») e na média da semana do Início.
  */
 export function computeDailyGains(history: HistoryEntry[]): DailyExperienceGain[] {
   const days = collapseToDays(history);
   const gains: DailyExperienceGain[] = [];
   for (let i = 1; i < days.length; i++) {
+    if (days[i].dayTimestamp !== addLocalDays(days[i - 1].dayTimestamp, 1)) continue;
     gains.push({
       dayTimestamp: days[i].dayTimestamp,
       experience: days[i].experience,

@@ -1,6 +1,6 @@
 import { Suspense, lazy } from 'react';
 import { PLAYERS } from '../constants/players';
-import { agoText, STALE_AFTER_DAYS, summarizeCharacter, WEEK_DAYS, type CharacterSummary } from '../domain/homeSummary';
+import { agoText, isStaleReading, summarizeCharacter, WEEK_DAYS, type CharacterSummary } from '../domain/homeSummary';
 import { getLevelProgress } from '../domain/levelProgress';
 import type { HistoriesByCharacter } from '../hooks/useAllCharacters';
 import { ATALHOS_INICIO, type PageId } from '../navigation/pages';
@@ -95,9 +95,7 @@ export function HomePage({ histories, loading, onNavigate }: HomePageProps) {
     summary: summarizeCharacter(histories[player.id] ?? [], now),
   }));
 
-  const old = summaries.filter(
-    ({ summary }) => summary.daysSinceLastReading !== null && summary.daysSinceLastReading >= STALE_AFTER_DAYS
-  );
+  const old = summaries.filter(({ summary }) => isStaleReading(summary.daysSinceLastReading));
   // Quem não tem fonte não é uma avaria: diz-se porquê, e não «vê a tarefa».
   const stale = old.filter(({ player }) => !player.noSource);
   const sourceless = old.filter(({ player }) => player.noSource);
