@@ -66,6 +66,17 @@ export function tibiaDayOf(instant) {
  * do dia D, e só existe depois do server save de D+1 (a recolha de 14/10 às
  * 10h trouxe a linha de 13/10). Uma leitura feita hoje depois do save é,
  * portanto, a linha de ontem.
+ *
+ * 22/10/2026 (ronda): LIMITAÇÃO CONHECIDA, não corrigida. Os highscores não
+ * param no save: às 03:03 UTC de 22/10 a API dizia `highscore_age` 15 — a
+ * lista tinha sido refeita às ~02:40 UTC, a meio do dia do Tibia. Uma leitura
+ * depois do save traz, por isso, a XP feita entre o servidor voltar e a lista
+ * ser refeita, e essa XP é do dia de HOJE gravada na linha de ONTEM (provável
+ * causa dos +2 483 746 do Baverone a 20/10 face ao guildstats; não provada,
+ * porque a linha não guarda o `snapshotAt`). Daqui não há forma honesta de
+ * ter a XP do fim do dia: a leitura mais próxima seria a última lista ANTES
+ * do save, e isso pede mudar a hora da tarefa tibia-xp do ai-pc — decisão do
+ * André, não deste ficheiro.
  */
 export function historyDateFor(snapshotAt) {
   return addDays(tibiaDayOf(snapshotAt), -1);
