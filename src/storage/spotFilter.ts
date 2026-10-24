@@ -31,6 +31,19 @@ export function saveSelectedSpots(names: string[] | null): void {
 }
 
 /**
+ * Os spots que passam o filtro, pela ordem em que vêm nos dados.
+ *
+ * Nomes guardados que já não existem nos dados (o bot mudou-lhes o nome ou
+ * deixou de os mandar) não fazem nada: não aparecem nem dão erro. Se só
+ * restarem esses, a lista fica vazia — e é o estado vazio do painel que
+ * oferece o «Mostrar todos».
+ */
+export function applySpotFilter<T extends { name: string }>(spots: T[], selected: string[] | null): T[] {
+  if (selected === null) return spots;
+  return spots.filter((spot) => selected.includes(spot.name));
+}
+
+/**
  * Mostrar também a hora de Lisboa nas janelas.
  *
  * Guarda-se pela mesma razão que o filtro: quem joga daqui quer a hora de

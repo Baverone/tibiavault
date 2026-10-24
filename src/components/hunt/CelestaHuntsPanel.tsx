@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useCelestaHunts } from '../../hooks/useCelestaHunts';
-import { loadSelectedSpots, loadShowLisbon, saveSelectedSpots, saveShowLisbon } from '../../storage/spotFilter';
+import {
+  applySpotFilter,
+  loadSelectedSpots,
+  loadShowLisbon,
+  saveSelectedSpots,
+  saveShowLisbon,
+} from '../../storage/spotFilter';
 import {
   formatAge,
   formatGeneratedStamp,
@@ -174,11 +180,7 @@ export function CelestaHuntsPanel({ collectionOff = false }: CelestaHuntsPanelPr
   // Sem escolha feita, mostra-se tudo — é o estado de quem abre a app pela
   // primeira vez, e ver spots a menos sem perceber porquê era pior do que ver
   // spots a mais.
-  const visibleSpots = useMemo(() => {
-    if (!data) return [];
-    if (selected === null) return data.spots;
-    return data.spots.filter((spot) => selected.includes(spot.name));
-  }, [data, selected]);
+  const visibleSpots = useMemo(() => (data ? applySpotFilter(data.spots, selected) : []), [data, selected]);
 
   // Estado de cada spot neste minuto. Recalcula-se quando o `now` avança, e é
   // por isso que o relógio do painel bate de minuto a minuto e não só para
@@ -315,10 +317,19 @@ export function CelestaHuntsPanel({ collectionOff = false }: CelestaHuntsPanelPr
           )}
 
           <div className="hunts-panel__spots">
+            {/* Vazio por duas vias: escondeste tudo, ou a escolha guardada só
+                tem nomes que o bot já não manda. O botão resolve as duas sem
+                ter de abrir o "Escolher spots"; sem escolha feita não há nada
+                para repor, e então não aparece (24/10/2026). */}
             {entries.length === 0 ? (
-              <p className="hunts-panel__note">
-                Escondeste todos os spots. Carrega em "Escolher spots" para voltar a mostrar algum.
-              </p>
+              <div className="hunts-panel__empty">
+                <p className="hunts-panel__note">Não há spots à vista.</p>
+                {selected !== null && (
+                  <button type="button" className="btn sm" onClick={showAllSpots}>
+                    Mostrar todos
+                  </button>
+                )}
+              </div>
             ) : (
               entries.map(({ spot, availability }) => (
                 <SpotRow key={spot.name} spot={spot} showLisbon={showLisbon} availability={availability} />

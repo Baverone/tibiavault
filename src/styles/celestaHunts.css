@@ -263,3 +263,10 @@
   align-self: flex-start;
   margin-top: 4px;
 }
+
+.hunts-panel__empty {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
