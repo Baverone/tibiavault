@@ -4,15 +4,37 @@
 // celula, a segunda com a abreviatura para telemovel).
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import {
   USER_AGENT,
   experienceForLevel,
   fetchExperienceRows,
   levelForExperience,
+  loadExistingHistory,
   mergeRows,
   missingDates,
   parseExperienceRows,
 } from './guildstatsHistory.mjs';
+
+// 25/10/2026: um ficheiro estragado dava [] e era reescrito só com a linha de
+// hoje. Numa pasta temporária, nunca no data/ verdadeiro.
+test('loadExistingHistory recusa um ficheiro estragado em vez de o dar por vazio', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'tibia-hist-'));
+  assert.deepEqual(loadExistingHistory(dir, 'nao-existe'), []);
+
+  const conflito = '<<<<<<< HEAD\n[{"date":"2026-10-24"}]\n=======\n[]\n>>>>>>> outro\n';
+  writeFileSync(join(dir, 'conflito.json'), conflito);
+  assert.throws(() => loadExistingHistory(dir, 'conflito'), /não é JSON válido/);
+  assert.equal(readFileSync(join(dir, 'conflito.json'), 'utf-8'), conflito);
+
+  writeFileSync(join(dir, 'objecto.json'), '{"date":"2026-10-24"}');
+  assert.throws(() => loadExistingHistory(dir, 'objecto'), /não é uma lista/);
+
+  writeFileSync(join(dir, 'bom.json'), '[{"date":"2026-10-24","level":1,"experience":0}]');
+  assert.equal(loadExistingHistory(dir, 'bom').length, 1);
+});
 
 const linha = (data, curta, nivel, xp, xpCurta) => `
   <tr>
