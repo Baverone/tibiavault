@@ -32,13 +32,15 @@ com os spots livres do Celesta, a stamina e as flechas.
 Não há `CLAUDE.md` neste repositório — este README faz esse papel. As duas
 coisas que já causaram confusão e não podem voltar a acontecer:
 
-1. **O site corre no Vercel, não no GitHub Pages.**
-   `https://calculadora-tibia.vercel.app/` (o Vercel sobreviveu ao rename de
-   15/09/2026). O `vite.config.ts` **não tem** `base` e não pode passar a
-   ter — o Vercel serve a partir da raiz (`/assets/...`); definir
-   `base: '/tibiavault/'` (como seria preciso para GitHub Pages) parte o
-   site. Se vires documentação a falar de Pages ou a mandar definir `base`,
-   está errada — corrige-a.
+1. **O site corre no GitHub Pages, em `https://tibia.baverone.com/`**
+   (domínio próprio). Saiu do Vercel a 24/09/2026 — decisão do André, tudo
+   no GitHub; quem publica é o workflow
+   [`pages.yml`](.github/workflows/pages.yml), em cada push para o `main` que
+   mexa no código. Confirmado a 25/10/2026: o site responde com
+   `server: GitHub.com`. Até essa data este ponto ainda dizia «corre no
+   Vercel», o que já era falso há um mês. O `vite.config.ts` **não tem**
+   `base` e não pode passar a ter: com o domínio próprio o site é servido a
+   partir da raiz (`/assets/...`), e um `base: '/tibiavault/'` parte-o.
 2. **O prefixo `'calculadora-hunt:'` do `localStorage`
    (`src/storage/huntPlannerStorage.ts`) não se muda sem migração testada.**
    É a chave sob a qual os inputs da calculadora de hunt já estão guardados
@@ -466,7 +468,7 @@ separador fique em segundo plano.
 ## Rashid Tracker
 
 Cartão global (`src/components/rashid/RashidCard.tsx`) com o ícone do NPC
-(`public/rashid.png` — não incluído no código, coloca ali o teu ficheiro),
+(`public/rashid.png`, que está no repositório),
 a cidade/local de hoje e um countdown até à próxima mudança.
 
 Horário fixo por dia da semana em `src/data/rashid/schedule.ts`. O "dia de
