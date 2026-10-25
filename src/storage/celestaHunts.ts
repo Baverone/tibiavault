@@ -9,7 +9,7 @@ import type { CelestaHuntsData } from '../domain/celestaHunts';
  *    a seguir à tarefa correr. No site publicado esta cópia fica congelada no
  *    build, e é normal ficar para trás.
  *  - data/celesta-hunts.json — commitado e enviado para o repo público. É esta
- *    que mantém o site do Vercel atualizado sem precisar de novo deploy.
+ *    que mantém o site publicado (GitHub Pages desde 24/09/2026) atualizado sem precisar de novo deploy.
  *
  * Ganha o que for mais recente, para nunca mostrarmos dados velhos só porque
  * um dos dois lados ficou para trás.

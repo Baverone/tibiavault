@@ -206,15 +206,28 @@ function historyPath(dataDir, id) {
   return join(dataDir, `${id}.json`);
 }
 
+/**
+ * O histórico gravado. Só um ficheiro que NÃO EXISTE conta como vazio.
+ *
+ * 25/10/2026 (revisão): um ficheiro que não se lia (marcas de conflito do git,
+ * uma escrita cortada a meio) também dava `[]`, e quem o chamava acrescentava
+ * a linha de hoje e gravava — meses de XP trocados por uma linha, e o alarme
+ * de frescura a dizer «ok» porque a linha mais recente era de hoje. Agora
+ * rebenta com o caminho: a corrida desse boneco falha e ninguém grava nada.
+ */
 export function loadExistingHistory(dataDir, id) {
   const path = historyPath(dataDir, id);
   if (!existsSync(path)) return [];
+  let parsed;
   try {
-    const parsed = JSON.parse(readFileSync(path, 'utf-8'));
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
+    parsed = JSON.parse(readFileSync(path, 'utf-8'));
+  } catch (error) {
+    throw new Error(`${path} não é JSON válido (${error.message}) — não gravo por cima; corrige o ficheiro`);
   }
+  if (!Array.isArray(parsed)) {
+    throw new Error(`${path} não é uma lista de leituras — não gravo por cima; corrige o ficheiro`);
+  }
+  return parsed;
 }
 
 export function saveHistory(dataDir, id, history) {

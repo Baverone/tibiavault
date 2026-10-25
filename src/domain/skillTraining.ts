@@ -108,7 +108,14 @@ function levelPercentFromPoints(skill: TrainableSkill, vocation: Vocation, point
   const b = vocationB(skill, vocation);
 
   const exactLevel = Math.log((points * (b - 1)) / config.a + 1) / Math.log(b) + config.c;
-  const level = Math.max(config.c, Math.floor(exactLevel));
+  // 25/10/2026: o logaritmo, mesmo em cima de um nível certo, sai às vezes
+  // 49,9999999 e o `floor` dava 49 — Magic Level 50 sem Loyalty aparecia como
+  // «base 49, 99,99 %» e «0 Lasting Exercise». Acerta-se com a soma exata dos
+  // pontos, com uma folga relativa para o erro de vírgula flutuante.
+  const tolerance = 1e-9 * Math.max(1, points);
+  let level = Math.max(config.c, Math.floor(exactLevel));
+  while (totalPointsAtLevel(skill, vocation, level + 1) <= points + tolerance) level++;
+  while (level > config.c && totalPointsAtLevel(skill, vocation, level) > points + tolerance) level--;
   const pointsAtLevel = totalPointsAtLevel(skill, vocation, level);
   const pointsForThisLevel = pointsForNextLevel(skill, vocation, level);
   const percent = pointsForThisLevel > 0 ? ((points - pointsAtLevel) / pointsForThisLevel) * 100 : 0;

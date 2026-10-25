@@ -2,7 +2,13 @@
 // zero/negativos que o proprio codigo documenta.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ARROW_RATES, buildArrowRateTable, calculateArrowsPerMinute, closestArrowRate, closestTableMinute, MAX_TABLE_MINUTES } from './arrowsCalculator.ts';
+import { ARROW_RATES, buildArrowRateTable, calculateArrowsPerMinute, closestArrowRate, closestTableMinute, formatArrowRate, MAX_TABLE_MINUTES } from './arrowsCalculator.ts';
+
+test('formatArrowRate escreve com virgula decimal, como o resto da app (25/10/2026)', () => {
+  assert.equal(formatArrowRate(calculateArrowsPerMinute(850, 32) as number), '26,56');
+  assert.equal(formatArrowRate(25), '25');
+  assert.equal(formatArrowRate(33.3), '33,3');
+});
 
 test('buildArrowRateTable tem uma linha por minuto e minute*rate em cada coluna', () => {
   const tabela = buildArrowRateTable();
