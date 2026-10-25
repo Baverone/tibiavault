@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { CharacterId, HistoryEntry } from '../domain/types';
 import { fetchSharedHistory } from '../storage/sharedHistory';
 
@@ -29,14 +29,9 @@ export function useCharacterState(characterId: CharacterId) {
     };
   }, [characterId]);
 
-  const currentExperience = history.at(-1)?.experience ?? null;
-
-  /** Há quantos dias é a leitura mais recente — é o que a app usa para avisar que os dados estão velhos. */
-  const daysSinceLastReading = useMemo(() => {
-    const last = history.at(-1);
-    if (!last) return null;
-    return Math.floor((Date.now() - last.timestamp) / 86_400_000);
-  }, [history]);
-
-  return { history, currentExperience, loading, daysSinceLastReading };
+  // 25/10/2026: devolvia também `currentExperience` e `daysSinceLastReading`,
+  // que já ninguém lia — a página tira os dois do `summarizeCharacter`, e o
+  // segundo contava horas e não dias de calendário (o erro corrigido a 20/10
+  // no `calendarDaysSince`). Ficar cá era convidar a usá-lo outra vez.
+  return { history, loading };
 }
