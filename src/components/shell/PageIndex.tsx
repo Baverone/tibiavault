@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Icon, type IconName } from './icons';
 import { sectionHref } from '../../navigation/pages';
+import { holdSectionInView } from '../../navigation/holdSection';
+import { browserHoldEnv } from '../../navigation/browserHoldEnv';
 
 export interface IndexEntry {
   /** O `id` do elemento na página. */
@@ -52,10 +54,18 @@ export function PageIndex({ entries, title = 'Nesta página', page }: PageIndexP
     return () => observer.disconnect();
   }, [entries]);
 
+  // A ida em curso: escolher outra secção a meio, ou sair da página, desliga-a.
+  const stopHold = useRef<(() => void) | null>(null);
+  useEffect(() => () => stopHold.current?.(), []);
+
+  // Suave, mas segura no sítio se o gráfico chegar a meio do caminho: no iPhone
+  // o salto cancelava o scroll e a pessoa ficava na Calculadora de hunt
+  // (25/10/2026).
   function goTo(id: string) {
     const element = document.getElementById(id);
     if (!element) return;
-    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    stopHold.current?.();
+    stopHold.current = holdSectionInView(element, browserHoldEnv(), { smooth: true });
     setActive(id);
   }
 

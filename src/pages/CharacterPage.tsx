@@ -4,6 +4,8 @@ import { getLevelProgress } from '../domain/levelProgress';
 import { agoText, isStaleReading, lastReadingNote, summarizeCharacter } from '../domain/homeSummary';
 import { useCharacterState } from '../hooks/useCharacterState';
 import { CHARACTER_SECTIONS } from '../navigation/pages';
+import { holdSectionInView } from '../navigation/holdSection';
+import { browserHoldEnv } from '../navigation/browserHoldEnv';
 import { Icon } from '../components/shell/icons';
 import { PageIndex } from '../components/shell/PageIndex';
 import { LevelProgressCard } from '../components/xp/LevelProgressCard';
@@ -31,31 +33,15 @@ interface CharacterPageProps {
 }
 
 /**
- * Desce até à secção pedida no endereço quando a página fica pronta.
- *
- * O gráfico de Progressão chega depois (é carregado à parte) e empurra o que
- * está por baixo — por isso volta a alinhar enquanto o conteúdo mudar de
- * altura, durante uns segundos, e pára logo que a pessoa mexa na página.
+ * Desce até à secção pedida no endereço quando a página fica pronta — e
+ * mantém-na lá enquanto o gráfico chega (ver `holdSectionInView`).
  */
 function useScrollToSection(section: string | null | undefined, ready: boolean) {
   useEffect(() => {
     if (!ready || !section) return;
     const target = document.getElementById(section);
     if (!target) return;
-    const align = () => target.scrollIntoView({ block: 'start' });
-    align();
-    const observer = new ResizeObserver(align);
-    const content = document.getElementById('conteudo');
-    if (content) observer.observe(content);
-    const stop = () => observer.disconnect();
-    const timer = window.setTimeout(stop, 3000);
-    const events = ['wheel', 'touchstart', 'keydown', 'mousedown'] as const;
-    for (const name of events) window.addEventListener(name, stop, { passive: true });
-    return () => {
-      stop();
-      window.clearTimeout(timer);
-      for (const name of events) window.removeEventListener(name, stop);
-    };
+    return holdSectionInView(target, browserHoldEnv());
   }, [section, ready]);
 }
 
