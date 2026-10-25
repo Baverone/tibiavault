@@ -38,7 +38,11 @@ function App() {
   let content = null;
 
   if (player) {
-    content = <CharacterPage player={player} section={section} />;
+    // `key`: 25/10/2026, sem ele o React reaproveitava a página do Baverone
+    // para a do Bluey (e vice-versa). No primeiro render da troca a calculadora
+    // de hunt ainda tinha o estado do outro boneco e o seu efeito gravava-o
+    // por cima dos campos guardados deste. Uma página nova por boneco.
+    content = <CharacterPage key={player.id} player={player} section={section} />;
     subtitle = `${player.vocation} — a XP, a previsão, a calculadora de hunt e as varinhas de treino.`;
   } else if (page === 'inicio') {
     content = <HomePage histories={histories} loading={loading} onNavigate={navigate} />;
