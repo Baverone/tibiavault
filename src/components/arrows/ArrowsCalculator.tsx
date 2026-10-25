@@ -5,6 +5,7 @@ import {
   calculateArrowsPerMinute,
   closestArrowRate,
   closestTableMinute,
+  formatArrowRate,
 } from '../../domain/arrows/arrowsCalculator';
 
 const TABLE = buildArrowRateTable();
@@ -49,7 +50,7 @@ export function ArrowsCalculator() {
 
       {rate !== null ? (
         <p className="daily-simulation-summary">
-          Consumo: <strong>{rate}</strong> flechas/minuto.
+          Consumo: <strong>{formatArrowRate(rate)}</strong> flechas/minuto.
         </p>
       ) : (
         (arrowsInput.trim() !== '' || minutesInput.trim() !== '') && (

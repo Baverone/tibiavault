@@ -29,6 +29,18 @@ export function calculateArrowsPerMinute(arrows: number, minutes: number): numbe
   return Math.round((arrows / minutes) * 100) / 100;
 }
 
+const rateFormatter = new Intl.NumberFormat('pt-PT', { maximumFractionDigits: 2 });
+
+/**
+ * O consumo como se escreve em português: «26,56».
+ *
+ * 25/10/2026: a página mostrava o número do JavaScript a direito («26.56»),
+ * com ponto decimal no meio de uma app que escreve tudo o resto com vírgula.
+ */
+export function formatArrowRate(rate: number): string {
+  return rateFormatter.format(rate);
+}
+
 /** Which table row (1..30) is numerically closest to a given minutes value, for highlighting. */
 export function closestTableMinute(minutes: number): number | null {
   if (!Number.isFinite(minutes) || minutes <= 0) return null;
