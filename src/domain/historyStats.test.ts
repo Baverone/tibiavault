@@ -3,7 +3,7 @@
 // leituras no mesmo dia (guildstats + entrada manual antiga a coexistir).
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { computeDailyGains, computeExperienceGains } from './historyStats.ts';
+import { computeDailyGains, computeExperienceGains, recentReadings } from './historyStats.ts';
 import type { HistoryEntry } from './types.ts';
 
 test('computeExperienceGains devolve lista vazia com 0 ou 1 leitura', () => {
@@ -82,6 +82,54 @@ test('computeDailyGains nao junta a XP de varios dias num dia depois de um burac
       [5, 50],
     ]
   );
+});
+
+// 26/10/2026 (ronda): a lista «Últimas leituras» comparava com a leitura
+// anterior fosse de que dia fosse — sem o 25/10, o 26/10 aparecia com a XP de
+// dois dias, por baixo do gráfico que (desde 22/10) já não dá ganho a esse dia.
+// Inclui a mudança de hora de 25/10 de propósito.
+test('recentReadings nao da ganho a um dia cujo dia anterior nao tem leitura', () => {
+  const dia23 = new Date(2026, 9, 23, 13, 0).getTime();
+  const dia24 = new Date(2026, 9, 24, 13, 0).getTime();
+  const dia26 = new Date(2026, 9, 26, 13, 0).getTime();
+  const dia27 = new Date(2026, 9, 27, 13, 0).getTime();
+  const linhas = recentReadings(
+    [
+      { timestamp: dia23, experience: 100 },
+      { timestamp: dia24, experience: 150 },
+      { timestamp: dia26, experience: 400 },
+      { timestamp: dia27, experience: 450 },
+    ],
+    5
+  );
+  assert.deepEqual(
+    linhas.map((linha) => [new Date(linha.entry.timestamp).getDate(), linha.experienceGained]),
+    [
+      [27, 50],
+      [26, null],
+      [24, 50],
+      [23, null],
+    ]
+  );
+});
+
+test('recentReadings corta nas ultimas N e mostra a leitura unica sem ganho', () => {
+  const dias = [1, 2, 3, 4].map((dia) => new Date(2026, 8, dia, 13, 0).getTime());
+  const linhas = recentReadings(
+    dias.map((timestamp, i) => ({ timestamp, experience: 100 * (i + 1) })),
+    2
+  );
+  assert.deepEqual(
+    linhas.map((linha) => [new Date(linha.entry.timestamp).getDate(), linha.experienceGained]),
+    [
+      [4, 100],
+      [3, 100],
+    ]
+  );
+  assert.deepEqual(recentReadings([{ timestamp: dias[0], experience: 100 }], 5), [
+    { entry: { timestamp: dias[0], experience: 100 }, experienceGained: null },
+  ]);
+  assert.deepEqual(recentReadings([], 5), []);
 });
 
 test('computeDailyGains aceita perdas de XP dia a dia', () => {
