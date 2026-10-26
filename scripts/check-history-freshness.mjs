@@ -96,8 +96,20 @@ for (const entry of waiting) {
 // disse, porque um buraco no meio não atrasa o último dia. Não pinta de
 // vermelho — os highscores só dão o dia corrente e não há como o recuperar —
 // mas fica escrito em cada corrida.
+//
+// 26/10/2026: desde 25/10 o loadExistingHistory rebenta com um ficheiro
+// estragado (marcas de conflito, escrita cortada). Sem o `try`, o alarme
+// morria aqui com um stack trace, antes de dizer quem estava ATRASADO — o
+// motivo passa a ir na linha desse boneco.
+const unreadable = new Map();
 for (const { id } of CHARACTERS) {
-  const holes = missingDates(loadExistingHistory(DATA_DIR, id));
+  let holes;
+  try {
+    holes = missingDates(loadExistingHistory(DATA_DIR, id));
+  } catch (error) {
+    unreadable.set(id, error.message);
+    continue;
+  }
   if (holes.length > 0) {
     console.log(`  BURACO  ${id}: falta(m) ${holes.join(', ')} — só se preenche se uma fonte tiver esse dia.`);
   }
@@ -112,7 +124,8 @@ console.error('');
 for (const entry of stale) {
   console.error(
     `  ATRASADO  [${entry.label}] ${entry.id}: último dia ${entry.newest}` +
-      (Number.isFinite(entry.age) ? ` (há ${entry.age} dia(s)).` : '.')
+      (Number.isFinite(entry.age) ? ` (há ${entry.age} dia(s)).` : '.') +
+      (unreadable.has(entry.id) ? `\n            ${unreadable.get(entry.id)}` : '')
   );
 }
 console.error(

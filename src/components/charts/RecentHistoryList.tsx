@@ -1,5 +1,5 @@
 import type { HistoryEntry } from '../../domain/types';
-import { computeExperienceGains } from '../../domain/historyStats';
+import { recentReadings } from '../../domain/historyStats';
 
 interface RecentHistoryListProps {
   history: HistoryEntry[];
@@ -16,30 +16,31 @@ const numberFormatter = new Intl.NumberFormat('pt-PT');
 export function RecentHistoryList({ history, maxEntries = 5 }: RecentHistoryListProps) {
   if (history.length === 0) return null;
 
-  const gains = computeExperienceGains(history);
-  const recentGains = gains.slice(-maxEntries).reverse();
+  // Um dia cujo anterior falta mostra a leitura com «—» no ganho, como o
+  // gráfico, que também não lhe desenha barra (26/10/2026).
+  const readings = recentReadings(history, maxEntries);
 
   return (
     <ul className="recent-history-list">
-      {recentGains.map((gain) => (
-        <li key={gain.to.timestamp}>
+      {readings.map(({ entry, experienceGained }) => (
+        <li key={entry.timestamp}>
           <span className="recent-history-list__date">
-            {dateFormatter.format(gain.to.timestamp)}
-            {gain.to.source === 'guildstats' && <span className="recent-history-list__source-tag">auto</span>}
+            {dateFormatter.format(entry.timestamp)}
+            {entry.source === 'guildstats' && <span className="recent-history-list__source-tag">auto</span>}
           </span>
-          <span className="recent-history-list__xp">{numberFormatter.format(gain.to.experience)} XP</span>
-          <span className={gain.experienceGained >= 0 ? 'recent-history-list__gain positive' : 'recent-history-list__gain negative'}>
-            {gain.experienceGained >= 0 ? '+' : ''}
-            {numberFormatter.format(gain.experienceGained)}
-          </span>
+          <span className="recent-history-list__xp">{numberFormatter.format(entry.experience)} XP</span>
+          {experienceGained === null ? (
+            <span className="recent-history-list__gain" title="Sem leitura do dia anterior">
+              —
+            </span>
+          ) : (
+            <span className={experienceGained >= 0 ? 'recent-history-list__gain positive' : 'recent-history-list__gain negative'}>
+              {experienceGained >= 0 ? '+' : ''}
+              {numberFormatter.format(experienceGained)}
+            </span>
+          )}
         </li>
       ))}
-      {gains.length === 0 && (
-        <li>
-          <span className="recent-history-list__date">{dateFormatter.format(history[0].timestamp)}</span>
-          <span className="recent-history-list__xp">{numberFormatter.format(history[0].experience)} XP</span>
-        </li>
-      )}
     </ul>
   );
 }

@@ -32,6 +32,39 @@ export function computeExperienceGains(history: HistoryEntry[]): ExperienceGain[
   return gains;
 }
 
+export interface RecentReading {
+  entry: HistoryEntry;
+  /** XP versus the previous calendar day; null when that day has no reading. */
+  experienceGained: number | null;
+}
+
+/**
+ * As últimas leituras, uma por dia e da mais recente para a mais antiga
+ * («Últimas leituras», por baixo do gráfico).
+ *
+ * 26/10/2026: usava o `computeExperienceGains`, que compara com a leitura
+ * anterior fosse de que dia fosse — sem o 25/10, o 26/10 aparecia com a XP de
+ * dois dias. Agora segue a regra do `computeDailyGains`: o dia aparece, mas só
+ * tem ganho se o dia anterior tiver leitura.
+ */
+export function recentReadings(history: HistoryEntry[], maxEntries: number): RecentReading[] {
+  const sorted = [...history].sort((a, b) => a.timestamp - b.timestamp);
+  const byDay = new Map<string, HistoryEntry>();
+  for (const entry of sorted) byDay.set(localDayKey(entry.timestamp), entry);
+  const days = [...byDay.values()];
+
+  return days
+    .map((entry, i) => {
+      const previous = days[i - 1];
+      const followsPrevious =
+        previous !== undefined &&
+        localMidnight(entry.timestamp) === addLocalDays(localMidnight(previous.timestamp), 1);
+      return { entry, experienceGained: followsPrevious ? entry.experience - previous.experience : null };
+    })
+    .slice(-maxEntries)
+    .reverse();
+}
+
 export interface DailyExperienceGain {
   /** Local midnight (ms) of the calendar day this gain is attributed to. */
   dayTimestamp: number;
