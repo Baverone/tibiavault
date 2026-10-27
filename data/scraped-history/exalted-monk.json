@@ -777,5 +777,19 @@
     "experience": 3651083619,
     "source": "guildstats",
     "scrapedAt": "2026-10-25T10:31:19.161Z"
+  },
+  {
+    "date": "2026-10-25",
+    "level": 606,
+    "experience": 3686950076,
+    "source": "guildstats",
+    "scrapedAt": "2026-10-27T10:31:39.806Z"
+  },
+  {
+    "date": "2026-10-26",
+    "level": 606,
+    "experience": 3686950076,
+    "source": "guildstats",
+    "scrapedAt": "2026-10-27T10:31:39.806Z"
   }
 ]
