@@ -7,16 +7,22 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { HOLD_MS, USER_INPUT_EVENTS, holdSectionInView, type HoldEnv, type ScrollOptions } from './holdSection.ts';
 
-function fakeBrowser(initialHeight = 2800) {
+/**
+ * `firstNoticeLater`: o primeiro aviso do ResizeObserver só chega com `deliver()`,
+ * como no browser (no frame seguinte, não dentro do `observe`).
+ */
+function fakeBrowser(initialHeight = 2800, { firstNoticeLater = false } = {}) {
   const scrolls: ScrollOptions[] = [];
   const target = { scrollIntoView: (options: ScrollOptions) => void scrolls.push(options) };
+  let height = initialHeight;
   let onHeight: ((height: number) => void) | null = null;
   let timer: (() => void) | null = null;
   const listeners = new Map<string, Set<() => void>>();
   const env: HoldEnv = {
+    contentHeight: () => height,
     observeHeight(callback) {
       onHeight = callback;
-      callback(initialHeight); // como o ResizeObserver: avisa logo ao começar
+      if (!firstNoticeLater) callback(height); // como o ResizeObserver: avisa logo ao começar
       return () => {
         onHeight = null;
       };
@@ -41,7 +47,15 @@ function fakeBrowser(initialHeight = 2800) {
     target,
     env,
     scrolls,
-    resize: (height: number) => onHeight?.(height),
+    resize: (next: number) => {
+      height = next;
+      onHeight?.(next);
+    },
+    /** A altura muda sem o observador ainda ter avisado. */
+    grow: (next: number) => {
+      height = next;
+    },
+    deliver: () => onHeight?.(height),
     expire: () => timer?.(),
     fire: (name: string) => [...(listeners.get(name) ?? [])].forEach((fn) => fn()),
     listening: () => [...listeners.values()].reduce((n, set) => n + set.size, 0),
@@ -58,6 +72,25 @@ test('o índice desce suave e, se o gráfico chegar a meio, volta a alinhar a se
   assert.equal(b.scrolls.length, 2);
   b.resize(2800 + 267); // a mesma altura não é mudança
   assert.equal(b.scrolls.length, 2);
+});
+
+// 28/10/2026, e2e das 03:59 (iPhone): o gráfico chegou entre o `observe` e o
+// primeiro aviso do ResizeObserver. Esse aviso já trazia a altura nova e era
+// tomado por «a altura de agora»: nada realinhava, o WebKit cancelava o scroll
+// suave e a pessoa ficava na Previsão (1 em 25 corridas no site público).
+test('o gráfico chegar antes do primeiro aviso do observador também realinha', () => {
+  const b = fakeBrowser(2705, { firstNoticeLater: true });
+  holdSectionInView(b.target, b.env, { smooth: true });
+  b.grow(2705 + 267);
+  b.deliver();
+  assert.deepEqual(b.scrolls, [{ behavior: 'smooth', block: 'start' }, { block: 'start' }]);
+});
+
+test('o primeiro aviso com a altura de quando arrancou não corta o scroll suave', () => {
+  const b = fakeBrowser(2705, { firstNoticeLater: true });
+  holdSectionInView(b.target, b.env, { smooth: true });
+  b.deliver();
+  assert.deepEqual(b.scrolls, [{ behavior: 'smooth', block: 'start' }]);
 });
 
 test('o endereço com secção desce logo, sem animação', () => {

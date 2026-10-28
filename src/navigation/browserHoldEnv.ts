@@ -3,6 +3,7 @@ import type { HoldEnv } from './holdSection';
 /** O `HoldEnv` do browser: a altura que conta é a do `#conteudo` da casca. */
 export function browserHoldEnv(): HoldEnv {
   return {
+    contentHeight: () => document.getElementById('conteudo')?.getBoundingClientRect().height ?? 0,
     observeHeight(onHeight) {
       const content = document.getElementById('conteudo');
       if (!content) return () => {};

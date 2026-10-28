@@ -27,6 +27,8 @@ export interface Scrollable {
  * testes compilam sem o `lib` do DOM). O de verdade está em `browserHoldEnv.ts`.
  */
 export interface HoldEnv {
+  /** A altura do conteúdo neste instante (medida já, não no próximo frame). */
+  contentHeight(): number;
   /** Chama `onHeight` com a altura do conteúdo agora e sempre que mudar; devolve o desligar. */
   observeHeight(onHeight: (height: number) => void): () => void;
   setTimeout(fn: () => void, ms: number): number;
@@ -47,11 +49,15 @@ export function holdSectionInView(
 ): () => void {
   target.scrollIntoView(smooth ? { behavior: 'smooth', block: 'start' } : { block: 'start' });
 
-  // O ResizeObserver avisa logo ao começar, com a altura de agora: isso não é
-  // uma mudança, e realinhar ali cortava o scroll suave que acabou de arrancar.
-  let lastHeight: number | null = null;
+  // O ResizeObserver avisa logo ao começar: com a altura de quando o scroll
+  // arrancou isso não é uma mudança, e realinhar ali cortava o scroll suave.
+  // A altura de referência mede-se AGORA e não no primeiro aviso: esse só
+  // chega no frame seguinte, e se o gráfico entrar pelo meio já traz a altura
+  // nova — passava por «altura de agora», nada realinhava e o WebKit deixava
+  // a pessoa na Previsão (e2e de 28/10/2026, iPhone, 1 em 25 corridas).
+  let lastHeight = env.contentHeight();
   const unobserve = env.observeHeight((height) => {
-    const changed = lastHeight !== null && height !== lastHeight;
+    const changed = height !== lastHeight;
     lastHeight = height;
     if (changed) target.scrollIntoView({ block: 'start' });
   });
