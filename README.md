@@ -213,8 +213,12 @@ de `guildstatsHistory.mjs`; faz commit, o push é do `tibia-push`.
    `data/scraped-history/<personagem>.json` — nunca apaga nem sobrescreve.
    Cada linha nova leva `source` (`highscores` ou `guildstats`).
 3. Na tabela do guildstats, cada linha tem de bater com a fórmula do nível, e
-   os dias que já estão no ficheiro têm de ser iguais aos lidos; se não
-   baterem, nada desse boneco é gravado.
+   os dias que já estão no ficheiro com origem no guildstats têm de ser iguais
+   aos lidos; se não baterem, nada desse boneco é gravado. Um dia guardado com
+   `source: 'highscores'` que o guildstats dá diferente é só aviso — a linha D
+   dos highscores apanha jogo de D+1 — e não impede a reserva do Baverone de
+   tapar os dias em falta (28/10/2026; o 20, 23 e 24/10 divergem para sempre).
+   Fica bloqueado só se nenhum dia em comum bater.
 4. Cada personagem é independente, mas a corrida só sai 0 se todos os de
    fonte automática forem recolhidos; um que falhe sai 1, com o nome e o motivo.
 
