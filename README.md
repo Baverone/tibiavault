@@ -339,7 +339,7 @@ scripts/
     gaps.test.mjs         # casos da meia-noite, sobreposições, formato do bot
     runs.jsonl            # uma linha por corrida (estado, duracao, custo) - nao vai para o git
 .github/workflows/
-  scrape-experience.yml   # rede de segurança: tenta a recolha e corre o alarme
+  scrape-experience.yml   # só o alarme de frescura (desde 28/10/2026 não recolhe nem faz commit)
 src/
   config.ts               # GITHUB_REPO e o estado da recolha do Celesta
   constants/players.ts    # os dois bonecos — manter igual a scripts/lib/trackedPlayers.mjs

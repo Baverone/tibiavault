@@ -1,47 +1,35 @@
-# Rede de seguranca da recolha de XP -- ja nao e a fonte principal.
+# Alarme de frescura da XP -- so le, nunca escreve no repositorio.
 #
-# 16/10/2026: a fonte passou do guildstats (atras do Cloudflare desde 14/10)
-# para os highscores oficiais via api.tibiadata.com, que tambem responde aos
-# runners -- por isso a recolha aqui pode voltar a entrar dados. O historico
-# abaixo e do tempo do guildstats.
+# 28/10/2026 (decisao do Andre: cortar o que e redundante): este workflow
+# deixou de tentar a recolha e de fazer commit/push. A recolha e do PC
+# (tarefas tibia-xp e tibia-xp-chrome do ai-pc) e a unica porta de saida para
+# o GitHub e o tibia-push; um segundo bot a escrever data/scraped-history era
+# uma segunda porta, e nao entrava nada por aqui desde 21/08. O nome do
+# ficheiro ficou o mesmo para nao partir links e o historico das corridas.
 #
-# A recolha a serio corre no PC (scripts/scrape-xp-local.ps1), porque o
-# guildstats.eu responde 403 a todos os IPs dos runners do GitHub. Entre 21 e
-# 31 de agosto de 2026 este workflow correu todos os dias, ficou verde todos
-# os dias e nao recolheu um unico dia: as 3 tentativas levavam 403 e o script
-# tratava isso como falha transitoria e saia com codigo 0. Dez dias de XP
-# perdidos sem um unico sinal.
+# O que fica e o alarme, e e por isso que isto continua no GitHub e nao no PC:
+# check-history-freshness.mjs falha a VERMELHO se ha 3+ dias que nao entra XP
+# nova. Apanha o PC desligado, o runner parado ou a tarefa apagada -- coisas
+# que o proprio PC nao consegue avisar sobre si.
 #
-# O que este workflow faz agora sao duas coisas separadas:
-#
-#  1. Tenta a recolha na mesma (continue-on-error) -- se o guildstats algum
-#     dia deixar de bloquear os runners, volta a funcionar sozinho, e enquanto
-#     bloquear nao custa nada e nao pinta nada de vermelho.
-#  2. Verifica se os dados estao atrasados (check-history-freshness.mjs) e
-#     falha a VERMELHO se estiverem. Esse e o unico alarme que interessa: nao
-#     "o pedido correu mal?", mas "ha quantos dias e que nao entra XP nova?".
-#     Apanha tanto o guildstats a mudar como o PC desligado ou a tarefa
-#     agendada apagada.
-#  3. O alarme das janelas de hunt do Celesta (check-hunts-freshness.mjs)
-#     esteve aqui de 09/09 a 10/09/2026 e saiu: o Andre desligou a recolha
-#     do Discord, por isso o ficheiro deixou de ser actualizado de proposito
-#     e o alarme so daria vermelho a mentir. O script fica no repo.
+# Historia: entre 21 e 31/08/2026 a recolha aqui ficou verde todos os dias sem
+# recolher um unico dia (403 do guildstats tratado como transitorio). Foi dai
+# que nasceu o alarme: nao "o pedido correu bem?", mas "ha quantos dias e que
+# nao entra XP nova?".
 name: Scrape Tibia Experience
 
 on:
-  # Uma vez por dia, as 12:00 UTC (13:00 em Lisboa no verao). O guildstats
-  # publica o dia anterior por volta das 10:50 UTC. O cron do GitHub costuma
-  # atrasar-se horas, o que aqui nao faz diferenca: o scraper so acrescenta
-  # dias que faltam e a verificacao de frescura tem 3 dias de folga.
+  # Uma vez por dia, as 12:00 UTC. O cron do GitHub costuma atrasar-se horas,
+  # o que aqui nao faz diferenca: a verificacao tem 3 dias de folga.
   schedule:
     - cron: '0 12 * * *'
   workflow_dispatch: {}
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  scrape:
+  frescura:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -50,31 +38,8 @@ jobs:
         with:
           node-version: 22
 
+      # o guildstatsHistory.mjs que o alarme importa precisa do cheerio
       - run: npm ci
 
-      # continue-on-error: espera-se que isto falhe com 403 enquanto o
-      # guildstats bloquear os runners. Nao e isto que decide a cor do job --
-      # e a verificacao de frescura, no fim.
-      - name: Tentar recolha
-        continue-on-error: true
-        run: node scripts/scrape-experience.mjs
-        env:
-          FORCE_SCRAPE: ${{ github.event_name == 'workflow_dispatch' && 'true' || 'false' }}
-
-      - name: Commit do que tiver sido recolhido
-        run: |
-          git config user.name "tibia-xp-bot"
-          git config user.email "actions@users.noreply.github.com"
-          git add data/scraped-history
-          if git diff --cached --quiet; then
-            echo "Sem alteracoes a commitar."
-          else
-            git commit -m "chore: atualizar histórico de XP ($(date -u +%Y-%m-%d))"
-            git pull --rebase
-            git push
-          fi
-
-      # O verdadeiro alarme. Vermelho aqui = ha 3+ dias que nao entra XP nova,
-      # venha ela da Action ou do PC.
-      - name: Histórico está a ficar para trás?
+      - name: Historico esta a ficar para tras?
         run: node scripts/check-history-freshness.mjs
