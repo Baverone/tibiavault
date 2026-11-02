@@ -456,7 +456,7 @@ vista enquanto se caça. Em setembro de 2026 passaram de um painel de ~250 px
 com anéis de 120 px para uma faixa de uma linha com anéis de 48 px; no
 telemóvel são três linhas de 42 px em vez de duas colunas de 96.
 Três timers regressivos independentes: **Pot Skills** (10 min),
-**Food ML** (1 hora) e **Plasmas** (29m40s, com aviso por voz quando faltam
+**Boost** (60 min por omissão, com o tempo à escolha — ver abaixo) e **Plasmas** (29m40s, com aviso por voz quando faltam
 10 segundos no relógio — ou seja, 30 segundos antes de os 30 minutos de
 plasma acabarem), cada um com anel de progresso SVG, botão Iniciar/Pausar e Reiniciar, mais um
 botão "Iniciar todos" no topo do painel.
@@ -468,7 +468,16 @@ ficheiros de áudio externos), tenta anunciar por voz o nome do timer via
 ou bloquear), mostra "Terminado!" durante ~3s, e depois reinicia sozinho e
 continua a contar em loop contínuo até seres tu a pausar.
 
-**Browser minimizado (corrigido a 02/11/2026).** Os amigos do André diziam que
+**O Boost (02/11/2026).** Era o «Food ML», de 60 min fixos; o André pediu-o
+como «Boost», com o tempo à escolha e um botão para os 60 min. O campo aceita
+minutos (`45`) ou horas:minutos (`1:30`), entre 1 min e 10 h
+([`duration.ts`](src/domain/timers/duration.ts)); o tempo fica no `localStorage`
+de cada browser ([`timerStorage.ts`](src/storage/timerStorage.ts)) e volta aos
+60 min se não houver. Só se muda com o timer parado ou em pausa, e mudar
+reinicia-o (o ciclo em curso foi contado com o tempo antigo).
+
+**Browser minimizado (corrigido a 02/11/2026).** Vale para os três timers — o
+Pot Skills, por ser o mais curto, era o primeiro onde se notava. Os amigos do André diziam que
 os timers falhavam com o browser minimizado. O Chrome acorda uma página
 escondida há mais de 5 minutos só **uma vez por minuto**, e o hook antigo
 recomeçava cada ciclo a contar de quando esse tique atrasado corria (o Plasma

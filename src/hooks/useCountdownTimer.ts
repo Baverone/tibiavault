@@ -77,6 +77,15 @@ export function useCountdownTimer({
     });
   }, [state, config]);
 
+  // A duração mudou (o Boost tem tempo à escolha): o ciclo em curso foi
+  // contado com a antiga, por isso o timer volta ao início com a nova.
+  const durationRef = useRef(durationSeconds);
+  useEffect(() => {
+    if (durationRef.current === durationSeconds) return;
+    durationRef.current = durationSeconds;
+    setState({ kind: 'stopped' });
+  }, [durationSeconds]);
+
   const view = viewAt(config, state, now);
 
   function start() {

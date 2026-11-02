@@ -1,12 +1,13 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { TimerCard, type TimerCardHandle } from './TimerCard';
+import { BOOST_DEFAULT_MINUTES, getBoostMinutes, saveBoostMinutes } from '../../storage/timerStorage';
 
 // As cores dos tokens da identidade (`--info`, `--warn`, `--bluey`). São
 // literais e não `var(...)` porque vão parar ao atributo `stroke` do anel SVG,
 // onde uma variável CSS não é resolvida. O roxo estava em #9b59b6 — 3,8:1
 // sobre o painel, e ainda por cima usado como cor do NOME do timer.
 const POT_SKILLS_COLOR = '#6f9bff';
-const FOOD_ML_COLOR = '#f0a35a';
+const BOOST_COLOR = '#f0a35a';
 const PLASMAS_COLOR = '#b08cff';
 
 const PLASMAS_DURATION_SECONDS = 29 * 60 + 40;
@@ -14,12 +15,20 @@ const PLASMAS_ALERTS = [{ atSeconds: 10, message: 'Faltam 30 segundos de plasma,
 
 export function TimersPanel() {
   const potSkillsRef = useRef<TimerCardHandle>(null);
-  const foodMlRef = useRef<TimerCardHandle>(null);
+  const boostRef = useRef<TimerCardHandle>(null);
+  // 02/11/2026: era o «Food ML», de 60 min fixos. O André pediu-o como
+  // «Boost», com o tempo à escolha e um botão para os 60 min.
+  const [boostMinutes, setBoostMinutes] = useState(getBoostMinutes);
+
+  function chooseBoostMinutes(minutes: number) {
+    setBoostMinutes(minutes);
+    saveBoostMinutes(minutes);
+  }
   const plasmasRef = useRef<TimerCardHandle>(null);
 
   function startAll() {
     potSkillsRef.current?.start();
-    foodMlRef.current?.start();
+    boostRef.current?.start();
     plasmasRef.current?.start();
   }
 
@@ -33,7 +42,13 @@ export function TimersPanel() {
       </div>
       <div className="timers-panel__cards">
         <TimerCard ref={potSkillsRef} name="Pot Skills" durationSeconds={600} color={POT_SKILLS_COLOR} />
-        <TimerCard ref={foodMlRef} name="Food ML" durationSeconds={3600} color={FOOD_ML_COLOR} />
+        <TimerCard
+          ref={boostRef}
+          name="Boost"
+          durationSeconds={boostMinutes * 60}
+          color={BOOST_COLOR}
+          durationChoice={{ presetMinutes: BOOST_DEFAULT_MINUTES, onChange: chooseBoostMinutes }}
+        />
         <TimerCard
           ref={plasmasRef}
           name="Plasmas"

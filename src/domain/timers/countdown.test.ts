@@ -1,4 +1,4 @@
-// Os timers em ciclo (Pot Skills, Food ML, Plasmas). Os amigos do Andre diziam
+// Os timers em ciclo (Pot Skills, Boost, Plasmas). Os amigos do Andre diziam
 // que falhavam com o browser minimizado (02/11/2026): o Chrome so acorda uma
 // pagina escondida ha mais de 5 min uma vez por minuto, e a logica antiga
 // (a) recomecava o ciclo a contar de quando o tique atrasado corria — cada
@@ -77,6 +77,22 @@ test('um tique que salta o aviso E o fim so anuncia o fim (o aviso ja nao serve)
     dueEvents(PLASMA, state, 29 * MIN, 30 * MIN).map((e) => e.kind),
     ['finish']
   );
+});
+
+test('Pot Skills minimizado: tiques de minuto em minuto nao atrasam os fins', () => {
+  // Um tique por minuto durante 3 h: cada fim e visto no primeiro tique
+  // depois dele, e nunca mais de um minuto atrasado — o 18.º como o 1.º.
+  const state = runningState(POT, 0);
+  const periodo = POT.durationMs + POT.finishedMs;
+  const fins: number[] = [];
+  for (let t = MIN; t <= 3 * 60 * MIN; t += MIN) {
+    if (dueEvents(POT, state, t - MIN, t).some((e) => e.kind === 'finish')) fins.push(t);
+  }
+  assert.equal(fins.length, Math.floor((3 * 60 * MIN - POT.durationMs) / periodo) + 1);
+  fins.forEach((visto, i) => {
+    const devia = POT.durationMs + i * periodo;
+    assert.ok(visto - devia >= 0 && visto - devia < MIN, `fim ${i + 1}: ${visto - devia} ms de atraso`);
+  });
 });
 
 test('depois de horas sem tiques (portatil a dormir) anuncia um fim so, nao um por ciclo', () => {

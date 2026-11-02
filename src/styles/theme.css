@@ -864,3 +864,52 @@
   text-decoration: underline;
   cursor: pointer;
 }
+
+/* O tempo à escolha do Boost: um campo curto de minutos e o botão dos 60. */
+.timer-card__duration {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.timer-card__duration input {
+  width: 46px;
+  min-height: 30px;
+  padding: 4px 6px;
+  border: 1px solid var(--line2);
+  border-radius: 9px;
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.timer-card__duration input.invalido {
+  border-color: var(--err);
+}
+
+.timer-card__duration input:disabled,
+.timer-card__duration button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.timer-card__unit {
+  font-size: 11px;
+  color: var(--dim);
+}
+
+.timer-card__duration button {
+  background: var(--card);
+  border: 1px solid var(--line2);
+  border-radius: 9px;
+  padding: 4px 8px;
+  min-height: 30px;
+  color: var(--muted);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}

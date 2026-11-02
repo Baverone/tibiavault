@@ -1,6 +1,7 @@
-import { useImperativeHandle, forwardRef } from 'react';
+import { useEffect, useImperativeHandle, useState, forwardRef } from 'react';
 import { useCountdownTimer, type TimerAlert } from '../../hooks/useCountdownTimer';
 import { announce, playBeep } from '../../domain/timers/alerts';
+import { formatTimerMinutes, parseTimerMinutes } from '../../domain/timers/duration';
 
 interface TimerCardProps {
   name: string;
@@ -10,6 +11,16 @@ interface TimerCardProps {
   alerts?: readonly TimerAlert[];
   /** Spoken when the timer hits zero — defaults to "{name} terminado". */
   finishMessage?: string;
+  /**
+   * Tempo à escolha (o Boost): com isto o cartão ganha um campo de minutos e
+   * um botão com o tempo pré-definido. Só se muda com o timer parado ou em
+   * pausa — mudar reinicia-o, e a meio de um ciclo isso era perder a contagem
+   * sem dar por isso.
+   */
+  durationChoice?: {
+    presetMinutes: number;
+    onChange: (minutes: number) => void;
+  };
 }
 
 export interface TimerCardHandle {
@@ -27,7 +38,7 @@ function formatClock(ms: number): string {
 }
 
 export const TimerCard = forwardRef<TimerCardHandle, TimerCardProps>(function TimerCard(
-  { name, durationSeconds, color, alerts, finishMessage },
+  { name, durationSeconds, color, alerts, finishMessage, durationChoice },
   ref
 ) {
   const timer = useCountdownTimer({
@@ -71,6 +82,16 @@ export const TimerCard = forwardRef<TimerCardHandle, TimerCardProps>(function Ti
         </div>
       </div>
       <h4 style={{ color }}>{name}</h4>
+      {durationChoice && (
+        <DurationChoice
+          name={name}
+          minutes={durationSeconds / 60}
+          presetMinutes={durationChoice.presetMinutes}
+          locked={timer.isRunning || timer.justFinished}
+          color={color}
+          onChange={durationChoice.onChange}
+        />
+      )}
       <div className="timer-card__actions">
         <button type="button" style={{ borderColor: color, color }} onClick={timer.toggle} disabled={timer.justFinished}>
           {timer.isRunning ? 'Pausar' : 'Iniciar'}
@@ -82,3 +103,61 @@ export const TimerCard = forwardRef<TimerCardHandle, TimerCardProps>(function Ti
     </div>
   );
 });
+
+function DurationChoice({
+  name,
+  minutes,
+  presetMinutes,
+  locked,
+  color,
+  onChange,
+}: {
+  name: string;
+  minutes: number;
+  presetMinutes: number;
+  locked: boolean;
+  color: string;
+  onChange: (minutes: number) => void;
+}) {
+  const [text, setText] = useState(formatTimerMinutes(minutes));
+  // Volta a mostrar a duração em vigor quando ela muda por outro lado (o
+  // botão pré-definido) — e ao sair do campo com um valor que não serve.
+  useEffect(() => setText(formatTimerMinutes(minutes)), [minutes]);
+
+  function apply() {
+    const parsed = parseTimerMinutes(text);
+    if (parsed === null) setText(formatTimerMinutes(minutes));
+    else if (parsed !== minutes) onChange(parsed);
+  }
+
+  const lockedTitle = locked ? 'Pausa ou reinicia o timer para mudar o tempo' : undefined;
+  const invalid = text.trim() !== '' && parseTimerMinutes(text) === null;
+
+  return (
+    <div className="timer-card__duration" title={lockedTitle}>
+      <input
+        type="text"
+        inputMode="numeric"
+        aria-label={`Minutos do ${name} (ex.: 45 ou 1:30)`}
+        className={invalid ? 'invalido' : undefined}
+        value={text}
+        disabled={locked}
+        onChange={(event) => setText(event.target.value)}
+        onBlur={apply}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') apply();
+        }}
+      />
+      <span className="timer-card__unit">min</span>
+      <button
+        type="button"
+        disabled={locked || minutes === presetMinutes}
+        style={minutes === presetMinutes ? { borderColor: color, color } : undefined}
+        onClick={() => onChange(presetMinutes)}
+        aria-label={`${name}: ${presetMinutes} minutos`}
+      >
+        {presetMinutes}m
+      </button>
+    </div>
+  );
+}
