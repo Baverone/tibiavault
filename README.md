@@ -466,9 +466,23 @@ sinal sonoro via Web Audio API (`src/domain/timers/alerts.ts`, sem
 ficheiros de áudio externos), tenta anunciar por voz o nome do timer via
 `SpeechSynthesis` (pt-PT — falha silenciosamente se o browser não suportar
 ou bloquear), mostra "Terminado!" durante ~3s, e depois reinicia sozinho e
-continua a contar em loop contínuo até seres tu a pausar. O countdown segue
-um timestamp de fim (não conta ticks), por isso não desvia mesmo que o
-separador fique em segundo plano.
+continua a contar em loop contínuo até seres tu a pausar.
+
+**Browser minimizado (corrigido a 02/11/2026).** Os amigos do André diziam que
+os timers falhavam com o browser minimizado. O Chrome acorda uma página
+escondida há mais de 5 minutos só **uma vez por minuto**, e o hook antigo
+recomeçava cada ciclo a contar de quando esse tique atrasado corria (o Plasma
+ficava ~77 s mais atrasado por ciclo, ~7 min ao fim de 3 h) e perdia o aviso dos
+30 s (só o via se um tique caísse nos últimos 10 s). Agora:
+
+- a conta está em [`countdown.ts`](src/domain/timers/countdown.ts), com testes:
+  o ciclo seguinte ancora no **fim real** (`endsAt` + n·(duração + 3 s)), e os
+  avisos são momentos por onde se passou entre dois tiques — saem mesmo que o
+  tique chegue atrasado. Um tique que salta o aviso e o fim só anuncia o fim; um
+  que salta vários ciclos (portátil a dormir) anuncia um fim só;
+- os tiques vêm de um **Web Worker** ([`ticker.ts`](src/hooks/ticker.ts)), que
+  o Chrome não trava como os timers da página, partilhado pelos três timers e
+  desligado quando estão todos parados; há também um tique ao voltar à página.
 
 ## Partilha de XP
 

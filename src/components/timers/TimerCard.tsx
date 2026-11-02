@@ -1,19 +1,13 @@
-import { useEffect, useImperativeHandle, useRef, forwardRef } from 'react';
-import { useCountdownTimer } from '../../hooks/useCountdownTimer';
+import { useImperativeHandle, forwardRef } from 'react';
+import { useCountdownTimer, type TimerAlert } from '../../hooks/useCountdownTimer';
 import { announce, playBeep } from '../../domain/timers/alerts';
-
-export interface TimerAlert {
-  /** Fires once, the first time remaining time drops to this many seconds or below. */
-  atSeconds: number;
-  message: string;
-}
 
 interface TimerCardProps {
   name: string;
   durationSeconds: number;
   color: string;
   /** Voice announcements at specific points during the countdown (e.g. "1 minute left"). Optional. */
-  alerts?: TimerAlert[];
+  alerts?: readonly TimerAlert[];
   /** Spoken when the timer hits zero — defaults to "{name} terminado". */
   finishMessage?: string;
 }
@@ -36,34 +30,19 @@ export const TimerCard = forwardRef<TimerCardHandle, TimerCardProps>(function Ti
   { name, durationSeconds, color, alerts, finishMessage },
   ref
 ) {
-  const timer = useCountdownTimer(durationSeconds, () => {
-    playBeep();
-    announce(finishMessage ?? `${name} terminado`);
+  const timer = useCountdownTimer({
+    durationSeconds,
+    alerts,
+    onFinish: () => {
+      playBeep();
+      announce(finishMessage ?? `${name} terminado`);
+    },
+    // Os avisos a meio (ex.: «faltam 30 segundos»): um por ciclo, mesmo com
+    // tiques atrasados, e sem repetir ao retomar uma pausa — ver countdown.ts.
+    onAlert: (alert) => announce(alert.message),
   });
 
   useImperativeHandle(ref, () => ({ start: timer.start }));
-
-  // Mid-countdown voice alerts (e.g. "1 minute left"). Each one fires at most
-  // once per cycle — the fired set is cleared whenever a new cycle starts.
-  const firedAlertsRef = useRef<Set<number>>(new Set());
-
-  // "Novo ciclo" é o relógio estar outra vez cheio: depois do reinício
-  // automático no fim, ou de carregar em Reiniciar. Isto estava ligado ao
-  // `isRunning`, o que também limpava o conjunto ao retomar uma pausa — pausar
-  // aos 8 segundos e continuar fazia o aviso do plasma tocar segunda vez.
-  useEffect(() => {
-    if (timer.remainingMs >= durationSeconds * 1000) firedAlertsRef.current.clear();
-  }, [timer.remainingMs, durationSeconds]);
-
-  useEffect(() => {
-    if (!alerts || !timer.isRunning) return;
-    for (const alert of alerts) {
-      if (timer.remainingMs <= alert.atSeconds * 1000 && !firedAlertsRef.current.has(alert.atSeconds)) {
-        firedAlertsRef.current.add(alert.atSeconds);
-        announce(alert.message);
-      }
-    }
-  }, [timer.remainingMs, timer.isRunning, alerts]);
 
   const progress = timer.remainingMs / (durationSeconds * 1000);
   const dashOffset = CIRCUMFERENCE * (1 - progress);
