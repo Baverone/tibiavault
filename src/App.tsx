@@ -8,6 +8,7 @@ import { HomePage } from './pages/HomePage';
 import { CharacterPage } from './pages/CharacterPage';
 import { CelestaPage } from './pages/CelestaPage';
 import { MundoPage } from './pages/MundoPage';
+import { PartilhaPage } from './pages/PartilhaPage';
 import { StaminaCalculator } from './components/stamina/StaminaCalculator';
 import { ArrowsCalculator } from './components/arrows/ArrowsCalculator';
 import { PAGE_AJUDA } from './pages/ajuda';
@@ -50,6 +51,8 @@ function App() {
     subtitle = loading
       ? `O que a XP diz hoje (${hoje.format(new Date())}).`
       : `O que a XP diz hoje (${hoje.format(new Date())}): ${niveis.join(', ')}.`;
+  } else if (page === 'partilha') {
+    content = <PartilhaPage histories={histories} loading={loading} />;
   } else if (page === 'stamina') {
     content = <StaminaCalculator />;
   } else if (page === 'flechas') {

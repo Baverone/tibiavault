@@ -26,6 +26,7 @@ export type PageId =
   | 'inicio'
   | 'baverone'
   | 'bluey'
+  | 'partilha'
   | 'stamina'
   | 'flechas'
   | 'celesta'
@@ -64,6 +65,14 @@ export const PAGES: PageMeta[] = [
     label: PLAYERS[1].name,
     note: PLAYERS[1].vocation,
     icon: PLAYERS[1].icon,
+  },
+  {
+    id: 'partilha',
+    section: 'Personagens',
+    label: 'Partilha de XP',
+    note: 'quando dá para sharear',
+    icon: 'previsao',
+    subtitle: 'Quantos dias faltam até os dois poderem partilhar XP, ao ritmo a que cada um a está a fazer.',
   },
   {
     id: 'stamina',

@@ -62,6 +62,28 @@ export const PAGE_AJUDA: Partial<Record<PageId, ReactNode>> = {
   ),
   baverone: personagem,
   bluey: personagem,
+  partilha: (
+    <>
+      <p>
+        <b>A regra (tibia.com).</b> Numa party, o boneco mais baixo tem de ter pelo menos 2/3 dos níveis do mais alto
+        para a XP ser partilhada. Por isso o alvo não é fixo: cada nível que o mais alto sobe puxa o alvo 2/3 de nível
+        para cima.
+      </p>
+      <p>
+        <b>A conta.</b> Dia a dia, até dez anos para a frente: cada um soma a sua XP por dia, o nível sai da fórmula
+        oficial, e o primeiro dia em que os dois níveis cumprem a regra é a resposta. Se nunca cumprirem, diz-se isso
+        em vez de inventar uma data.
+      </p>
+      <p>
+        <b>O ritmo</b> é a média da XP feita no período escolhido (a mesma conta da Previsão, ancorada à leitura mais
+        recente). Escrever outro número nos campos experimenta um ritmo diferente sem mexer em nada.
+      </p>
+      <p>
+        <b>«Quanto precisa por dia»</b> conta com o mais alto a continuar ao ritmo dele: o alvo é o nível que ele terá
+        nesse dia, não o de hoje.
+      </p>
+    </>
+  ),
   stamina: (
     <>
       <p>

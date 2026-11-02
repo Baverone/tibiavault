@@ -6,6 +6,7 @@ import type { HistoriesByCharacter } from '../hooks/useAllCharacters';
 import { ATALHOS_INICIO, type PageId } from '../navigation/pages';
 import { Icon } from '../components/shell/icons';
 import { RecentHistoryList } from '../components/charts/RecentHistoryList';
+import { PartilhaResumo } from './PartilhaPage';
 
 /**
  * O gráfico arrasta o Recharts atrás dele — sozinho, dois terços do JavaScript
@@ -141,6 +142,8 @@ export function HomePage({ histories, loading, onNavigate }: HomePageProps) {
           <SummaryTiles key={player.id} summary={summary} name={player.name} color={player.accentColor} />
         ))}
       </div>
+
+      <PartilhaResumo histories={histories} onNavigate={onNavigate} />
 
       <h2 className="rotulo secao-rotulo">Onde vais mais vezes</h2>
       <div className="atalhos">

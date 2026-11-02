@@ -9,7 +9,8 @@ Aplicação web para acompanhar o progresso de XP de dois personagens —
 **Baverone** (Royal Paladin) e **Bluey The Cat** (Exalted Monk) — com
 recolha diária automática do guildstats.eu, gráfico de progressão com
 período à escolha, previsão de níveis com janela simétrica, timers de hunt
-sempre visíveis, calculadora de varinhas de treino, e páginas de utilitários
+sempre visíveis, calculadora de varinhas de treino, a contagem dos dias até
+os dois poderem partilhar XP, e páginas de utilitários
 com os spots livres do Celesta, a stamina e as flechas.
 
 > **Setembro de 2026 — a casca comum.** A app era uma página só, com uma fila
@@ -468,6 +469,26 @@ ou bloquear), mostra "Terminado!" durante ~3s, e depois reinicia sozinho e
 continua a contar em loop contínuo até seres tu a pausar. O countdown segue
 um timestamp de fim (não conta ticks), por isso não desvia mesmo que o
 separador fique em segundo plano.
+
+## Partilha de XP
+
+Pedido do André a 02/11/2026: quantos dias faltam até o Bluey poder sharear com
+o Baverone, ao ritmo a que os dois estão a fazer XP. Página `#partilha`
+([`PartilhaPage.tsx`](src/pages/PartilhaPage.tsx)), com um cartão de uma linha
+no Início.
+
+- A regra é a dos 2/3 (`getShareExpRange`, em `shareExperience.ts`). As contas
+  vivem em [`shareProjection.ts`](src/domain/shareProjection.ts), com testes.
+- Simula-se **dia a dia**, até 10 anos (`MAX_SHARE_DAYS`): a XP por nível cresce
+  com o quadrado do nível, por isso não há uma reta para resolver. Se não
+  chegam lá, a página diz «nunca a este ritmo» em vez de inventar uma data.
+- O ritmo de cada um é o `computeRateOverWindow` da Previsão (7, 14, 30 ou 90
+  dias; 30 por omissão). Os dois campos aceitam outro ritmo para experimentar
+  (`parseDailyXp`: `20000000`, `20M`, `20kk`), sem guardar nada.
+- «Quanto precisa por dia» conta com o mais alto a continuar a subir: o alvo é
+  o nível que ele terá nesse dia.
+- A 01/11/2026 a resposta era «nunca» a 7, 14 e 30 dias, e 643 dias ao ritmo de
+  90 dias (o Bluey no 606 precisava do 788).
 
 ## Rashid Tracker
 

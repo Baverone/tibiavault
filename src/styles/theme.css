@@ -845,3 +845,22 @@
     padding: 12px;
   }
 }
+
+/* Partilha de XP: os dois ritmos lado a lado, um por baixo do outro no telemóvel. */
+.partilha-ritmos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+/* Um botão que se lê como uma ligação, no meio de uma frase. */
+.link-botao {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
