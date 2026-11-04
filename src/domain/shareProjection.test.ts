@@ -3,7 +3,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { experienceForLevel } from './experienceTable.ts';
-import { canShare, dailyXpToShareIn, daysUntilShare, parseDailyXp, shareGap } from './shareProjection.ts';
+import {
+  canShare,
+  dailyXpToShareIn,
+  daysUntilShare,
+  MAX_DAILY_XP,
+  MAX_SHARE_DAYS,
+  noShareReason,
+  parseDailyXp,
+  shareGap,
+  shareVerdict,
+} from './shareProjection.ts';
 
 test('canShare segue os exemplos oficiais e nao depende da ordem', () => {
   assert.equal(canShare(40, 60), true);
@@ -105,4 +115,51 @@ test('parseDailyXp devolve null para vazio ou texto que nao e numero', () => {
   assert.equal(parseDailyXp('muito'), null);
   assert.equal(parseDailyXp('18,1'), null);
   assert.equal(parseDailyXp('12abc'), null);
+});
+
+test('parseDailyXp recusa numeros enormes em vez de devolver Infinity', () => {
+  assert.equal(parseDailyXp('9'.repeat(310)), null);
+  assert.equal(parseDailyXp('9'.repeat(50)), null);
+  assert.equal(parseDailyXp(`${'9'.repeat(400)}M`), null);
+  assert.equal(parseDailyXp('-' + '9'.repeat(50)), null);
+  assert.equal(parseDailyXp(String(MAX_DAILY_XP)), MAX_DAILY_XP);
+  assert.equal(parseDailyXp(String(MAX_DAILY_XP + 1)), null);
+});
+
+test('um ritmo enorme nao bloqueia as contas', () => {
+  const alto = { experience: experienceForLevel(1000), dailyXp: MAX_DAILY_XP };
+  const baixo = { experience: experienceForLevel(10), dailyXp: MAX_DAILY_XP };
+  assert.ok(shareVerdict(alto, baixo).kind !== undefined);
+});
+
+test('shareVerdict: 18,1 M contra 6 M por dia partilham daqui a 6 774 dias, nao "nunca"', () => {
+  const baverone = { experience: 27_372_383_124, dailyXp: 18_100_000 };
+  const bluey = { experience: 3_686_950_076, dailyXp: 6_000_000 };
+  assert.equal(daysUntilShare(baverone, bluey), null);
+  const verdict = shareVerdict(baverone, bluey);
+  assert.equal(verdict.kind, 'later');
+  assert.ok(verdict.kind === 'later' && verdict.days > MAX_SHARE_DAYS);
+});
+
+test('shareVerdict: 18,1 M contra 3,5 M por dia e mesmo "nunca"', () => {
+  const baverone = { experience: 27_372_383_124, dailyXp: 18_100_000 };
+  const bluey = { experience: 3_686_950_076, dailyXp: 3_500_000 };
+  assert.equal(shareVerdict(baverone, bluey).kind, 'never');
+});
+
+test('shareVerdict: ja partilham, ou partilham dentro de 10 anos', () => {
+  const alto = { experience: experienceForLevel(300), dailyXp: 0 };
+  assert.deepEqual(shareVerdict(alto, { experience: experienceForLevel(250), dailyXp: 0 }), { kind: 'now' });
+  const falta = experienceForLevel(200) - experienceForLevel(199);
+  assert.deepEqual(
+    shareVerdict(alto, { experience: experienceForLevel(199), dailyXp: Math.ceil(falta / 10) }),
+    { kind: 'within', days: 10 }
+  );
+});
+
+test('noShareReason distingue parados, mais baixo parado/a perder e mais alto mais depressa', () => {
+  assert.equal(noShareReason(0, 0), 'both-stopped');
+  assert.equal(noShareReason(0, -5), 'low-not-rising');
+  assert.equal(noShareReason(1_000_000, 0), 'low-not-rising');
+  assert.equal(noShareReason(18_100_000, 3_500_000), 'high-faster');
 });

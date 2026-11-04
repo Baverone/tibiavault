@@ -3,14 +3,18 @@ import { PLAYERS, type PlayerMeta } from '../constants/players';
 import { levelForExperience } from '../domain/experienceTable';
 import {
   dailyXpToShareIn,
-  daysUntilShare,
   DEFAULT_SHARE_WINDOW,
+  MAX_DAILY_XP,
+  MAX_LATER_SHARE_DAYS,
   MAX_SHARE_DAYS,
+  noShareReason,
   parseDailyXp,
   SHARE_TARGETS,
   SHARE_WINDOWS,
   shareGap,
+  shareVerdict,
   type ShareCharacter,
+  type ShareVerdict,
 } from '../domain/shareProjection';
 import { computeRateOverWindow } from '../domain/xpForecast';
 import type { HistoriesByCharacter } from '../hooks/useAllCharacters';
@@ -67,25 +71,42 @@ interface ShareOutlook {
   high: MeasuredCharacter;
   low: MeasuredCharacter;
   gap: ReturnType<typeof shareGap>;
-  days: number | null;
+  verdict: ShareVerdict;
+  /** Os ritmos assumidos, para a frase dizer porque não partilham. */
+  highDailyXp: number;
+  lowDailyXp: number;
+  /** Quem ficou a 0 por falta de leituras (e não por escolha de quem escreveu). */
+  unmeasured: PlayerMeta[];
   /** O dia de onde se conta: o da leitura mais recente dos dois. */
   from: number;
 }
 
-/** A resposta, com os ritmos que se assumem para cada um. */
+/**
+ * A resposta, com os ritmos que se assumem para cada um. `typedHigh` e
+ * `typedLow` dizem se o ritmo foi escrito à mão; sem isso e sem leituras, o
+ * ritmo passa a 0 e a página tem de o avisar (04/11/2026).
+ */
 function shareOutlook(
   [high, low]: [MeasuredCharacter, MeasuredCharacter],
   highDailyXp: number,
-  lowDailyXp: number
+  lowDailyXp: number,
+  typedHigh: boolean,
+  typedLow: boolean
 ): ShareOutlook {
   return {
     high,
     low,
     gap: shareGap(high.experience, low.experience),
-    days: daysUntilShare(
+    verdict: shareVerdict(
       { experience: high.experience, dailyXp: highDailyXp },
       { experience: low.experience, dailyXp: lowDailyXp }
     ),
+    highDailyXp,
+    lowDailyXp,
+    unmeasured: [
+      ...(!typedHigh && high.measuredDailyXp === null ? [high.player] : []),
+      ...(!typedLow && low.measuredDailyXp === null ? [low.player] : []),
+    ],
     from: Math.max(high.lastReading, low.lastReading),
   };
 }
@@ -96,26 +117,68 @@ function Name({ player }: { player: PlayerMeta }) {
 
 /** A frase da resposta, a mesma na página e no cartão do Início. */
 export function OutlookSentence({ outlook }: { outlook: ShareOutlook }) {
-  const { high, low, days, from } = outlook;
-  if (days === 0) {
-    return (
-      <>
-        <Name player={low.player} /> e <Name player={high.player} /> já partilham XP.
-      </>
-    );
+  const { high, low, verdict, from } = outlook;
+  switch (verdict.kind) {
+    case 'now':
+      return (
+        <>
+          <Name player={low.player} /> e <Name player={high.player} /> já partilham XP.
+        </>
+      );
+    case 'within':
+    case 'later':
+      return (
+        <>
+          Partilham daqui a <b>{daysText(verdict.days)}</b>
+          {verdict.kind === 'later' && <> (mais de {MAX_SHARE_DAYS / 365} anos)</>}, por volta de{' '}
+          {dateFormatter.format(new Date(from + verdict.days * MS_PER_DAY))}.
+        </>
+      );
+    case 'beyond':
+      return (
+        <>
+          A este ritmo <b>não partilham nos próximos {MAX_LATER_SHARE_DAYS / 365} anos</b>.
+        </>
+      );
+    case 'never':
+      switch (noShareReason(outlook.highDailyXp, outlook.lowDailyXp)) {
+        case 'both-stopped':
+          return (
+            <>
+              Com os dois parados, <b>nunca chegam a partilhar</b>: nenhum dos dois sobe.
+            </>
+          );
+        case 'low-not-rising':
+          return (
+            <>
+              A este ritmo <b>nunca chegam a partilhar</b>: o <Name player={low.player} /> não sobe.
+            </>
+          );
+        default:
+          return (
+            <>
+              A este ritmo <b>nunca chegam a partilhar</b>: o <Name player={high.player} /> afasta-se mais depressa do
+              que o <Name player={low.player} /> sobe.
+            </>
+          );
+      }
   }
-  if (days === null) {
-    return (
-      <>
-        A este ritmo <b>nunca chegam a partilhar</b>: o <Name player={high.player} /> afasta-se mais depressa do que o{' '}
-        <Name player={low.player} /> sobe.
-      </>
-    );
-  }
+}
+
+/** Aviso de que um ritmo sem leituras foi tratado como 0. */
+function UnmeasuredNote({ outlook, windowDays }: { outlook: ShareOutlook; windowDays: number }) {
+  if (outlook.unmeasured.length === 0) return null;
   return (
-    <>
-      Partilham daqui a <b>{daysText(days)}</b>, por volta de {dateFormatter.format(new Date(from + days * MS_PER_DAY))}.
-    </>
+    <p className="daily-simulation-note">
+      Sem leituras que cheguem nos últimos {windowDays} dias para medir o ritmo do{' '}
+      {outlook.unmeasured.map((player, index) => (
+        <span key={player.id}>
+          {index > 0 && ' e do '}
+          <Name player={player} />
+        </span>
+      ))}
+      : assumi 0 XP por dia. Escreve um ritmo para experimentar outro.
+    </p>
   );
 }
 
@@ -146,7 +209,7 @@ function RateField({
         value={value}
         onChange={(event) => onChange(event.target.value)}
       />
-      {invalid && <p className="field-error">Não percebi — usa um número (ex.: 20000000) ou milhões (ex.: 20M, 20kk).</p>}
+      {invalid && <p className="field-error">Não percebi — usa um número (ex.: 20000000) ou milhões (ex.: 20M, 20kk), até {plain.format(MAX_DAILY_XP)}.</p>}
     </div>
   );
 }
@@ -175,9 +238,11 @@ export function PartilhaPage({ histories, loading }: PartilhaPageProps) {
   const [high, low] = both;
   const highDailyXp = parseDailyXp(highInput) ?? high.measuredDailyXp ?? 0;
   const lowDailyXp = parseDailyXp(lowInput) ?? low.measuredDailyXp ?? 0;
-  const outlook = shareOutlook(both, highDailyXp, lowDailyXp);
+  const typedHigh = parseDailyXp(highInput) !== null;
+  const typedLow = parseDailyXp(lowInput) !== null;
+  const outlook = shareOutlook(both, highDailyXp, lowDailyXp, typedHigh, typedLow);
   const highChar: ShareCharacter = { experience: high.experience, dailyXp: highDailyXp };
-  const edited = parseDailyXp(highInput) !== null || parseDailyXp(lowInput) !== null;
+  const edited = typedHigh || typedLow;
 
   return (
     <>
@@ -269,9 +334,10 @@ export function PartilhaPage({ histories, loading }: PartilhaPageProps) {
         <p className="xp-forecast__headline">
           <OutlookSentence outlook={outlook} />
         </p>
-        {outlook.days === null && (
+        <UnmeasuredNote outlook={outlook} windowDays={windowDays} />
+        {(outlook.verdict.kind === 'never' || outlook.verdict.kind === 'beyond') && (
           <p className="daily-simulation-note">
-            Procurei até {MAX_SHARE_DAYS / 365} anos para a frente. Daqui a um ano o {high.player.name} estaria no nível{' '}
+            Procurei até {MAX_LATER_SHARE_DAYS / 365} anos para a frente. Daqui a um ano o {high.player.name} estaria no nível{' '}
             {levelForExperience(Math.max(0, high.experience + highDailyXp * 365))} (pede o{' '}
             {shareGap(Math.max(0, high.experience + highDailyXp * 365), 0).levelNeeded}) e o {low.player.name} no{' '}
             {levelForExperience(Math.max(0, low.experience + lowDailyXp * 365))}.
@@ -311,7 +377,9 @@ export function PartilhaPage({ histories, loading }: PartilhaPageProps) {
                       ? 'já chega'
                       : lowDailyXp > 0
                         ? `${timesFormatter.format(needed / lowDailyXp)}×`
-                        : 'o ritmo acima é 0'}
+                        : lowDailyXp < 0
+                          ? 'o ritmo acima é negativo'
+                          : 'o ritmo acima é 0'}
                   </td>
                 </tr>
               );
@@ -333,7 +401,7 @@ export function PartilhaResumo({
 }) {
   const both = measureBoth(histories, DEFAULT_SHARE_WINDOW);
   if (!both) return null;
-  const outlook = shareOutlook(both, both[0].measuredDailyXp ?? 0, both[1].measuredDailyXp ?? 0);
+  const outlook = shareOutlook(both, both[0].measuredDailyXp ?? 0, both[1].measuredDailyXp ?? 0, false, false);
 
   return (
     <div className="card espaco">
@@ -346,7 +414,7 @@ export function PartilhaResumo({
       </div>
       <p className="xp-forecast__headline">
         <OutlookSentence outlook={outlook} />
-        {outlook.days !== 0 && (
+        {outlook.verdict.kind !== 'now' && (
           <>
             {' '}
             Hoje o <Name player={outlook.low.player} /> precisava do nível {outlook.gap.levelNeeded} (faltam{' '}
@@ -354,6 +422,7 @@ export function PartilhaResumo({
           </>
         )}
       </p>
+      <UnmeasuredNote outlook={outlook} windowDays={DEFAULT_SHARE_WINDOW} />
       <p className="daily-simulation-note">
         <a
           href="#partilha"

@@ -65,6 +65,60 @@ export function daysUntilShare(
   return null;
 }
 
+/**
+ * Até onde se procura para dizer «daqui a N dias (mais de 10 anos)» em vez de
+ * «nunca» (04/11/2026): 18,1 M contra 6 M por dia dá 6 774 dias, e isso não é
+ * «nunca». Cem anos.
+ */
+export const MAX_LATER_SHARE_DAYS = 36_500;
+
+/**
+ * Menor razão entre os ritmos (mais baixo / mais alto) com que o mais baixo
+ * ainda apanha o mais alto: a XP cresce com o cubo do nível, e a regra são 2/3
+ * dos níveis, logo (2/3)³ = 8/27 da XP por dia. Abaixo disto a razão dos níveis
+ * tende para um valor que não chega aos 2/3 — é «nunca», e não «ainda não».
+ */
+const MIN_CATCH_UP_RATIO = 8 / 27;
+
+export type ShareVerdict =
+  | { kind: 'now' }
+  /** Dentro de `MAX_SHARE_DAYS`. */
+  | { kind: 'within'; days: number }
+  /** Para lá de `MAX_SHARE_DAYS`, mas ainda dentro de `MAX_LATER_SHARE_DAYS`. */
+  | { kind: 'later'; days: number }
+  /** Não acontece em cem anos, mas não está provado que nunca aconteça. */
+  | { kind: 'beyond' }
+  /** Não acontece nunca, ao ritmo assumido. */
+  | { kind: 'never' };
+
+/** Os ritmos tornam impossível o mais baixo apanhar o mais alto? */
+function provablyNever(a: ShareCharacter, b: ShareCharacter): boolean {
+  const [high, low] = a.experience >= b.experience ? [a, b] : [b, a];
+  if (low.dailyXp <= 0) return high.dailyXp >= 0;
+  return high.dailyXp > 0 && low.dailyXp / high.dailyXp < MIN_CATCH_UP_RATIO;
+}
+
+/** `daysUntilShare` a sério: distingue «para lá de 10 anos» de «nunca». */
+export function shareVerdict(a: ShareCharacter, b: ShareCharacter): ShareVerdict {
+  const days = daysUntilShare(a, b, MAX_LATER_SHARE_DAYS);
+  if (days === null) return provablyNever(a, b) ? { kind: 'never' } : { kind: 'beyond' };
+  if (days === 0) return { kind: 'now' };
+  return days <= MAX_SHARE_DAYS ? { kind: 'within', days } : { kind: 'later', days };
+}
+
+export type NoShareReason = 'both-stopped' | 'low-not-rising' | 'high-faster';
+
+/**
+ * Porque é que não partilham, para a frase não acusar o mais alto de se afastar
+ * quando os dois estão parados (04/11/2026). Os argumentos são os ritmos
+ * assumidos do mais alto e do mais baixo.
+ */
+export function noShareReason(highDailyXp: number, lowDailyXp: number): NoShareReason {
+  if (highDailyXp === 0 && lowDailyXp === 0) return 'both-stopped';
+  if (lowDailyXp <= 0) return 'low-not-rising';
+  return 'high-faster';
+}
+
 export interface ShareGap {
   /** O nível mínimo que o mais baixo precisa para partilhar com o mais alto, hoje. */
   levelNeeded: number;
@@ -90,9 +144,20 @@ export function parseDailyXp(raw: string): number | null {
   const text = raw.trim().toLowerCase().replace(/\s+/g, '');
   if (text === '') return null;
   const millions = /^(-?\d+(?:[.,]\d+)?)(?:m|kk)$/.exec(text);
-  if (millions) return Math.round(Number(millions[1].replace(',', '.')) * 1_000_000);
+  if (millions) return withinLimit(Math.round(Number(millions[1].replace(',', '.')) * 1_000_000));
   if (!/^-?\d{1,3}(?:[.,]?\d{3})*$/.test(text)) return null;
-  return Number(text.replace(/[.,]/g, ''));
+  return withinLimit(Number(text.replace(/[.,]/g, '')));
+}
+
+/**
+ * O maior ritmo que o campo aceita: um bilião (10¹²) de XP por dia. Sem limite,
+ * 310 dígitos davam `Infinity` (página em branco) e 50 dígitos bloqueavam a
+ * pesquisa do nível (04/11/2026).
+ */
+export const MAX_DAILY_XP = 1_000_000_000_000;
+
+function withinLimit(value: number): number | null {
+  return Number.isFinite(value) && Math.abs(value) <= MAX_DAILY_XP ? value : null;
 }
 
 /**
