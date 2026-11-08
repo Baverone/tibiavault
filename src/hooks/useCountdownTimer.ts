@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { dueEvents, pausedState, runningState, viewAt, type TimerConfig, type TimerState } from '../domain/timers/countdown';
+import { dueEvents, pauseWithEvents, runningState, viewAt, type TimerConfig, type TimerState } from '../domain/timers/countdown';
 import { subscribeTicks } from './ticker';
 
 const FINISHED_DISPLAY_MS = 3000;
@@ -99,7 +99,19 @@ export function useCountdownTimer({
   function toggle() {
     if (state.kind === 'running') {
       if (view.justFinished) return;
-      setState(pausedState(config, state, Date.now()));
+      const t = Date.now();
+      const paused = pauseWithEvents(config, state, lastTickRef.current, t);
+      lastTickRef.current = t;
+      const { onFinish: finish, onAlert: alert, alerts: list } = callbacksRef.current;
+      for (const event of paused.events) {
+        if (event.kind === 'finish') finish();
+        else {
+          const which = list.find((a) => a.atSeconds * 1000 === event.alertAtMs);
+          if (which) alert?.(which);
+        }
+      }
+      setNow(t);
+      setState(paused.state);
     } else {
       start();
     }

@@ -52,6 +52,21 @@ export function pausedState(config: TimerConfig, state: TimerState, now: number)
   return { kind: 'paused', remainingMs: viewAt(config, state, now).remainingMs };
 }
 
+/**
+ * Pausa e devolve também os eventos que passaram entre o último tique e a
+ * pausa. 08/11/2026: pausar nos ≤250 ms a seguir ao aviso/ao fim perdia o
+ * evento, porque o tique seguinte já não corria (o estado deixa de ser
+ * `running`). Quem pausa tem de anunciar estes eventos antes de largar o tique.
+ */
+export function pauseWithEvents(
+  config: TimerConfig,
+  state: TimerState,
+  lastTick: number,
+  now: number
+): { state: TimerState; events: TimerEvent[] } {
+  return { events: dueEvents(config, state, lastTick, now), state: pausedState(config, state, now) };
+}
+
 /** O que o cartão mostra num dado instante. */
 export function viewAt(config: TimerConfig, state: TimerState, now: number): TimerView {
   if (state.kind === 'stopped') return { remainingMs: config.durationMs, justFinished: false };

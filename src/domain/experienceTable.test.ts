@@ -4,6 +4,7 @@
 // nos limites exatos de um nivel.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { experienceForLevel, levelForExperience, MAX_KNOWN_LEVEL } from './experienceTable.ts';
 
 test('experienceForLevel bate com os valores oficiais conhecidos', () => {
@@ -56,3 +57,22 @@ test('levelForExperience aguenta XP muito grande sem degradar (busca exponencial
   const xp = experienceForLevel(nivelAlto);
   assert.equal(levelForExperience(xp), nivelAlto);
 });
+
+// 08/11/2026: com XP acima de 2^53 o `high *= 2` deixava de avancar e a pesquisa
+// nunca acabava (travava a calculadora de hunt). Corre num processo filho com
+// tempo limite, porque um ciclo infinito nao se interrompe dentro do proprio teste.
+for (const xp of [1e20, 1e40, 1e60, 1e300, Number.MAX_VALUE]) {
+  test(`levelForExperience(${xp}) acaba sempre e devolve o teto`, () => {
+    const modulo = JSON.stringify(import.meta.resolve('./experienceTable.ts'));
+    const codigo = `import { levelForExperience, MAX_SEARCH_LEVEL } from ${modulo};
+      const n = levelForExperience(${xp});
+      console.log(n <= MAX_SEARCH_LEVEL && Number.isInteger(n) ? 'ok' : 'mau');`;
+    const p = spawnSync(process.execPath, ['--experimental-strip-types', '--no-warnings', '--input-type=module', '-e', codigo], {
+      timeout: 5000,
+      encoding: 'utf8',
+    });
+    assert.notEqual(p.signal, 'SIGTERM', 'ficou preso (morto ao fim de 5 s)');
+    assert.equal(p.status, 0, p.stderr);
+    assert.equal(p.stdout.trim(), 'ok');
+  });
+}

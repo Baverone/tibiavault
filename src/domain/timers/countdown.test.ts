@@ -6,7 +6,7 @@
 // porque o tique seguinte ja apanhava o fim. Estes testes fixam o contrario.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { dueEvents, pausedState, runningState, viewAt, type TimerConfig } from './countdown.ts';
+import { dueEvents, pauseWithEvents, pausedState, runningState, viewAt, type TimerConfig } from './countdown.ts';
 
 const S = 1000;
 const MIN = 60 * S;
@@ -114,6 +114,21 @@ test('pausar aos 8 s e retomar nao repete o aviso dos 10 s', () => {
   const retomado = runningState(PLASMA, aos8 + MIN, pausa);
   const depois = dueEvents(PLASMA, retomado, aos8 + MIN, aos8 + MIN + 7 * S);
   assert.deepEqual(depois, []);
+});
+
+test('pausar nos 250 ms a seguir ao aviso nao perde o aviso', () => {
+  const inicio = runningState(PLASMA, 0);
+  const aviso = PLASMA.durationMs - 10 * S;
+  const ultimoTique = aviso - 100;
+  const { events, state } = pauseWithEvents(PLASMA, inicio, ultimoTique, aviso + 150);
+  assert.deepEqual(events.map((e) => e.kind), ['alert']);
+  assert.equal(state.kind, 'paused');
+});
+
+test('pausar nos 250 ms a seguir ao fim nao perde o fim', () => {
+  const inicio = runningState(POT, 0);
+  const { events } = pauseWithEvents(POT, inicio, POT.durationMs - 100, POT.durationMs + 150);
+  assert.deepEqual(events.map((e) => e.kind), ['finish']);
 });
 
 test('o aviso do ciclo seguinte volta a sair', () => {

@@ -18,11 +18,18 @@ interface HuntPlannerCardProps {
 
 const numeros = new Intl.NumberFormat('pt-PT');
 
-function paraNumero(texto: string): number | null {
+// 08/11/2026: campos sem limite deixavam escrever 1e60 e travar a página (e o
+// valor ficava guardado, por isso travava outra vez ao abrir). Fora do limite
+// conta como campo por preencher.
+const MAX_NIVEL_ALVO = 100_000;
+const MAX_XP_HORA = 1e12;
+const MAX_HORAS = 1000;
+
+function paraNumero(texto: string, max: number): number | null {
   const limpo = texto.trim().replace(/\s/g, '');
   if (limpo === '') return null;
   const valor = Number(limpo);
-  return Number.isFinite(valor) && valor >= 0 ? valor : null;
+  return Number.isFinite(valor) && valor >= 0 && valor <= max ? valor : null;
 }
 
 export function HuntPlannerCard({ personagem, xpAtual, accentColor }: HuntPlannerCardProps) {
@@ -37,10 +44,10 @@ export function HuntPlannerCard({ personagem, xpAtual, accentColor }: HuntPlanne
     setEntrada((atual) => ({ ...atual, [campo]: valor }));
   }
 
-  const nivelAlvo = paraNumero(entrada.nivelAlvo);
-  const xpHora = paraNumero(entrada.xpHora);
-  const horas = paraNumero(entrada.horas);
-  const boosts = entrada.boost ? (paraNumero(entrada.boosts) ?? 0) : 0;
+  const nivelAlvo = paraNumero(entrada.nivelAlvo, MAX_NIVEL_ALVO);
+  const xpHora = paraNumero(entrada.xpHora, MAX_XP_HORA);
+  const horas = paraNumero(entrada.horas, MAX_HORAS);
+  const boosts = entrada.boost ? (paraNumero(entrada.boosts, MAX_BOOSTS_POR_DIA) ?? 0) : 0;
 
   // Memorizado para o objeto não ser novo em cada render — sem isto o useMemo
   // do resultado recalculava sempre, e o linter tinha razão em queixar-se.
@@ -71,6 +78,7 @@ export function HuntPlannerCard({ personagem, xpAtual, accentColor }: HuntPlanne
             id={`alvo-${personagem}`}
             type="number"
             min="1"
+            max={MAX_NIVEL_ALVO}
             placeholder={`atual: ${nivelAtual}`}
             value={entrada.nivelAlvo}
             onChange={(e) => alterar('nivelAlvo', e.target.value)}
@@ -82,6 +90,7 @@ export function HuntPlannerCard({ personagem, xpAtual, accentColor }: HuntPlanne
             id={`xph-${personagem}`}
             type="number"
             min="0"
+            max={MAX_XP_HORA}
             placeholder="ex: 2500000"
             value={entrada.xpHora}
             onChange={(e) => alterar('xpHora', e.target.value)}
@@ -93,6 +102,7 @@ export function HuntPlannerCard({ personagem, xpAtual, accentColor }: HuntPlanne
             id={`horas-${personagem}`}
             type="number"
             min="0"
+            max={MAX_HORAS}
             step="0.5"
             placeholder="ex: 4"
             value={entrada.horas}

@@ -14,6 +14,9 @@
 /** Highest level Tibia has officially published experience values for. Used for input validation, not as a hard cap on calculations. */
 export const MAX_KNOWN_LEVEL = 3500;
 
+/** Teto da pesquisa em levelForExperience (2^26): a fórmula ainda é exacta aqui e a pesquisa acaba sempre. */
+export const MAX_SEARCH_LEVEL = 2 ** 26;
+
 export function experienceForLevel(level: number): number {
   if (!Number.isInteger(level) || level < 1) {
     throw new Error(`Invalid level: ${level}. Level must be an integer >= 1.`);
@@ -34,6 +37,10 @@ export function levelForExperience(experience: number): number {
   let low = 1;
   let high = 1;
   while (experienceForLevel(high) <= experience) {
+    // 08/11/2026: sem teto, uma XP enorme (1e60) fazia `high` passar 2^53, onde
+    // `high *= 2` deixa de mudar nada e o ciclo nunca acaba. Acima do teto o
+    // nível devolvido é o teto — nenhum jogador chega perto.
+    if (high >= MAX_SEARCH_LEVEL) return MAX_SEARCH_LEVEL;
     high *= 2;
   }
 
