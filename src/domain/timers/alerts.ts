@@ -4,14 +4,17 @@
  * every call is wrapped and failures are swallowed silently (the visual
  * "terminado" state still fires regardless).
  */
+import { beepOffsets, framedAnnouncement, once, speechFallbackMs } from './framedAlert.ts';
 
-export function playBeep(): void {
+const SINGLE_BEEP_OFFSETS = [0, 0.22, 0.44];
+
+function playBeepsAt(offsets: readonly number[]): void {
   try {
     const AudioContextCtor = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     const ctx = new AudioContextCtor();
     const now = ctx.currentTime;
 
-    [0, 0.22, 0.44].forEach((offset) => {
+    offsets.forEach((offset) => {
       const oscillator = ctx.createOscillator();
       const gain = ctx.createGain();
       oscillator.type = 'sine';
@@ -24,19 +27,57 @@ export function playBeep(): void {
       oscillator.stop(now + offset + 0.2);
     });
 
-    setTimeout(() => ctx.close(), 900);
+    const last = offsets[offsets.length - 1] ?? 0;
+    setTimeout(() => ctx.close(), (last + 0.5) * 1000);
   } catch {
     // Web Audio unavailable/blocked — ignore.
   }
 }
 
-export function announce(text: string): void {
-  if (!('speechSynthesis' in window)) return;
+/** O sinal curto de sempre: três bips (~0,6 s). */
+export function playBeep(): void {
+  playBeepsAt(SINGLE_BEEP_OFFSETS);
+}
+
+/** Bips seguidos durante `seconds` segundos (ver `beepOffsets`). */
+export function playBeeps(seconds: number): void {
+  playBeepsAt(beepOffsets(seconds));
+}
+
+// O Chrome deixa ir o utterance para o lixo a meio e aí o `onend` nunca chega;
+// guardá-lo aqui até acabar evita isso.
+const speaking = new Set<SpeechSynthesisUtterance>();
+
+/** Fala `text` (pt-PT). `onDone`, se houver, corre uma vez quando a voz acaba, falha ou não existe. */
+export function announce(text: string, onDone?: () => void): void {
+  const done = once(() => onDone?.());
+  if (!('speechSynthesis' in window)) {
+    done();
+    return;
+  }
   try {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'pt-PT';
+    const finish = () => {
+      speaking.delete(utterance);
+      done();
+    };
+    utterance.onend = finish;
+    utterance.onerror = finish;
+    speaking.add(utterance);
     window.speechSynthesis.speak(utterance);
+    setTimeout(finish, speechFallbackMs(text));
   } catch {
     // SpeechSynthesis unavailable — ignore.
+    done();
   }
+}
+
+/** Bips durante `seconds` s, a voz, e mais `seconds` s de bips quando a voz acaba. */
+export function announceFramedByBeeps(text: string, seconds: number): void {
+  framedAnnouncement(text, seconds, {
+    beep: playBeeps,
+    speak: announce,
+    wait: (ms, fn) => setTimeout(fn, ms),
+  });
 }

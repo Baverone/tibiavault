@@ -1,6 +1,6 @@
 import { useEffect, useImperativeHandle, useState, forwardRef } from 'react';
 import { useCountdownTimer, type TimerAlert } from '../../hooks/useCountdownTimer';
-import { announce, playBeep } from '../../domain/timers/alerts';
+import { announce, announceFramedByBeeps, playBeep } from '../../domain/timers/alerts';
 import { formatTimerMinutes, parseTimerMinutes } from '../../domain/timers/duration';
 
 interface TimerCardProps {
@@ -11,6 +11,12 @@ interface TimerCardProps {
   alerts?: readonly TimerAlert[];
   /** Spoken when the timer hits zero — defaults to "{name} terminado". */
   finishMessage?: string;
+  /**
+   * Com isto, o fim toca bips durante estes segundos, anuncia, e toca outra vez
+   * os mesmos segundos de bips quando a voz acaba (o Pot Skills, 11/11/2026).
+   * Sem isto fica o sinal curto de sempre antes da voz.
+   */
+  finishBeepSeconds?: number;
   /**
    * Tempo à escolha (o Boost): com isto o cartão ganha um campo de minutos e
    * um botão com o tempo pré-definido. Só se muda com o timer parado ou em
@@ -38,15 +44,20 @@ function formatClock(ms: number): string {
 }
 
 export const TimerCard = forwardRef<TimerCardHandle, TimerCardProps>(function TimerCard(
-  { name, durationSeconds, color, alerts, finishMessage, durationChoice },
+  { name, durationSeconds, color, alerts, finishMessage, finishBeepSeconds, durationChoice },
   ref
 ) {
   const timer = useCountdownTimer({
     durationSeconds,
     alerts,
     onFinish: () => {
-      playBeep();
-      announce(finishMessage ?? `${name} terminado`);
+      const message = finishMessage ?? `${name} terminado`;
+      if (finishBeepSeconds) {
+        announceFramedByBeeps(message, finishBeepSeconds);
+      } else {
+        playBeep();
+        announce(message);
+      }
     },
     // Os avisos a meio (ex.: «faltam 30 segundos»): um por ciclo, mesmo com
     // tiques atrasados, e sem repetir ao retomar uma pausa — ver countdown.ts.

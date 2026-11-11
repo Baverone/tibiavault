@@ -468,6 +468,15 @@ ficheiros de áudio externos), tenta anunciar por voz o nome do timer via
 ou bloquear), mostra "Terminado!" durante ~3s, e depois reinicia sozinho e
 continua a contar em loop contínuo até seres tu a pausar.
 
+**Bips do Pot Skills (11/11/2026).** O André pediu, além do anúncio, um sinal
+sonoro durante 2 s antes e 2 s depois. No fim do Pot Skills toca uma rajada de
+bips (um a cada 0,25 s, 8 em 2 s), a voz entra quando a rajada acaba, e outra
+rajada de 2 s começa quando a voz termina (`onend`; se o browser não o mandar,
+há uma reserva de alguns segundos para os bips do fim não se perderem). A
+sequência está em [`framedAlert.ts`](src/domain/timers/framedAlert.ts), com
+testes; o cartão liga-a com `finishBeepSeconds`. O Boost e o Plasmas ficam com
+o sinal curto de sempre.
+
 **O Boost (02/11/2026).** Era o «Food ML», de 60 min fixos; o André pediu-o
 como «Boost», com o tempo à escolha e um botão para os 60 min. O campo aceita
 minutos (`45`) ou horas:minutos (`1:30`), entre 1 min e 10 h

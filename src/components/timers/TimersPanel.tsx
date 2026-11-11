@@ -10,6 +10,9 @@ const POT_SKILLS_COLOR = '#6f9bff';
 const BOOST_COLOR = '#f0a35a';
 const PLASMAS_COLOR = '#b08cff';
 
+// 11/11/2026: o André pediu bips 2 s antes e 2 s depois do anúncio do Pot Skills.
+const POT_SKILLS_BEEP_SECONDS = 2;
+
 const PLASMAS_DURATION_SECONDS = 29 * 60 + 40;
 const PLASMAS_ALERTS = [{ atSeconds: 10, message: 'Faltam 30 segundos de plasma, reiniciar contagem' }];
 
@@ -41,7 +44,13 @@ export function TimersPanel() {
         </button>
       </div>
       <div className="timers-panel__cards">
-        <TimerCard ref={potSkillsRef} name="Pot Skills" durationSeconds={600} color={POT_SKILLS_COLOR} />
+        <TimerCard
+          ref={potSkillsRef}
+          name="Pot Skills"
+          durationSeconds={600}
+          color={POT_SKILLS_COLOR}
+          finishBeepSeconds={POT_SKILLS_BEEP_SECONDS}
+        />
         <TimerCard
           ref={boostRef}
           name="Boost"
