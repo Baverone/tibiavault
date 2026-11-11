@@ -3,6 +3,7 @@ import {
   calculateSkillTraining,
   calculateTrainingToTarget,
   LASTING_EXERCISE_CHARGES,
+  MAX_SKILL_LEVEL,
   minSkillLevel,
   SKILL_LABELS,
   type TrainableSkill,
@@ -46,7 +47,9 @@ export function SkillTrainingRow({
   const levelError =
     entry.level.trim() !== '' && levelResult.ok && levelResult.value < minLevel
       ? `${SKILL_LABELS[skill]} começa no nível ${minLevel}.`
-      : null;
+      : entry.level.trim() !== '' && levelResult.ok && levelResult.value > MAX_SKILL_LEVEL
+        ? `O nível vai até ${MAX_SKILL_LEVEL}.`
+        : null;
 
   const canCalculate = levelResult.ok && percentMissingResult.ok && !levelError;
 
@@ -73,9 +76,10 @@ export function SkillTrainingRow({
   // O objetivo é comparado com o nível BASE, não com o que aparece no jogo:
   // com Loyalty, o número do jogo vai à frente do skill real.
   const targetTooLow = targetTyped && targetResult.ok && result !== null && targetResult.value <= result.baseLevel;
+  const targetTooHigh = targetTyped && targetResult.ok && targetResult.value > MAX_SKILL_LEVEL;
 
   const toTarget =
-    canCalculate && levelResult.ok && percentMissingResult.ok && targetTyped && targetResult.ok && !targetTooLow
+    canCalculate && levelResult.ok && percentMissingResult.ok && targetTyped && targetResult.ok && !targetTooLow && !targetTooHigh
       ? calculateTrainingToTarget(
           skill,
           vocation,
@@ -159,6 +163,7 @@ export function SkillTrainingRow({
           {hasLoyalty ? ` — no jogo vês ${displayedLevel}, mas o skill real é ${result.baseLevel}.` : '.'}
         </p>
       )}
+      {targetTooHigh && <p className="field-error">O objetivo vai até {MAX_SKILL_LEVEL}.</p>}
       {targetTyped && !targetResult.ok && <p className="field-error">{!targetResult.ok ? targetResult.error : ''}</p>}
 
       {toTarget && (

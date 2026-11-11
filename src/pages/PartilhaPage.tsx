@@ -20,6 +20,7 @@ import { computeRateOverWindow } from '../domain/xpForecast';
 import type { HistoriesByCharacter } from '../hooks/useAllCharacters';
 import type { PageId } from '../navigation/pages';
 import { Icon } from '../components/shell/icons';
+import { HistoryErrorNote } from '../components/shell/HistoryErrorNote';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const plain = new Intl.NumberFormat('pt-PT');
@@ -39,8 +40,13 @@ interface MeasuredCharacter {
   experience: number;
   /** XP por dia medida na janela; `null` sem leituras que cheguem. */
   measuredDailyXp: number | null;
-  /** Quando foi a leitura mais recente (ms). */
+  /** Quando foi a leitura mais recente (ms) — depois de alinhar, a mais recente dos dois. */
   lastReading: number;
+  /**
+   * Dias que a XP deste foi puxada para a frente, ao ritmo medido, para ficar
+   * no mesmo dia que a do outro. 0 quando as leituras são do mesmo dia.
+   */
+  extrapolatedDays: number;
 }
 
 /**
@@ -61,7 +67,21 @@ function measureBoth(histories: HistoriesByCharacter, windowDays: number): [Meas
       experience: last.experience,
       measuredDailyXp: computeRateOverWindow(history, windowDays)?.averageDailyXp ?? null,
       lastReading: last.timestamp,
+      extrapolatedDays: 0,
     });
+  }
+  // 11/11/2026 (auditoria, Codex e revisão própria): com uma leitura de dia 10 e
+  // outra de dia 5, as contas tratavam-nas como do mesmo dia — o de leitura
+  // mais antiga perdia cinco dias de XP. Puxa-se esse para o dia do outro, ao
+  // ritmo que ele próprio tem feito, e a página di-lo.
+  const from = Math.max(...measured.map((m) => m.lastReading));
+  for (const m of measured) {
+    const days = Math.round((from - m.lastReading) / MS_PER_DAY);
+    if (days > 0) {
+      m.experience = Math.max(0, Math.round(m.experience + (m.measuredDailyXp ?? 0) * days));
+      m.extrapolatedDays = days;
+      m.lastReading = from;
+    }
   }
   measured.sort((a, b) => b.experience - a.experience);
   return [measured[0], measured[1]];
@@ -166,6 +186,22 @@ export function OutlookSentence({ outlook }: { outlook: ShareOutlook }) {
 }
 
 /** Aviso de que um ritmo sem leituras foi tratado como 0. */
+/** Diz quem teve a XP puxada para a frente para as leituras ficarem no mesmo dia. */
+function ExtrapolatedNote({ outlook }: { outlook: ShareOutlook }) {
+  const moved = [outlook.high, outlook.low].filter((m) => m.extrapolatedDays > 0);
+  if (moved.length === 0) return null;
+  return (
+    <p className="daily-simulation-note">
+      {moved.map((m) => (
+        <span key={m.player.id}>
+          A última leitura do <Name player={m.player} /> é {daysText(m.extrapolatedDays)} mais antiga: a XP dele foi
+          puxada até ao dia da do outro, ao ritmo que tem feito.{' '}
+        </span>
+      ))}
+    </p>
+  );
+}
+
 function UnmeasuredNote({ outlook, windowDays }: { outlook: ShareOutlook; windowDays: number }) {
   if (outlook.unmeasured.length === 0) return null;
   return (
@@ -217,6 +253,8 @@ function RateField({
 interface PartilhaPageProps {
   histories: HistoriesByCharacter;
   loading: boolean;
+  error: string | null;
+  onRetry: () => void;
 }
 
 /**
@@ -225,7 +263,7 @@ interface PartilhaPageProps {
  * resposta era «nunca» em três dos quatro períodos, quanto o mais baixo
  * precisaria de fazer por dia para lá chegar num prazo.
  */
-export function PartilhaPage({ histories, loading }: PartilhaPageProps) {
+export function PartilhaPage({ histories, loading, error, onRetry }: PartilhaPageProps) {
   const [windowDays, setWindowDays] = useState<number>(DEFAULT_SHARE_WINDOW);
   const [highInput, setHighInput] = useState('');
   const [lowInput, setLowInput] = useState('');
@@ -233,7 +271,10 @@ export function PartilhaPage({ histories, loading }: PartilhaPageProps) {
   const both = useMemo(() => measureBoth(histories, windowDays), [histories, windowDays]);
 
   if (loading) return <p className="vazio">A carregar o histórico dos dois bonecos…</p>;
-  if (!both) return <p className="vazio">Ainda não há histórico dos dois bonecos para fazer as contas.</p>;
+  if (!both) {
+    if (error) return <HistoryErrorNote error={error} onRetry={onRetry} />;
+    return <p className="vazio">Ainda não há histórico dos dois bonecos para fazer as contas.</p>;
+  }
 
   const [high, low] = both;
   const highDailyXp = parseDailyXp(highInput) ?? high.measuredDailyXp ?? 0;
@@ -246,6 +287,7 @@ export function PartilhaPage({ histories, loading }: PartilhaPageProps) {
 
   return (
     <>
+      {error && <HistoryErrorNote error={error} onRetry={onRetry} />}
       <div className="stats">
         <div className="stat">
           <span className="rotulo">
@@ -335,6 +377,7 @@ export function PartilhaPage({ histories, loading }: PartilhaPageProps) {
           <OutlookSentence outlook={outlook} />
         </p>
         <UnmeasuredNote outlook={outlook} windowDays={windowDays} />
+        <ExtrapolatedNote outlook={outlook} />
         {(outlook.verdict.kind === 'never' || outlook.verdict.kind === 'beyond') && (
           <p className="daily-simulation-note">
             Procurei até {MAX_LATER_SHARE_DAYS / 365} anos para a frente. Daqui a um ano o {high.player.name} estaria no nível{' '}
@@ -423,6 +466,7 @@ export function PartilhaResumo({
         )}
       </p>
       <UnmeasuredNote outlook={outlook} windowDays={DEFAULT_SHARE_WINDOW} />
+      <ExtrapolatedNote outlook={outlook} />
       <p className="daily-simulation-note">
         <a
           href="#partilha"

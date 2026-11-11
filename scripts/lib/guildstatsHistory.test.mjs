@@ -179,3 +179,17 @@ test('missingDates aponta os buracos do meio da série', () => {
   assert.deepEqual(missingDates(serie), ['2026-10-14', '2026-10-17', '2026-10-18']);
   assert.deepEqual(missingDates([]), []);
 });
+
+// Auditoria de 11/11/2026 (com o Codex).
+test('levelForExperience acaba sempre, mesmo com XP absurda, e recusa XP invalida', () => {
+  assert.equal(levelForExperience(1e60), 2 ** 26);
+  assert.throws(() => levelForExperience(-1));
+  assert.throws(() => levelForExperience(Number.NaN));
+});
+
+test('mergeRows: a mesma data duas vezes no lote entra uma vez; com valores diferentes, falha', () => {
+  const linha = { date: '2026-11-10', level: 1, experience: 5 };
+  const { added } = mergeRows([], [linha, { ...linha }], 'agora');
+  assert.equal(added.length, 1);
+  assert.throws(() => mergeRows([], [linha, { ...linha, experience: 6 }], 'agora'), /duas vezes/);
+});

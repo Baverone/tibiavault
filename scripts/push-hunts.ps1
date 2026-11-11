@@ -1,9 +1,9 @@
-﻿# Publica as janelas de hunt no GitHub, para o site do Vercel as ver.
-#
-# O Claude escreve data\celesta-hunts.json e public\celesta-hunts.json a cada
-# ciclo (le a DM do bot Letter no Discord). Este script so trata do ultimo
-# passo: empurrar para o repo. Corre de 5 em 5 minutos e sai em silencio
-# quando nao ha nada a fazer.
+﻿# A unica porta de saida do TibiaVault para o GitHub (tarefa tibia-push do
+# ai-pc, 10:20/13:20/20:20). Commita as janelas de hunt se mudaram (a recolha
+# do Discord esta desligada desde 15/09/2026) e envia os commits que as outras
+# tarefas deixaram por enviar (a XP do tibia-xp e do tibia-xp-chrome). Sai em
+# silencio quando nao ha nada a fazer. (Cabecalho revisto a 11/11/2026: falava
+# do Vercel e de 5 em 5 minutos.)
 #
 # Licoes aprendidas, todas do mesmo feitio -- o modo de falha perigoso nao e
 # rebentar, e ficar calado:
@@ -25,6 +25,13 @@
 #     sem nenhum processo git vivo) e removido -- com registo no log --
 #     antes de desistir. Um lock que nao cumpra os tres criterios faz falhar:
 #     pode haver um git a serio a trabalhar do outro lado.
+#  4. (11/11/2026, auditoria com o Codex) O `git diff --cached` e o `git commit`
+#     nao tinham pathspec: qualquer coisa que outra sessao deixasse em staging
+#     ia no commit «janelas de hunt» e seguia para o site (aconteceu a 01/09,
+#     commit 9302a38, com ~70 ficheiros apagados). Agora so os $publicados
+#     entram nesse commit. Tambem: so publica a partir do `main` (o site le o
+#     main), e se o --autostash nao conseguir repor o que la estava (conflito)
+#     falha em vez de dizer «publicado» com marcas de conflito na arvore.
 
 $ErrorActionPreference = 'Continue'
 $repo       = 'C:\Users\Catarina\tibiavault'
@@ -83,6 +90,11 @@ function Resolve-LockObsoleto([string]$contexto) {
 }
 
 Set-Location -LiteralPath $repo
+if (-not $?) { Falhar "nao consegui entrar em $repo" }
+
+$ramo = Invoke-Git @('rev-parse', '--abbrev-ref', 'HEAD')
+if ($LASTEXITCODE -ne 0) { Falhar "git rev-parse falhou: $ramo" }
+if ($ramo -ne 'main') { Falhar "a arvore esta no ramo '$ramo', nao no main - o site le o main, nao publico daqui" }
 
 $argsAdd = @('add', '--') + $publicados
 $saida = Invoke-Git $argsAdd
@@ -94,11 +106,12 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # --quiet devolve 0 quando NAO ha nada em staging, 1 quando ha, >1 se rebentou.
-git diff --cached --quiet
+$argsDiff = @('diff', '--cached', '--quiet', '--') + $publicados
+& git @argsDiff
 $cod = $LASTEXITCODE
 if ($cod -gt 1) { Falhar "git diff --cached falhou (codigo $cod)" }
 if ($cod -eq 1) {
-  $saida = Invoke-Git @('commit', '-m', 'chore: janelas de hunt livres do Celesta')
+  $saida = Invoke-Git (@('commit', '-m', 'chore: janelas de hunt livres do Celesta', '--') + $publicados)
   if ($LASTEXITCODE -ne 0) { Falhar "git commit falhou: $saida" }
 }
 
@@ -110,10 +123,15 @@ $ahead = Invoke-Git @('rev-list', '--count', '@{u}..HEAD')
 if ($LASTEXITCODE -ne 0) { Falhar "sem upstream configurado: $ahead" }
 if ([int]$ahead -eq 0) { exit 0 }
 
+$stashAntes = @(git stash list).Count
 $saida = Invoke-Git @('pull', '--rebase', '--autostash')
 if ($LASTEXITCODE -ne 0) {
   git rebase --abort 2>&1 | Out-Null
   Falhar "rebase falhou com $ahead commit(s) por enviar - abortado, resolver a mao: $saida"
+}
+$conflitos = Invoke-Git @('diff', '--name-only', '--diff-filter=U')
+if ($conflitos -or @(git stash list).Count -gt $stashAntes) {
+  Falhar "o --autostash nao conseguiu repor as alteracoes locais (conflito em: $conflitos) - ficaram no git stash, resolver a mao antes de publicar"
 }
 
 $saida = Invoke-Git @('push')

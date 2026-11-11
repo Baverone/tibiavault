@@ -107,3 +107,16 @@ test('ausentes: a cópia esvaziada ou estragada dá «sem leituras», o original
   }
   assert.equal(readFileSync(join(DADOS, 'royal-paladin.json'), 'utf8'), original);
 });
+
+// Auditoria de 11/11/2026 (Codex): XP negativa rebentava o resumo e uma data
+// impossivel era empurrada para o mes seguinte.
+test('scrapedRecordsToHistory deixa de fora XP negativa/decimal e datas que nao existem', () => {
+  const history = scrapedRecordsToHistory([
+    { date: '2026-11-09', level: 1, experience: -1, scrapedAt: '' },
+    { date: '2026-02-30', level: 1, experience: 5, scrapedAt: '' },
+    { date: '2026-11-08', level: 1, experience: 1.5, scrapedAt: '' },
+    { date: '2026-11-10', level: 1, experience: 7, scrapedAt: '' },
+  ]);
+  assert.equal(history.length, 1);
+  assert.equal(history[0].experience, 7);
+});

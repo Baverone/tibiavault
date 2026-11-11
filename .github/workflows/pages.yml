@@ -20,9 +20,11 @@ permissions:
   pages: write
   id-token: write
 
+# false (11/11/2026): é o que o GitHub recomenda para o Pages — um push novo
+# espera que o deploy em curso acabe, em vez de o cortar a meio.
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:

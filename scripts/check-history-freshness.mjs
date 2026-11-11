@@ -49,12 +49,27 @@ function daysBetween(fromIsoDate, toIsoDate) {
   return Math.round((to - from) / 86_400_000);
 }
 
+// 11/11/2026 (auditoria com o Codex): uma linha com `date: "x"` dava idade NaN,
+// e como `NaN > 3` é falso o boneco contava como «ok». Uma linha recente sem
+// XP também chegava para calar o alarme. Só contam linhas com uma data que
+// existe no calendário e uma XP inteira >= 0.
+function isRealDate(value) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}
+
+function isValidReading(entry) {
+  return isRealDate(entry?.date) && Number.isInteger(entry?.experience) && entry.experience >= 0;
+}
+
 function newestDateIn(file) {
   try {
     const parsed = JSON.parse(readFileSync(file, 'utf-8'));
     if (!Array.isArray(parsed) || parsed.length === 0) return null;
     // Os ficheiros são gravados ordenados, mas não custa não confiar nisso.
-    return parsed.reduce((newest, entry) => (entry?.date > newest ? entry.date : newest), '');
+    const newest = parsed.filter(isValidReading).reduce((best, entry) => (entry.date > best ? entry.date : best), '');
+    return newest || null;
   } catch {
     return null;
   }
@@ -82,6 +97,12 @@ const waiting = [];
       continue;
     }
     const age = daysBetween(newest, today);
+    // Um dia no futuro não é «fresco»: é uma linha errada que, sem isto,
+    // calava o alarme durante dias.
+    if (!Number.isFinite(age) || age < 0) {
+      stale.push({ id, label, newest: `${newest} (no futuro — linha errada)`, age });
+      continue;
+    }
     (age > MAX_AGE_DAYS ? stale : ok).push({ id, label, newest, age });
   }
 }

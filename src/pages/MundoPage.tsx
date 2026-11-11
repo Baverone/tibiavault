@@ -6,8 +6,8 @@ import { Icon } from '../components/shell/icons';
  * Os dois relógios do mundo: o Rashid e a rotação do Tibiadrome.
  *
  * Estavam os dois empilhados no topo da app, por cima de qualquer separador —
- * 180 px de informação que muda uma vez por dia (o Rashid) e uma vez de cinco
- * em cinco semanas (a rotação), à frente da XP, que muda todos os dias. São o
+ * 180 px de informação que muda uma vez por dia (o Rashid) e uma vez de duas
+ * em duas semanas (a rotação), à frente da XP, que muda todos os dias. São o
  * mesmo tipo de coisa — «o que é que o mundo está a fazer hoje» — e é isso que
  * os põe na mesma página.
  */

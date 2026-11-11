@@ -332,3 +332,44 @@ export function spotAvailability(
     ? { state: 'busy', window: next.window, changesAt: next.window.start, minutesUntilChange: next.startsIn }
     : { state: 'busy', window: null, changesAt: null, minutesUntilChange: null };
 }
+
+const HHMM = /^\d{2}:\d{2}$/;
+
+function isValidWindow(value: unknown): boolean {
+  if (typeof value !== 'object' || value === null) return false;
+  const w = value as Record<string, unknown>;
+  return (
+    typeof w.start === 'string' &&
+    HHMM.test(w.start) &&
+    typeof w.end === 'string' &&
+    HHMM.test(w.end) &&
+    typeof w.minutes === 'number' &&
+    Number.isFinite(w.minutes)
+  );
+}
+
+/**
+ * O ficheiro tem tudo o que o painel usa? (11/11/2026, auditoria com o Codex:
+ * só se viam `generatedAt` e `spots`; um ficheiro sem `timezone`, ou com uma
+ * janela vazia em `free`, rebentava o painel mais à frente.)
+ */
+export function isCelestaHuntsData(value: unknown): value is CelestaHuntsData {
+  if (typeof value !== 'object' || value === null) return false;
+  const data = value as Partial<CelestaHuntsData>;
+  return (
+    typeof data.generatedAt === 'string' &&
+    typeof data.timezone === 'string' &&
+    typeof data.referenceTime === 'string' &&
+    typeof data.minWindowMinutes === 'number' &&
+    (data.highlights === undefined || (Array.isArray(data.highlights) && data.highlights.every((h) => typeof h === 'string'))) &&
+    Array.isArray(data.spots) &&
+    data.spots.every(
+      (spot) =>
+        typeof spot === 'object' &&
+        spot !== null &&
+        typeof spot.name === 'string' &&
+        Array.isArray(spot.free) &&
+        spot.free.every(isValidWindow)
+    )
+  );
+}

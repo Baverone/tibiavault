@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { CASA, pageById, pageTitle, sections, type PageId } from '../../navigation/pages';
 import { Icon } from './icons';
 
@@ -31,12 +31,30 @@ interface AppShellProps {
 export function AppShell({ page, onNavigate, subtitle, actions, timers, help, children }: AppShellProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const meta = pageById(page);
+  const sideRef = useRef<HTMLElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const wasOpen = useRef(false);
 
   // A classe vive no `<body>` (e não num `<div>`) porque é ela que trava o
   // scroll da página por trás do painel.
   useEffect(() => {
     document.body.classList.toggle('menu-on', menuOpen);
     return () => document.body.classList.remove('menu-on');
+  }, [menuOpen]);
+
+  // 11/11/2026 (auditoria): no telemóvel o painel aberto não recebia o foco, e
+  // ao fechar o foco ficava perdido lá dentro. Abre → primeiro link; fecha →
+  // volta ao botão «Menu». (Fechado, o CSS esconde-o com `visibility`, que o
+  // tira da ordem do Tab e dos leitores de ecrã.)
+  // Tem de vir DEPOIS do efeito da classe `menu-on`: antes dela o painel ainda
+  // está `hidden` e o `focus()` não pega.
+  useEffect(() => {
+    if (menuOpen) {
+      sideRef.current?.querySelector<HTMLElement>('a, button')?.focus();
+    } else if (wasOpen.current) {
+      menuButtonRef.current?.focus();
+    }
+    wasOpen.current = menuOpen;
   }, [menuOpen]);
 
   // Um título por página no separador (T4 da auditoria de 20/10/2026).
@@ -69,7 +87,7 @@ export function AppShell({ page, onNavigate, subtitle, actions, timers, help, ch
       </a>
 
       <div className="shell">
-        <aside className="side" id="side" aria-label="Navegação do site">
+        <aside className="side" id="side" aria-label="Navegação do site" ref={sideRef}>
           <div className="sidetop">
             <a className="casa" href={CASA.href}>
               ← {CASA.label}
@@ -129,6 +147,7 @@ export function AppShell({ page, onNavigate, subtitle, actions, timers, help, ch
         <div className="mainc">
           <header className="topbar">
             <button
+              ref={menuButtonRef}
               className="menub"
               type="button"
               aria-expanded={menuOpen}

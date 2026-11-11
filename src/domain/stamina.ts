@@ -74,23 +74,33 @@ export function staminaZone(minutes: number): StaminaZone {
   return { label: 'esgotada', xp: '0%' };
 }
 
+/**
+ * "39:30", "39", "39.5" ou "39,5" em minutos; null se não for nenhum destes.
+ *
+ * 11/11/2026 (auditoria com o Codex): o `split(':')` aceitava "39:30:99" (como
+ * 39:30), ":" (como 0) e "39:" (como 39:00), e "1e308" dava minutos infinitos.
+ * Agora o formato inteiro tem de bater certo e o resultado tem de ser finito.
+ */
+function parseHoursToMinutes(trimmed: string): number | null {
+  const colon = /^(\d+):(\d{1,2})$/.exec(trimmed);
+  if (colon) {
+    const mins = Number(colon[2]);
+    if (mins >= 60) return null;
+    const total = Number(colon[1]) * 60 + mins;
+    return Number.isFinite(total) ? total : null;
+  }
+  if (!/^\d+(?:[.,]\d+)?$/.test(trimmed)) return null;
+  const minutes = Number(trimmed.replace(',', '.')) * 60;
+  return Number.isFinite(minutes) ? minutes : null;
+}
+
 /** Parses "39:30", "39", "39.5" or "39,5" (hours[:minutes] or decimal hours) into minutes. null if invalid or outside 0–42h. */
 export function parseStaminaToMinutes(raw: string): number | null {
   const trimmed = raw.trim();
   if (trimmed === '') return null;
 
-  let minutes: number;
-  if (trimmed.includes(':')) {
-    const [h, m] = trimmed.split(':');
-    const hours = Number(h);
-    const mins = Number(m);
-    if (!Number.isInteger(hours) || !Number.isInteger(mins) || hours < 0 || mins < 0 || mins >= 60) return null;
-    minutes = hours * 60 + mins;
-  } else {
-    const hours = Number(trimmed.replace(',', '.'));
-    if (!Number.isFinite(hours)) return null;
-    minutes = hours * 60;
-  }
+  const minutes = parseHoursToMinutes(trimmed);
+  if (minutes === null) return null;
 
   if (minutes < 0 || minutes > MAX_STAMINA_MIN) return null;
   return minutes;
@@ -101,20 +111,8 @@ export function parseDurationToMinutes(raw: string): number | null {
   const trimmed = raw.trim();
   if (trimmed === '') return null;
 
-  let minutes: number;
-  if (trimmed.includes(':')) {
-    const [h, m] = trimmed.split(':');
-    const hours = Number(h);
-    const mins = Number(m);
-    if (!Number.isInteger(hours) || !Number.isInteger(mins) || hours < 0 || mins < 0 || mins >= 60) return null;
-    minutes = hours * 60 + mins;
-  } else {
-    const hours = Number(trimmed.replace(',', '.'));
-    if (!Number.isFinite(hours)) return null;
-    minutes = hours * 60;
-  }
-
-  return minutes > 0 ? minutes : null;
+  const minutes = parseHoursToMinutes(trimmed);
+  return minutes !== null && minutes > 0 ? minutes : null;
 }
 
 /** Formats minutes as "HH:MM" (in-game stamina style), clamped to 0–42h. */

@@ -132,7 +132,7 @@ export const PAGE_AJUDA: Partial<Record<PageId, ReactNode>> = {
         <code>Europe/Lisbon</code>, que se ajusta sozinho a verão/inverno).
       </p>
       <p>
-        <b>A rotação do Tibiadrome</b> é contada a partir de uma data-âncora conhecida, de cinco em cinco semanas.
+        <b>A rotação do Tibiadrome</b> é contada a partir de uma data-âncora conhecida, de duas em duas semanas (14 dias).
       </p>
     </>
   ),

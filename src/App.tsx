@@ -31,7 +31,7 @@ const hoje = new Intl.DateTimeFormat('pt-PT', { day: '2-digit', month: '2-digit'
  */
 function App() {
   const [page, navigate, section] = useHashRoute();
-  const { histories, loading } = useAllCharacters();
+  const { histories, loading, error: historyError, retry: retryHistory } = useAllCharacters();
 
   const player = playerBySlug(page);
 
@@ -46,13 +46,19 @@ function App() {
     content = <CharacterPage key={player.id} player={player} section={section} />;
     subtitle = `${player.vocation} — a XP, a previsão, a calculadora de hunt e as varinhas de treino.`;
   } else if (page === 'inicio') {
-    content = <HomePage histories={histories} loading={loading} onNavigate={navigate} />;
+    content = <HomePage
+        histories={histories}
+        loading={loading}
+        error={historyError}
+        onRetry={retryHistory}
+        onNavigate={navigate}
+      />;
     const niveis = PLAYERS.map((p) => levelHeadline(p.name, histories[p.id] ?? [], Date.now()));
     subtitle = loading
       ? `O que a XP diz hoje (${hoje.format(new Date())}).`
       : `O que a XP diz hoje (${hoje.format(new Date())}): ${niveis.join(', ')}.`;
   } else if (page === 'partilha') {
-    content = <PartilhaPage histories={histories} loading={loading} />;
+    content = <PartilhaPage histories={histories} loading={loading} error={historyError} onRetry={retryHistory} />;
   } else if (page === 'stamina') {
     content = <StaminaCalculator />;
   } else if (page === 'flechas') {

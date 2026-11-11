@@ -168,22 +168,26 @@ normalmente — daí a mudança.
 
 ### O que corre onde
 
+*Tabela revista na auditoria de 11/11/2026: a anterior ainda falava do
+Agendador de Tarefas de hora a hora e de 5 em 5 minutos, que já não existe.*
+
 | Onde | O quê | Quando |
 | --- | --- | --- |
-| PC (Agendador de Tarefas) | [`scripts/scrape-xp-local.ps1`](scripts/scrape-xp-local.ps1) | de hora a hora |
-| PC (Agendador de Tarefas) | [`scripts/push-hunts.ps1`](scripts/push-hunts.ps1) | de 5 em 5 minutos |
-| PC (Agendador de Tarefas) | [`scripts/celesta/run-celesta-local.ps1`](scripts/celesta/run-celesta-local.ps1) — Claude Code lê o Discord e escreve `celesta-hunts.json` | de hora a hora, 08:03–23:03 e 00:03 |
-| GitHub Actions | [`scrape-experience.yml`](.github/workflows/scrape-experience.yml) | 1×/dia, como alarme |
+| ai-pc, tarefa `tibia-xp` | [`scripts/scrape-experience.mjs`](scripts/scrape-experience.mjs) — Baverone pelos highscores (TibiaData) — **commit sem push** | 10:05, 13:05, 20:05 |
+| ai-pc, tarefa `tibia-xp-chrome` | XP do Bluey lida no guildstats.eu pelo Chrome do André — **commit sem push** | 10:30, 13:30 |
+| ai-pc, tarefa `tibia-push` | [`scripts/push-hunts.ps1`](scripts/push-hunts.ps1) — a **única porta de saída** para o GitHub | 10:20, 13:20, 20:20 |
+| ai-pc, tarefa `tibia-site` | confirma que https://tibia.baverone.com/ está de pé | 10:40, 20:40 |
+| GitHub Actions | [`scrape-experience.yml`](.github/workflows/scrape-experience.yml) — só o alarme de frescura | 1×/dia (12:00 UTC) |
+| GitHub Actions | [`testes.yml`](.github/workflows/testes.yml) — tipos, lint e testes | em cada push de código |
 
-`scrape-xp-local.ps1` corre os dois scrapers e faz **commit sem push** —
-quem faz push é o `push-hunts.ps1`, que já corre de 5 em 5 minutos e já
-verifica se há commits por enviar. Um único script a fazer push significa
-zero corridas entre os dois.
+O `scrape-xp-local.ps1` e a tarefa `\CalculadoraTibia-RecolhaXP` do Agendador
+estão **desligados**; as tarefas `tibia-celesta`/`tibia-reservas` (Discord)
+estão arquivadas desde 15/09/2026.
 
-Correr de hora a hora não custa nada: o scraper só acrescenta datas que
-ainda não tem, por isso quase todas as corridas não fazem rigorosamente
-nada. É de propósito — o guildstats só publica o dia anterior por volta das
-10:50 UTC, e assim não interessa a que horas o PC está ligado.
+Só o `push-hunts.ps1` faz push. Desde 11/11/2026 o commit dele só leva os
+ficheiros das hunts (nada do que outra sessão deixe em staging), só publica a
+partir do `main`, e falha alto se o `--autostash` não conseguir repor as
+alterações locais (antes dizia «publicado» com marcas de conflito na árvore).
 
 ### Como funciona a recolha
 
@@ -231,6 +235,10 @@ de `guildstatsHistory.mjs`; faz commit, o push é do `tibia-push`.
 e é essa que ele mede, com 3 dias de folga (o guildstats publica o dia
 anterior, e um dia perdido recupera-se sozinho).
 
+Desde 11/11/2026 só contam linhas com uma data que existe e XP inteira
+\>= 0, e um último dia **no futuro** é vermelho — antes, uma linha com
+`date: "x"` dava idade `NaN` e o boneco passava como «ok».
+
 Corre no fim do workflow diário e faz o job ficar **vermelho** quando o
 histórico está mesmo a ficar para trás — venha isso do guildstats mudar
 outra vez, do PC desligado ou da tarefa agendada apagada. O vermelho é o
@@ -242,9 +250,7 @@ Para o correr à mão:
 node scripts/check-history-freshness.mjs
 ```
 
-O workflow continua a tentar a recolha (com `continue-on-error`), para
-voltar a funcionar sozinho se o guildstats algum dia deixar de bloquear os
-runners.
+O workflow já não tenta a recolha: corre só este alarme.
 
 ### O mesmo alarme, para as janelas de hunt (setembro de 2026)
 
@@ -263,13 +269,9 @@ dados novos são quatro corridas falhadas seguidas — é o limiar, e é
 `--max-idade-horas`. Fora do horário não há alarme nenhum: um aviso que toca
 todas as noites é um aviso que se ignora.
 
-Corre em três sítios:
-
-- no workflow diário, a seguir ao da XP e com `if: always()` para os dois
-  não se taparem um ao outro (é o caminho que chega ao mail);
-- no teste da tarefa `tibia-push` do ai-pc, que corre de 5 em 5 minutos — é
-  o que dá o sinal em minutos e não no dia seguinte;
-- à mão: `node scripts/check-hunts-freshness.mjs`.
+*Desde que a recolha do Discord foi desligada (15/09/2026) este alarme já
+não corre no workflow diário nem no `tibia-push`; fica para quando as janelas
+voltarem.* À mão: `node scripts/check-hunts-freshness.mjs`.
 
 A **decisão está duplicada** em `src/domain/celestaHunts.ts`
 (`isCollectionStalled`), porque é a app que pinta o painel de vermelho e os
@@ -281,9 +283,11 @@ o caso das 08:00 e o do horário de inverno.
 ### Como a app lê isto
 
 A app (`src/storage/sharedHistory.ts`) busca este JSON diretamente do
-GitHub (`raw.githubusercontent.com`) ao carregar, e junta-o com o histórico
-manual do `localStorage` — entradas automáticas aparecem marcadas "AUTO" na
-lista de histórico recente. **Isto só funciona depois de definires
+GitHub (`raw.githubusercontent.com`) ao carregar, e volta a buscá-lo ao
+regressar a um separador escondido há mais de meia hora. Uma falha de rede ou
+do GitHub aparece como erro com «Tentar outra vez» — só um 404 é «ainda não há
+histórico» (11/11/2026). Linhas com data impossível ou XP negativa ficam de
+fora. **Isto só funciona depois de definires
 `GITHUB_REPO` em [`src/config.ts`](src/config.ts)** com o teu
 `utilizador/repositório`.
 
@@ -327,10 +331,10 @@ scripts/
     fixtures/             # páginas reais do guildstats, cortadas, para os testes
     trackedPlayers.mjs    # quem é rastreado e para que pasta
   scrape-experience.mjs   # recolha diária (corre no PC)
-  scrape-xp-local.ps1     # corre o scraper + commit (tarefa agendada, de hora a hora)
+  scrape-xp-local.ps1     # corre o scraper + commit (DESLIGADO; a recolha é a tarefa tibia-xp do ai-pc)
   check-history-freshness.mjs  # alarme: falha se o histórico tiver 3+ dias de atraso
   check-hunts-freshness.mjs    # alarme: falha se as janelas de hunt estiverem paradas 4h+ de horário
-  push-hunts.ps1          # publica as janelas de hunt (tarefa agendada, 5 em 5 min)
+  push-hunts.ps1          # única porta de saída para o GitHub (tarefa tibia-push do ai-pc, 3×/dia)
   celesta/
     prompt-local.md       # o que o Claude Code faz em cada corrida (Discord -> reservas)
     run-celesta-local.ps1 # lanca o Claude Code local e regista a corrida (tarefa agendada)

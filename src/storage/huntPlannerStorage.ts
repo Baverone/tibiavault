@@ -1,4 +1,4 @@
-import type { CharacterId } from '../domain/types';
+import type { CharacterId } from '../domain/types.ts';
 
 export interface EntradaHunt {
   nivelAlvo: string;
@@ -24,6 +24,20 @@ export const ENTRADA_VAZIA: EntradaHunt = {
   dobro: false,
 };
 
+/**
+ * Cada campo só é aproveitado se for do tipo certo; o resto volta ao valor por
+ * omissão. 11/11/2026 (auditoria com o Codex): um `{"nivelAlvo":null}` guardado
+ * entrava tal e qual e o `.trim()` rebentava a calculadora a cada recarga.
+ */
+export function sanearEntrada(lido: Record<string, unknown>): EntradaHunt {
+  const entrada: EntradaHunt = { ...ENTRADA_VAZIA };
+  for (const chave of Object.keys(ENTRADA_VAZIA) as (keyof EntradaHunt)[]) {
+    const valor = lido[chave];
+    if (typeof valor === typeof ENTRADA_VAZIA[chave]) (entrada as unknown as Record<string, unknown>)[chave] = valor;
+  }
+  return entrada;
+}
+
 /** Guardado por personagem: a XP/h de uma hunt do Baverone não serve ao Bluey. */
 export function carregarEntrada(personagem: CharacterId): EntradaHunt {
   try {
@@ -31,7 +45,7 @@ export function carregarEntrada(personagem: CharacterId): EntradaHunt {
     if (!bruto) return ENTRADA_VAZIA;
     const lido = JSON.parse(bruto);
     if (typeof lido !== 'object' || lido === null) return ENTRADA_VAZIA;
-    return { ...ENTRADA_VAZIA, ...lido };
+    return sanearEntrada(lido as Record<string, unknown>);
   } catch {
     return ENTRADA_VAZIA;
   }

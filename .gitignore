@@ -39,3 +39,12 @@ scripts/publicar-agendado.ps1
 scripts/.publicar-agora
 scripts/.publicar-vivo
 PUBLICACAO-FALHOU.txt
+# 11/11/2026 (auditoria): o publicar.ps1 fazia `git add -A` e push direto -- uma
+# segunda porta de saida, e publicava tudo o que estivesse na pasta. Fica no
+# disco, fora do git, como os de cima.
+scripts/publicar.ps1
+
+# Ficheiros locais que nunca vao para o repo publico: o kit Claude+Codex
+# (.colab/: registos e respostas) e o arranque do canal.
+.colab/
+canal-tibiavault.md

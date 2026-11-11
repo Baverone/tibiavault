@@ -5,6 +5,7 @@ import { getLevelProgress } from '../domain/levelProgress';
 import type { HistoriesByCharacter } from '../hooks/useAllCharacters';
 import { ATALHOS_INICIO, type PageId } from '../navigation/pages';
 import { Icon } from '../components/shell/icons';
+import { HistoryErrorNote } from '../components/shell/HistoryErrorNote';
 import { RecentHistoryList } from '../components/charts/RecentHistoryList';
 import { PartilhaResumo } from './PartilhaPage';
 
@@ -47,7 +48,8 @@ function SummaryTiles({ summary, name, color }: { summary: CharacterSummary; nam
           {summary.lastDay !== null ? `dia ${dayFormatter.format(summary.lastDay)}` : 'sem leituras'}
           {progress &&
             ` · nível ${progress.currentLevel}, ${percentFormatter.format(
-              progress.progressPercent / 100
+              // Para baixo: 99,96 % não pode aparecer como «100,0 %» (11/11/2026).
+              Math.floor(progress.progressPercent * 10) / 1000
             )} para o ${progress.nextLevel}`}
         </span>
       </div>
@@ -79,6 +81,8 @@ function sentence(text: string): string {
 interface HomePageProps {
   histories: HistoriesByCharacter;
   loading: boolean;
+  error: string | null;
+  onRetry: () => void;
   onNavigate: (id: PageId) => void;
 }
 
@@ -89,7 +93,7 @@ interface HomePageProps {
  * a abrir isto — quanto é que os dois fizeram ontem, e como correu a semana —
  * obrigava a abrir os dois separadores e a comparar de cabeça.
  */
-export function HomePage({ histories, loading, onNavigate }: HomePageProps) {
+export function HomePage({ histories, loading, error, onRetry, onNavigate }: HomePageProps) {
   const now = Date.now();
   const summaries = PLAYERS.map((player) => ({
     player,
@@ -105,6 +109,7 @@ export function HomePage({ histories, loading, onNavigate }: HomePageProps) {
 
   return (
     <>
+      {error && <HistoryErrorNote error={error} onRetry={onRetry} />}
       {stale.length > 0 && (
         <p className="aviso warn">
           <Icon name="aviso" size={17} />

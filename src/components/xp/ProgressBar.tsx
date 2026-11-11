@@ -17,7 +17,8 @@ export function ProgressBar({ percent, accentColor }: ProgressBarProps) {
   return (
     <div className="progress-bar">
       <div className="progress-bar__fill" style={{ width: `${clamped}%`, backgroundColor: accentColor }} />
-      <span className="progress-bar__label">{percentFormatter.format(clamped / 100)}</span>
+      {/* Arredonda para baixo (11/11/2026): 99,996 % escrevia «100,00 %» com o nível ainda por subir. */}
+      <span className="progress-bar__label">{percentFormatter.format(Math.floor(clamped * 100) / 10000)}</span>
     </div>
   );
 }

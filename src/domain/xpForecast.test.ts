@@ -3,7 +3,8 @@
 // incluindo o caso de ritmo negativo (mortes a comer mais do que se ganha).
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { computeRateOverWindow, forecastNextLevels, projectAtHorizon } from './xpForecast.ts';
+import { calendarDaysUntil, computeRateOverWindow, forecastNextLevels, projectAtHorizon, readingInstant } from './xpForecast.ts';
+import { experienceForLevel } from './experienceTable.ts';
 import type { HistoryEntry } from './types.ts';
 
 const DIA = 24 * 60 * 60 * 1000;
@@ -80,4 +81,27 @@ test('forecastNextLevels devolve `count` niveis consecutivos a partir do nivel a
   assert.equal(previsoes.length, 3);
   assert.deepEqual(previsoes.map((p) => p.level), [2, 3, 4]);
   assert.ok(previsoes.every((p) => p.daysToReach > 0));
+});
+
+// Auditoria de 11/11/2026: a Previsão conta a partir da leitura, não de «agora».
+test('readingInstant: a linha do dia D vale o server save de D+1 (09:00 de Lisboa)', () => {
+  const inverno = { timestamp: Date.parse('2026-11-10T12:00:00Z'), experience: 0 };
+  assert.equal(readingInstant(inverno).toISOString(), '2026-11-11T09:00:00.000Z');
+  const verao = { timestamp: Date.parse('2026-07-10T12:00:00Z'), experience: 0 };
+  assert.equal(readingInstant(verao).toISOString(), '2026-07-11T08:00:00.000Z');
+});
+
+test('calendarDaysUntil conta dias de calendario, como a data mostrada ao lado', () => {
+  const now = new Date(2026, 10, 11, 21, 18);
+  assert.equal(calendarDaysUntil(new Date(2026, 10, 21, 1, 0), now), 10);
+  assert.equal(calendarDaysUntil(new Date(2026, 10, 11, 23, 0), now), 0);
+  assert.equal(calendarDaysUntil(new Date(2026, 10, 12, 0, 30), now), 1);
+  assert.equal(calendarDaysUntil(new Date(2026, 10, 9), now), -2);
+});
+
+test('com a leitura atrasada, um nivel ja passado fica com data no passado', () => {
+  const lastReading = { timestamp: Date.parse('2026-10-20T12:00:00Z'), experience: 0 };
+  const from = readingInstant(lastReading);
+  const [next] = forecastNextLevels(experienceForLevel(100) - 10, 10, 1, from);
+  assert.ok(next.estimatedDate.getTime() < Date.parse('2026-10-25T00:00:00Z'));
 });

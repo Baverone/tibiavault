@@ -25,10 +25,22 @@ export function experienceForLevel(level) {
   return Math.round((50 / 3) * (level ** 3 - 6 * level ** 2 + 17 * level - 12));
 }
 
+// Teto da pesquisa, o mesmo de MAX_SEARCH_LEVEL na app. Sem ele, uma XP enorme
+// (1e60) levava `high` acima de 2^53, onde `high *= 2` deixa de mudar e o ciclo
+// nunca acaba (a app foi corrigida a 08/11/2026; aqui ficou por corrigir ate a
+// auditoria de 11/11/2026).
+export const MAX_SEARCH_LEVEL = 2 ** 26;
+
 export function levelForExperience(experience) {
+  if (!Number.isFinite(experience) || experience < 0) {
+    throw new Error(`XP invalida: ${experience}`);
+  }
   let low = 1;
   let high = 1;
-  while (experienceForLevel(high) <= experience) high *= 2;
+  while (experienceForLevel(high) <= experience) {
+    if (high >= MAX_SEARCH_LEVEL) return MAX_SEARCH_LEVEL;
+    high *= 2;
+  }
   while (low < high) {
     const mid = low + Math.ceil((high - low) / 2);
     if (experienceForLevel(mid) <= experience) low = mid;
@@ -243,7 +255,18 @@ export function saveHistory(dataDir, id, history) {
  */
 export function mergeRows(history, rows, scrapedAt) {
   const knownDates = new Set(history.map((entry) => entry.date));
-  const added = rows
+  // 11/11/2026 (auditoria): duas linhas novas com a mesma data entravam as
+  // duas. Iguais, fica uma; com XP diferente nao ha como saber qual e a certa,
+  // e gravar uma delas a sorte e pior do que falhar.
+  const byDate = new Map();
+  for (const row of rows) {
+    const seen = byDate.get(row.date);
+    if (!seen) byDate.set(row.date, row);
+    else if (seen.experience !== row.experience || seen.level !== row.level) {
+      throw new Error(`a fonte trouxe ${row.date} duas vezes com valores diferentes (${seen.experience} e ${row.experience}) - nao gravo nenhuma`);
+    }
+  }
+  const added = [...byDate.values()]
     .filter((row) => !knownDates.has(row.date))
     .sort((a, b) => a.date.localeCompare(b.date))
     .map((row) => ({ ...row, scrapedAt }));

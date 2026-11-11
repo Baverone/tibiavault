@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { CharacterId, HistoryEntry } from '../domain/types';
-import { fetchSharedHistory } from '../storage/sharedHistory';
+import { fetchSharedHistory, historyErrorText } from '../storage/sharedHistory';
+import { useRefreshWhenVisible } from './useRefreshWhenVisible';
 
 /**
  * O estado de um painel de boneco: o histórico recolhido e a XP atual.
@@ -9,29 +10,44 @@ import { fetchSharedHistory } from '../storage/sharedHistory';
  * silenciosamente parada, escrever a XP à mão era a única forma de a app
  * mostrar alguma coisa atual — resolvida a recolha, esse remendo passou a
  * ser só mais um sítio onde os números podiam divergir. A fonte é uma só.
+ *
+ * 11/11/2026: uma falha ao ler fica em `error` (com `retry`), e o histórico
+ * que já se tinha não se perde por causa dela.
  */
 export function useCharacterState(characterId: CharacterId) {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  const retry = useCallback(() => setAttempt((n) => n + 1), []);
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
 
-    fetchSharedHistory(characterId).then((entries) => {
-      if (cancelled) return;
-      setHistory([...entries].sort((a, b) => a.timestamp - b.timestamp));
-      setLoading(false);
-    });
+    fetchSharedHistory(characterId).then(
+      (entries) => {
+        if (cancelled) return;
+        setHistory([...entries].sort((a, b) => a.timestamp - b.timestamp));
+        setError(null);
+        setLoading(false);
+      },
+      (reason: unknown) => {
+        if (cancelled) return;
+        setError(historyErrorText(reason));
+        setLoading(false);
+      }
+    );
 
     return () => {
       cancelled = true;
     };
-  }, [characterId]);
+  }, [characterId, attempt]);
+
+  useRefreshWhenVisible(retry);
 
   // 25/10/2026: devolvia também `currentExperience` e `daysSinceLastReading`,
   // que já ninguém lia — a página tira os dois do `summarizeCharacter`, e o
   // segundo contava horas e não dias de calendário (o erro corrigido a 20/10
   // no `calendarDaysSince`). Ficar cá era convidar a usá-lo outra vez.
-  return { history, loading };
+  return { history, loading, error, retry };
 }

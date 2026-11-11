@@ -52,17 +52,21 @@ if ($LASTEXITCODE -ne 0) {
 
 # Antes das 9h de Lisboa o scraper sai sem fazer nada (server save do Tibia);
 # nesse caso nao ha nada para commitar e saimos em silencio.
-git add data/scraped-history
+git add -- data/scraped-history
+if ($LASTEXITCODE -ne 0) { Write-Log 'git add falhou'; exit 1 }
 
-# --quiet devolve 0 quando NAO ha nada em staging.
-git diff --cached --quiet
+# --quiet devolve 0 quando NAO ha nada em staging, 1 quando ha, >1 se rebentou.
+# So olha (e so commita) o data/scraped-history: o que outra sessao tenha
+# deixado em staging nao entra neste commit (auditoria de 11/11/2026).
+git diff --cached --quiet -- data/scraped-history
+if ($LASTEXITCODE -gt 1) { Write-Log 'git diff falhou'; exit 1 }
 if ($LASTEXITCODE -eq 0) {
   if ($falhas -gt 0) { exit 1 }
   exit 0
 }
 
 $hoje = Get-Date -Format 'yyyy-MM-dd'
-git commit -m "chore: atualizar historico de XP ($hoje)" | Out-Null
+git commit -m "chore: atualizar historico de XP ($hoje)" -- data/scraped-history | Out-Null
 if ($LASTEXITCODE -ne 0) { Write-Log 'commit falhou'; exit 1 }
 
 Write-Log "XP recolhida e commitada ($hoje) - o push-hunts.ps1 envia dentro de 5 min"

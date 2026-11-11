@@ -1,7 +1,33 @@
 import { experienceForLevel, levelForExperience } from './experienceTable.ts';
 import type { HistoryEntry } from './types.ts';
+import { addDaysToKey, serverSaveAt } from './tibiaDay.ts';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+/**
+ * O instante a que corresponde a XP de uma leitura. A linha do dia D traz a XP
+ * do fim do dia D do Tibia, ou seja do server save que abre o dia seguinte
+ * (09:00 de Lisboa de D+1) — é a essa hora que a recolha a lê.
+ *
+ * 11/11/2026 (auditoria): a Previsão contava a partir de «agora» com a XP da
+ * última leitura. Com a leitura atrasada uns dias, as datas saíam esses dias
+ * tarde e um nível já passado aparecia com data no futuro.
+ */
+export function readingInstant(entry: HistoryEntry): Date {
+  const dateKey = new Date(entry.timestamp).toISOString().slice(0, 10);
+  return new Date(serverSaveAt(addDaysToKey(dateKey, 1)));
+}
+
+/**
+ * Dias de calendário (no fuso do browser) de `now` até `date`: 0 hoje, 1
+ * amanhã, negativo se já passou. É o que bate certo com a data mostrada ao
+ * lado — «21/11 (9 dias)» a 11/11 era um arredondamento de 9,2 dias que
+ * contradizia a data.
+ */
+export function calendarDaysUntil(date: Date, now: Date = new Date()): number {
+  const startOf = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  return Math.round((startOf(date) - startOf(now)) / MS_PER_DAY);
+}
 
 /** Horizontes oferecidos por omissão. Qualquer número serve — estes são só os atalhos. */
 export const FORECAST_HORIZONS = [7, 30, 60, 90] as const;

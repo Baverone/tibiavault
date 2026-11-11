@@ -6,6 +6,7 @@ import type { Vocation } from '../domain/skillTraining';
 // vocation essentially never changes once promoted.
 
 const CACHE_PREFIX = 'tibia-xp-calc:vocation:';
+const KNOWN_VOCATIONS: readonly Vocation[] = ['knight', 'paladin', 'sorcerer', 'druid', 'monk'];
 
 function cacheKey(characterId: string): string {
   return `${CACHE_PREFIX}${characterId}`;
@@ -14,7 +15,9 @@ function cacheKey(characterId: string): string {
 export function getCachedVocation(characterId: string): Vocation | null {
   try {
     const raw = localStorage.getItem(cacheKey(characterId));
-    return raw ? (raw as Vocation) : null;
+    // Só uma vocação conhecida (11/11/2026): um valor estranho guardado fazia a
+    // calculadora procurar skills de uma vocação que não existe.
+    return raw && (KNOWN_VOCATIONS as readonly string[]).includes(raw) ? (raw as Vocation) : null;
   } catch {
     return null;
   }
@@ -46,6 +49,9 @@ export async function fetchCharacterVocation(characterName: string): Promise<Voc
   try {
     const response = await fetch(`https://api.tibiadata.com/v4/character/${encodeURIComponent(characterName)}`, {
       cache: 'no-store',
+      // 11/11/2026: sem prazo, uma API pendurada deixava «A detetar…» para sempre
+      // e escondia os botões para escolher a vocação à mão.
+      signal: AbortSignal.timeout(8_000),
     });
     if (!response.ok) return null;
 

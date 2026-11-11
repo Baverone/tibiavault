@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react';
 import type { HistoryEntry } from '../../domain/types';
 import {
+  calendarDaysUntil,
   computeRateOverWindow,
   DEFAULT_HORIZON_DAYS,
   FORECAST_HORIZONS,
   forecastNextLevels,
   projectAtHorizon,
+  readingInstant,
 } from '../../domain/xpForecast';
 
 interface XpForecastCardProps {
@@ -16,6 +18,15 @@ interface XpForecastCardProps {
 
 const numberFormatter = new Intl.NumberFormat('pt-PT');
 const dateFormatter = new Intl.DateTimeFormat('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+/** «(hoje)», «(amanhã)», «(9 dias)» — ou «já devia ter chegado» se a data passou. */
+function formatEta(date: Date): string {
+  const days = calendarDaysUntil(date);
+  if (days < 0) return 'já devia ter chegado';
+  if (days === 0) return 'hoje';
+  if (days === 1) return 'amanhã';
+  return `${days} dias`;
+}
 
 function formatDays(days: number): string {
   if (days < 1) return 'menos de 1 dia';
@@ -39,11 +50,11 @@ export function XpForecastCard({ history, currentExperience, accentColor }: XpFo
 
   const rate = useMemo(() => computeRateOverWindow(history, horizon), [history, horizon]);
   const projection = useMemo(
-    () => (rate ? projectAtHorizon(currentExperience, rate) : null),
+    () => (rate ? projectAtHorizon(currentExperience, rate, readingInstant(rate.lastEntry)) : null),
     [rate, currentExperience]
   );
   const nextLevels = useMemo(
-    () => (rate ? forecastNextLevels(currentExperience, rate.averageDailyXp, 5) : []),
+    () => (rate ? forecastNextLevels(currentExperience, rate.averageDailyXp, 5, readingInstant(rate.lastEntry)) : []),
     [rate, currentExperience]
   );
 
@@ -129,7 +140,7 @@ export function XpForecastCard({ history, currentExperience, accentColor }: XpFo
                     <td>{numberFormatter.format(Math.round(forecast.experienceNeeded))} XP</td>
                     <td>
                       {dateFormatter.format(forecast.estimatedDate)}
-                      <span className="xp-forecast__eta"> ({formatDays(forecast.daysToReach)})</span>
+                      <span className="xp-forecast__eta"> ({formatEta(forecast.estimatedDate)})</span>
                     </td>
                   </tr>
                 ))}

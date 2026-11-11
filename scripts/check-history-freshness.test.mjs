@@ -64,3 +64,25 @@ test('historicos em dia saem 0 e os buracos continuam a ser ditos', () => {
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /BURACO {2}royal-paladin: falta\(m\) 2026-10-02/);
 });
+
+// Auditoria de 11/11/2026 (com o Codex): uma data que nao existe dava idade NaN
+// e o boneco passava como «ok»; uma data no futuro calava o alarme.
+test('linhas com data invalida ou sem XP nao contam como frescas', () => {
+  const today = lisbonToday();
+  const result = runAlarm({
+    'royal-paladin.json': JSON.stringify([{ date: 'x' }, { date: today }, { date: '2026-02-30', experience: 1 }]),
+    'exalted-monk.json': JSON.stringify([{ date: today, level: 1, experience: 0 }]),
+  });
+  assert.equal(result.status, 1, result.stdout);
+  assert.match(result.stderr, /ATRASADO {2}\[bonecos\] royal-paladin/);
+});
+
+test('uma data no futuro sai vermelha', () => {
+  const today = lisbonToday();
+  const result = runAlarm({
+    'royal-paladin.json': JSON.stringify([{ date: '2999-01-01', level: 1, experience: 0 }]),
+    'exalted-monk.json': JSON.stringify([{ date: today, level: 1, experience: 0 }]),
+  });
+  assert.equal(result.status, 1, result.stdout);
+  assert.match(result.stderr, /royal-paladin: último dia 2999-01-01 \(no futuro/);
+});

@@ -7,6 +7,7 @@ import { CHARACTER_SECTIONS } from '../navigation/pages';
 import { holdSectionInView } from '../navigation/holdSection';
 import { browserHoldEnv } from '../navigation/browserHoldEnv';
 import { Icon } from '../components/shell/icons';
+import { HistoryErrorNote } from '../components/shell/HistoryErrorNote';
 import { PageIndex } from '../components/shell/PageIndex';
 import { LevelProgressCard } from '../components/xp/LevelProgressCard';
 import { XpForecastCard } from '../components/xp/XpForecastCard';
@@ -55,7 +56,7 @@ function useScrollToSection(section: string | null | undefined, ready: boolean) 
  * rolar até lá e esperar reconhecê-la.
  */
 export function CharacterPage({ player, section }: CharacterPageProps) {
-  const { history, loading } = useCharacterState(player.id);
+  const { history, loading, error, retry } = useCharacterState(player.id);
   const now = Date.now();
   const summary = summarizeCharacter(history, now);
   const progress = summary.experience !== null ? getLevelProgress(summary.experience) : null;
@@ -65,6 +66,7 @@ export function CharacterPage({ player, section }: CharacterPageProps) {
   if (loading) return <p className="vazio">A carregar o histórico do {player.name}…</p>;
 
   if (!progress) {
+    if (error) return <HistoryErrorNote error={error} onRetry={retry} />;
     return (
       <p className="vazio">
         Sem leituras do {player.name}: ainda não há histórico. A recolha corre no PC e publica em{' '}
@@ -78,6 +80,7 @@ export function CharacterPage({ player, section }: CharacterPageProps) {
       <PageIndex entries={CHARACTER_SECTIONS} page={player.slug} />
 
       <div>
+        {error && <HistoryErrorNote error={error} onRetry={retry} />}
         {isStale && (
           <p className="aviso warn">
             <Icon name="aviso" size={17} />

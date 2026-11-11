@@ -98,8 +98,24 @@ function provablyNever(a: ShareCharacter, b: ShareCharacter): boolean {
   return high.dailyXp > 0 && low.dailyXp / high.dailyXp < MIN_CATCH_UP_RATIO;
 }
 
+// 11/11/2026 (auditoria): a pesquisa vai até 36 500 dias (~60 ms quando a
+// resposta é «para lá de 100 anos») e corria em cada render — cada tecla nos
+// campos do ritmo, e o cartão do Início. Guardam-se as últimas respostas.
+const verdictCache = new Map<string, ShareVerdict>();
+const VERDICT_CACHE_SIZE = 16;
+
 /** `daysUntilShare` a sério: distingue «para lá de 10 anos» de «nunca». */
 export function shareVerdict(a: ShareCharacter, b: ShareCharacter): ShareVerdict {
+  const key = `${a.experience}|${a.dailyXp}|${b.experience}|${b.dailyXp}`;
+  const cached = verdictCache.get(key);
+  if (cached) return cached;
+  const verdict = computeShareVerdict(a, b);
+  if (verdictCache.size >= VERDICT_CACHE_SIZE) verdictCache.delete(verdictCache.keys().next().value as string);
+  verdictCache.set(key, verdict);
+  return verdict;
+}
+
+function computeShareVerdict(a: ShareCharacter, b: ShareCharacter): ShareVerdict {
   const days = daysUntilShare(a, b, MAX_LATER_SHARE_DAYS);
   if (days === null) return provablyNever(a, b) ? { kind: 'never' } : { kind: 'beyond' };
   if (days === 0) return { kind: 'now' };

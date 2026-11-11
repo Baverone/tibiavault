@@ -959,13 +959,21 @@ h1.pgt {
     position: fixed;
     inset: 0 auto 0 0;
     transform: translateX(-102%);
-    transition: transform 0.18s ease;
+    /* Fechado fica `hidden` (11/11/2026): só com o transform os ~10 links
+       continuavam no Tab e eram lidos pelos leitores de ecrã. O atraso do
+       `visibility` deixa a animação de saída acabar antes de o esconder. */
+    visibility: hidden;
+    transition:
+      transform 0.18s ease,
+      visibility 0s linear 0.18s;
     box-shadow: var(--sombra);
     width: min(86vw, var(--side));
   }
 
   body.menu-on .side {
     transform: none;
+    visibility: visible;
+    transition: transform 0.18s ease;
   }
 
   body:not(.menu-on) .veu {

@@ -109,3 +109,19 @@ test('staminaZone cobre as quatro faixas de XP', () => {
   assert.equal(staminaZone(1).xp, '50%');
   assert.equal(staminaZone(0).xp, '0%');
 });
+
+// Auditoria de 11/11/2026 (Codex): formatos meio certos passavam.
+test('stamina e duracao recusam formatos malformados e numeros infinitos', () => {
+  for (const lixo of ['39:30:99', ':', '39:', ':30', '1e308', '1e3', '39,5,5', '-1', 'abc']) {
+    assert.equal(parseStaminaToMinutes(lixo), null, `stamina ${lixo}`);
+  }
+  for (const lixo of ['3:30:99', ':', '3:', '1e308', '9'.repeat(400), '9'.repeat(400) + ':00']) {
+    assert.equal(parseDurationToMinutes(lixo), null, `duracao ${lixo}`);
+  }
+  assert.equal(parseStaminaToMinutes('39:30'), 39 * 60 + 30);
+  assert.equal(parseStaminaToMinutes('39,5'), 39 * 60 + 30);
+  assert.equal(parseStaminaToMinutes('39.5'), 39 * 60 + 30);
+  assert.equal(parseStaminaToMinutes('0'), 0);
+  assert.equal(parseDurationToMinutes('3:05'), 185);
+  assert.equal(parseDurationToMinutes('0'), null);
+});

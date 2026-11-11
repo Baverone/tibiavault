@@ -7,8 +7,10 @@ import assert from 'node:assert/strict';
 import {
   calculateSkillTraining,
   calculateTrainingToTarget,
+  MAX_SKILL_LEVEL,
   minSkillLevel,
   VOCATION_SKILLS,
+  type TrainableSkill,
   type Vocation,
 } from './skillTraining.ts';
 
@@ -44,4 +46,22 @@ test('com Loyalty o nível base fica atrás do do jogo, e a meio de um nível n�
   const meio = calculateSkillTraining('magic', 'monk', 50, 50, false, 0);
   assert.equal(meio.baseLevel, 50);
   assert.ok(Math.abs(meio.basePercent - 50) < 0.01);
+});
+
+// Auditoria de 11/11/2026 (Codex): nivel 10000 bloqueava a pagina num ciclo infinito.
+test('no teto (MAX_SKILL_LEVEL) todas as contas acabam e dao numeros finitos', () => {
+  const casos: Array<[TrainableSkill, Vocation]> = [
+    ['magic', 'knight'], ['magic', 'paladin'], ['magic', 'sorcerer'], ['magic', 'monk'],
+    ['distance', 'paladin'], ['sword', 'knight'], ['shielding', 'knight'], ['fist', 'monk'],
+  ];
+  for (const [skill, vocation] of casos) {
+    const r = calculateSkillTraining(skill, vocation, MAX_SKILL_LEVEL - 1, 50, false, 0);
+    assert.ok(Number.isFinite(r.pointsRemaining) && Number.isFinite(r.chargesNormal), `${skill}/${vocation}`);
+    const t = calculateTrainingToTarget(skill, vocation, 100, 0, MAX_SKILL_LEVEL, false, 50);
+    assert.ok(t && Number.isFinite(t.lastingNormal), `${skill}/${vocation} alvo`);
+  }
+});
+
+test('acima do teto falha logo, em vez de bloquear', () => {
+  assert.throws(() => calculateSkillTraining('magic', 'paladin', 10000, 50, false, 0), RangeError);
 });

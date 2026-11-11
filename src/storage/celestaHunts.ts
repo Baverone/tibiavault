@@ -1,5 +1,5 @@
 import { GITHUB_REPO } from '../config';
-import type { CelestaHuntsData } from '../domain/celestaHunts';
+import { isCelestaHuntsData as isValid, type CelestaHuntsData } from '../domain/celestaHunts';
 
 /**
  * A tarefa agendada escreve o mesmo ficheiro em dois sítios:
@@ -22,16 +22,13 @@ import type { CelestaHuntsData } from '../domain/celestaHunts';
 const LOCAL_URL = '/celesta-hunts.json';
 const REMOTE_URL = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/data/celesta-hunts.json`;
 
-function isValid(value: unknown): value is CelestaHuntsData {
-  if (typeof value !== 'object' || value === null) return false;
-  const data = value as Partial<CelestaHuntsData>;
-  return typeof data.generatedAt === 'string' && Array.isArray(data.spots);
-}
-
 async function fetchOne(url: string, bust: number): Promise<CelestaHuntsData | null> {
   try {
     const separator = url.includes('?') ? '&' : '?';
-    const response = await fetch(`${url}${separator}t=${bust}`, { cache: 'no-store' });
+    const response = await fetch(`${url}${separator}t=${bust}`, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(15_000),
+    });
     if (!response.ok) return null;
 
     const data: unknown = await response.json();

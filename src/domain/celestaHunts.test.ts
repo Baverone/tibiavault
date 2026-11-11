@@ -6,10 +6,12 @@
 // perguntas diferentes e a segunda e a que a app responde no telemovel.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   formatAge,
   formatGeneratedStamp,
   formatLength,
+  isCelestaHuntsData,
   isCollectionStalled,
   isWithinCollectionHours,
   minutesSinceReference,
@@ -251,4 +253,18 @@ test('formatGeneratedStamp diz a que noite as melhores janelas se referem', () =
   // 00:06 UTC = 02:06 em Berlim; a referencia do bot e as 02:04 do dia 9.
   assert.equal(formatGeneratedStamp(geradoEm('2026-09-09T00:06:00Z')), '09/09, 02:04');
   assert.equal(formatGeneratedStamp(geradoEm('nao e uma data')), null);
+});
+
+// Auditoria de 11/11/2026 (Codex): o ficheiro so era validado por cima.
+test('isCelestaHuntsData: os ficheiros reais passam; campos em falta ou janelas vazias nao', () => {
+  for (const file of ['data/celesta-hunts.json', 'public/celesta-hunts.json']) {
+    const real = JSON.parse(readFileSync(new URL(`../../${file}`, import.meta.url), 'utf-8'));
+    assert.equal(isCelestaHuntsData(real), true, file);
+  }
+  const base = { generatedAt: 'x', referenceTime: '10:03', timezone: 'Europe/Berlin', minWindowMinutes: 60 };
+  assert.equal(isCelestaHuntsData({ ...base, spots: [] }), true);
+  assert.equal(isCelestaHuntsData({ generatedAt: 'x', spots: [] }), false);
+  assert.equal(isCelestaHuntsData({ ...base, spots: [{ name: 'a', free: [null] }] }), false);
+  assert.equal(isCelestaHuntsData({ ...base, spots: [{ name: 'a', free: [{}] }] }), false);
+  assert.equal(isCelestaHuntsData({ ...base, spots: [{ name: 'a', free: [{ start: '10:00', end: '12:00', minutes: 120 }] }] }), true);
 });

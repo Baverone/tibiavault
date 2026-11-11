@@ -71,6 +71,16 @@ export const SKILL_LABELS: Record<TrainableSkill, string> = {
   fist: 'Fist Fighting',
 };
 
+/**
+ * Nível de skill mais alto que a calculadora aceita (atual e objetivo).
+ *
+ * 11/11/2026 (auditoria com o Codex): sem teto, um nível 10000 fazia os pontos
+ * passarem a Infinity e o `while` de `levelPercentFromPoints` nunca acabava —
+ * a página bloqueava. 500 fica muito acima de qualquer skill real e, mesmo no
+ * pior caso (Magic Level de Knight, 3^500), as contas continuam finitas.
+ */
+export const MAX_SKILL_LEVEL = 500;
+
 /** Minimum valid skill level — combat skills start at 10, Magic Level starts at 0. */
 export function minSkillLevel(skill: TrainableSkill): number {
   return SKILL_CONFIG[skill].c;
@@ -107,14 +117,17 @@ function levelPercentFromPoints(skill: TrainableSkill, vocation: Vocation, point
   const config = SKILL_CONFIG[skill];
   const b = vocationB(skill, vocation);
 
+  if (!Number.isFinite(points) || points < 0) {
+    throw new RangeError(`Pontos de skill inválidos: ${points}`);
+  }
   const exactLevel = Math.log((points * (b - 1)) / config.a + 1) / Math.log(b) + config.c;
   // 25/10/2026: o logaritmo, mesmo em cima de um nível certo, sai às vezes
   // 49,9999999 e o `floor` dava 49 — Magic Level 50 sem Loyalty aparecia como
   // «base 49, 99,99 %» e «0 Lasting Exercise». Acerta-se com a soma exata dos
   // pontos, com uma folga relativa para o erro de vírgula flutuante.
   const tolerance = 1e-9 * Math.max(1, points);
-  let level = Math.max(config.c, Math.floor(exactLevel));
-  while (totalPointsAtLevel(skill, vocation, level + 1) <= points + tolerance) level++;
+  let level = Math.min(MAX_SKILL_LEVEL, Math.max(config.c, Math.floor(exactLevel)));
+  while (level < MAX_SKILL_LEVEL && totalPointsAtLevel(skill, vocation, level + 1) <= points + tolerance) level++;
   while (level > config.c && totalPointsAtLevel(skill, vocation, level) > points + tolerance) level--;
   const pointsAtLevel = totalPointsAtLevel(skill, vocation, level);
   const pointsForThisLevel = pointsForNextLevel(skill, vocation, level);
