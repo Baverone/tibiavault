@@ -13,13 +13,35 @@ function ficouVazio(normalized: string): boolean {
   return normalized === '';
 }
 
+/**
+ * 12/11/2026 (proposta 4 da auditoria, decisão do André): o ponto só é aceite
+ * como separador de milhares, em grupos de três ("1.500", "3.581.151.352").
+ * Até aqui todos os pontos eram apagados, e "85.5" (quem quis dizer 85,5)
+ * passava como 855 sem aviso nenhum.
+ */
+const PONTOS_DE_MILHAR = /^-?\d{1,3}(\.\d{3})+(,\d*)?$/;
+
+/** Tira os espaços e, se os pontos estiverem nos milhares, deixa o número pronto para o `Number`. */
+function normalizar(trimmed: string, fieldLabel: string): ValidationResult<string> {
+  const semEspacos = trimmed.replace(/\s/g, '');
+  if (semEspacos.includes('.') && !PONTOS_DE_MILHAR.test(semEspacos)) {
+    return {
+      ok: false,
+      error: `${fieldLabel} tem um ponto fora do sítio: o ponto só separa milhares (1.500); para decimais usa a vírgula (2,5).`,
+    };
+  }
+  return { ok: true, value: semEspacos.replace(/\./g, '').replace(',', '.') };
+}
+
 export function parseNonNegativeInteger(raw: string, fieldLabel: string): ValidationResult<number> {
   const trimmed = raw.trim();
   if (trimmed === '') {
     return { ok: false, error: `Introduz ${fieldLabel}.` };
   }
 
-  const normalized = trimmed.replace(/\s|\./g, '').replace(',', '.');
+  const normalizado = normalizar(trimmed, fieldLabel);
+  if (!normalizado.ok) return normalizado;
+  const normalized = normalizado.value;
   const value = Number(normalized);
 
   if (ficouVazio(normalized) || !Number.isFinite(value)) {
@@ -41,7 +63,9 @@ export function parsePositiveNumber(raw: string, fieldLabel: string): Validation
     return { ok: false, error: `Introduz ${fieldLabel}.` };
   }
 
-  const normalized = trimmed.replace(/\s|\./g, '').replace(',', '.');
+  const normalizado = normalizar(trimmed, fieldLabel);
+  if (!normalizado.ok) return normalizado;
+  const normalized = normalizado.value;
   const value = Number(normalized);
 
   if (ficouVazio(normalized) || !Number.isFinite(value)) {
@@ -61,7 +85,9 @@ export function parseNonNegativeNumber(raw: string, fieldLabel: string): Validat
     return { ok: false, error: `Introduz ${fieldLabel}.` };
   }
 
-  const normalized = trimmed.replace(/\s|\./g, '').replace(',', '.');
+  const normalizado = normalizar(trimmed, fieldLabel);
+  if (!normalizado.ok) return normalizado;
+  const normalized = normalizado.value;
   const value = Number(normalized);
 
   if (ficouVazio(normalized) || !Number.isFinite(value)) {

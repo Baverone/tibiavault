@@ -3,7 +3,7 @@
 // 16/10/2026.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'fs';
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import {
@@ -152,7 +152,7 @@ test(
     const dir = tempDir(t);
     const antigo = [{ date: '2026-10-13', level: 1174, experience: 26_885_267_055, scrapedAt: '2026-10-14T09:05:17.170Z' }];
     writeFileSync(join(dir, 'royal-paladin.json'), `${JSON.stringify(antigo, null, 2)}\n`);
-    const { impl } = fakeFetch({ 1: page(1, [someone(612, 'Baverone', 1174, 26_900_000_000)], { totalPages: 1 }) });
+    const { impl } = fakeFetch({ 1: page(1, [someone(612, 'Baverone', 1175, 26_900_000_000)], { totalPages: 1 }) });
 
     const result = await syncFromHighscores({
       id: 'royal-paladin', nick: 'Baverone', world: 'Celesta', dataDir: dir, fetchImpl: impl, now,
@@ -164,12 +164,15 @@ test(
       ...antigo,
       {
         date: '2026-10-15',
-        level: 1174,
+        level: 1175,
         experience: 26_900_000_000,
         scrapedAt: '2026-10-16T10:05:00.000Z',
         source: 'highscores',
+        snapshotAt: '2026-10-16T09:55:00.000Z',
       },
     ]);
+    // nem o trinco nem o temporário ficam para trás
+    assert.deepEqual(readdirSync(dir), ['royal-paladin.json']);
 
     // segunda corrida no mesmo dia: não mexe
     const again = await syncFromHighscores({
@@ -177,6 +180,47 @@ test(
     });
     assert.equal(again.added, 0);
     assert.equal(JSON.parse(readFileSync(join(dir, 'royal-paladin.json'), 'utf-8')).length, 2);
+  })
+);
+
+// 12/11/2026 (proposta 2 da auditoria): sem hora fiável, nada se grava.
+for (const [caso, opcoes, motivo] of [
+  ['sem information.timestamp', { timestamp: undefined }, /information\.timestamp/],
+  ['com timestamp ilegível', { timestamp: 'ontem' }, /information\.timestamp/],
+  ['sem highscore_age', { age: undefined }, /highscore_age/],
+  ['com highscore_age negativo', { age: -3 }, /highscore_age/],
+  ['com highscore_age null', { age: null }, /highscore_age/],
+  ['com uma lista do futuro', { timestamp: '2026-10-16T11:00:00Z' }, /depois de agora/],
+]) {
+  test(
+    `resposta ${caso} não entra no histórico`,
+    quiet(async (t) => {
+      const dir = tempDir(t);
+      const body = page(1, [BAVERONE], { totalPages: 1, ...opcoes });
+      // `undefined` no page() cai no valor por omissão: tira-se à mão
+      if ('timestamp' in opcoes && opcoes.timestamp === undefined) delete body.information.timestamp;
+      if ('age' in opcoes && opcoes.age === undefined) delete body.highscores.highscore_age;
+      const { impl } = fakeFetch({ 1: body });
+
+      await assert.rejects(
+        syncFromHighscores({ id: 'royal-paladin', nick: 'Baverone', world: 'Celesta', dataDir: dir, fetchImpl: impl, now }),
+        (error) => error.transient === true && motivo.test(error.message)
+      );
+      assert.deepEqual(readdirSync(dir), []);
+    })
+  );
+}
+
+test(
+  'nível e XP que não batem com a fórmula já não se gravam (era só um aviso)',
+  quiet(async (t) => {
+    const dir = tempDir(t);
+    const { impl } = fakeFetch({ 1: page(1, [someone(612, 'Baverone', 1174, 26_900_000_000)], { totalPages: 1 }) });
+    await assert.rejects(
+      syncFromHighscores({ id: 'royal-paladin', nick: 'Baverone', world: 'Celesta', dataDir: dir, fetchImpl: impl, now }),
+      (error) => error.transient === true && /não bate com a fórmula/.test(error.message)
+    );
+    assert.deepEqual(readdirSync(dir), []);
   })
 );
 

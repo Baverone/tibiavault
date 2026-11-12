@@ -27,7 +27,7 @@
 import * as cheerio from 'cheerio';
 import { experienceForLevel } from '../../src/domain/experienceTable.ts';
 import { historyDateFor } from './tibiaDataHighscores.mjs';
-import { loadExistingHistory, saveHistory } from './guildstatsHistory.mjs';
+import { updateHistory } from './guildstatsHistory.mjs';
 
 export const SOURCE = 'guildstats';
 
@@ -182,14 +182,17 @@ export async function readCharacter(nick, { world, fetchImpl, retryDelayMs } = {
 export async function syncFromGuildstatsCharacter({ id, nick, world, dataDir, fetchImpl, retryDelayMs, now = () => new Date() }) {
   const page = await readCharacter(nick, { world, fetchImpl, retryDelayMs });
   const date = historyDateFor(now());
-  const history = loadExistingHistory(dataDir, id);
-  if (history.some((entry) => entry.date === date)) {
+  const saved = updateHistory(dataDir, id, (history) => {
+    if (history.some((entry) => entry.date === date)) return null;
+    return [
+      ...history,
+      { date, level: page.level, experience: page.experience, scrapedAt: now().toISOString(), source: SOURCE },
+    ].sort((a, b) => a.date.localeCompare(b.date));
+  });
+  if (!saved) {
     console.log(`[${id}] já está em dia (${date}; guildstats, ${page.experience} XP) — nada a fazer.`);
     return { added: 0, date, ...page };
   }
-  history.push({ date, level: page.level, experience: page.experience, scrapedAt: now().toISOString(), source: SOURCE });
-  history.sort((a, b) => a.date.localeCompare(b.date));
-  saveHistory(dataDir, id, history);
   console.log(
     `[${id}] guardado ${date}: nível ${page.level}, ${page.experience} XP ` +
       `(guildstats; ${experienceForLevel(page.level)} + ${page.progress} confere com a fórmula).`

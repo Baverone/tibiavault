@@ -4,10 +4,13 @@
 // celula, a segunda com a abreviatura para telemovel).
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, renameSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
+import { spawn, spawnSync } from 'node:child_process';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import {
+  LOCK_STALE_MS,
   USER_AGENT,
   experienceForLevel,
   fetchExperienceRows,
@@ -16,7 +19,15 @@ import {
   mergeRows,
   missingDates,
   parseExperienceRows,
+  recoverStaleLock,
+  updateHistory,
+  withHistoryLock,
+  writeFileAtomic,
 } from './guildstatsHistory.mjs';
+
+// Um pid que ja nao existe: o de um processo que acabou de terminar.
+const DEAD_PID = spawnSync(process.execPath, ['-e', '']).pid;
+const DEAD = JSON.stringify({ pid: DEAD_PID });
 
 // 25/10/2026: um ficheiro estragado dava [] e era reescrito só com a linha de
 // hoje. Numa pasta temporária, nunca no data/ verdadeiro.
@@ -172,6 +183,210 @@ test('mergeRows preenche buracos no meio da série e nunca sobrescreve', () => {
   assert.equal(history[2].experience, 300, 'o 15/10 que já estava não pode ser sobrescrito');
   assert.equal(history[1].scrapedAt, 'agora');
   assert.equal(ja.length, 2, 'não mexe no array de entrada');
+});
+
+// 12/11/2026 (proposta 3 da auditoria): gravacao atomica e trinco.
+test('writeFileAtomic: se a troca falhar, o ficheiro antigo fica inteiro e o temporario sai', (t) => {
+  const dir = mkdtempSync(join(tmpdir(), 'hist-atomic-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const path = join(dir, 'a.json');
+  writeFileSync(path, '[1]\n');
+  assert.throws(
+    () =>
+      writeFileAtomic(path, '[1,2]\n', {
+        renameImpl: () => {
+          throw Object.assign(new Error('disco cheio'), { code: 'ENOSPC' });
+        },
+      }),
+    /disco cheio/
+  );
+  assert.equal(readFileSync(path, 'utf-8'), '[1]\n');
+  assert.deepEqual(readdirSync(dir), ['a.json']);
+});
+
+test('writeFileAtomic: se a escrita falhar antes da troca, tambem nao sobra temporario', (t) => {
+  const dir = mkdtempSync(join(tmpdir(), 'hist-atomic-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const path = join(dir, 'a.json');
+  writeFileSync(path, '[1]\n');
+  assert.throws(
+    () =>
+      writeFileAtomic(path, '[1,2]\n', {
+        writeImpl: () => {
+          throw Object.assign(new Error('disco cheio'), { code: 'ENOSPC' });
+        },
+      }),
+    /disco cheio/
+  );
+  assert.equal(readFileSync(path, 'utf-8'), '[1]\n');
+  assert.deepEqual(readdirSync(dir), ['a.json']);
+});
+
+test('writeFileAtomic repete quando o Windows tem o ficheiro ocupado por instantes', (t) => {
+  const dir = mkdtempSync(join(tmpdir(), 'hist-atomic-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const path = join(dir, 'a.json');
+  let tries = 0;
+  writeFileAtomic(path, '[3]\n', {
+    renameImpl: (from, to) => {
+      tries++;
+      if (tries < 3) throw Object.assign(new Error('ocupado'), { code: 'EBUSY' });
+      renameSync(from, to);
+    },
+  });
+  assert.equal(tries, 3);
+  assert.equal(readFileSync(path, 'utf-8'), '[3]\n');
+});
+
+test('updateHistory grava dentro do trinco e tira-o no fim, mesmo quando falha', (t) => {
+  const dir = mkdtempSync(join(tmpdir(), 'hist-lock-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  updateHistory(dir, 'boneco', (history) => {
+    assert.ok(existsSync(join(dir, 'boneco.json.lock')));
+    return [...history, { date: '2026-11-11', level: 1, experience: 0 }];
+  });
+  assert.equal(JSON.parse(readFileSync(join(dir, 'boneco.json'), 'utf-8')).length, 1);
+  assert.equal(updateHistory(dir, 'boneco', () => null), null);
+  assert.throws(() => updateHistory(dir, 'boneco', () => { throw new Error('rebentou'); }), /rebentou/);
+  assert.deepEqual(readdirSync(dir), ['boneco.json']);
+});
+
+test('withHistoryLock: com o trinco de outro processo, espera e falha como temporario', (t) => {
+  const dir = mkdtempSync(join(tmpdir(), 'hist-lock-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  writeFileSync(join(dir, 'boneco.json.lock'), '{"pid":1}');
+  let ran = false;
+  assert.throws(
+    () => withHistoryLock(dir, 'boneco', () => { ran = true; }, { waitMs: 300, pollMs: 50 }),
+    (error) => error.transient === true && /trancado/.test(error.message)
+  );
+  assert.equal(ran, false);
+  assert.ok(existsSync(join(dir, 'boneco.json.lock')), 'o trinco dos outros nao e tirado');
+});
+
+test('withHistoryLock: um trinco esquecido (processo morto) deixa de contar', (t) => {
+  const dir = mkdtempSync(join(tmpdir(), 'hist-lock-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const lock = join(dir, 'boneco.json.lock');
+  writeFileSync(lock, DEAD);
+  const old = new Date(Date.now() - LOCK_STALE_MS - 60_000);
+  utimesSync(lock, old, old);
+  assert.equal(withHistoryLock(dir, 'boneco', () => 'feito', { waitMs: 300, pollMs: 50 }), 'feito');
+  assert.equal(existsSync(lock), false);
+});
+
+// Terceira ronda do Codex (12/11/2026): a recuperacao nunca tira o trinco do
+// lugar; prende-o com uma segunda ligacao exclusiva e so o apaga se for o velho.
+function oldLock(dir, content) {
+  const lock = join(dir, 'boneco.json.lock');
+  writeFileSync(lock, content);
+  const old = new Date(Date.now() - LOCK_STALE_MS - 60_000);
+  utimesSync(lock, old, old);
+  return lock;
+}
+
+test('recoverStaleLock: o trinco velho que se viu sai, e nao sobra nada', (t) => {
+  const dir = mkdtempSync(join(tmpdir(), 'hist-lock-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const lock = oldLock(dir, DEAD);
+  assert.equal(recoverStaleLock(lock, DEAD), true);
+  assert.deepEqual(readdirSync(dir), []);
+});
+
+// 4.a ronda do Codex: velho nao prova morto (processo suspenso).
+test('recoverStaleLock: um trinco velho de um processo ainda vivo fica', (t) => {
+  const dir = mkdtempSync(join(tmpdir(), 'hist-lock-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const vivo = JSON.stringify({ pid: process.pid });
+  const lock = oldLock(dir, vivo);
+  assert.equal(recoverStaleLock(lock, vivo), false);
+  assert.equal(readFileSync(lock, 'utf-8'), vivo);
+  const semPid = '{"quem":"?"}';
+  writeFileSync(lock, semPid);
+  assert.equal(recoverStaleLock(lock, semPid, -1), false, 'sem pid nao ha como confirmar');
+  assert.deepEqual(readdirSync(dir), ['boneco.json.lock']);
+});
+
+test('recoverStaleLock: se entretanto o trinco ja e outro, nao lhe toca', (t) => {
+  const dir = mkdtempSync(join(tmpdir(), 'hist-lock-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const lock = join(dir, 'boneco.json.lock');
+  writeFileSync(lock, '{"pid":"vivo"}'); // A tirou o velho e pos o seu
+  assert.equal(recoverStaleLock(lock, DEAD), false);
+  assert.equal(readFileSync(lock, 'utf-8'), '{"pid":"vivo"}');
+  assert.deepEqual(readdirSync(dir), ['boneco.json.lock']);
+});
+
+test('recoverStaleLock: com outro processo a recuperar, nao faz nada', (t) => {
+  const dir = mkdtempSync(join(tmpdir(), 'hist-lock-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const lock = oldLock(dir, DEAD);
+  writeFileSync(`${lock}.recuperar`, 'outro');
+  assert.equal(recoverStaleLock(lock, DEAD), false);
+  assert.equal(readFileSync(lock, 'utf-8'), DEAD);
+  assert.equal(readFileSync(`${lock}.recuperar`, 'utf-8'), 'outro');
+});
+
+test('withHistoryLock: uma recuperacao presa respeita o prazo e diz que ficheiro apagar', (t) => {
+  const dir = mkdtempSync(join(tmpdir(), 'hist-lock-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const lock = oldLock(dir, DEAD);
+  writeFileSync(`${lock}.recuperar`, 'preso');
+  const started = Date.now();
+  assert.throws(
+    () => withHistoryLock(dir, 'boneco', () => {}, { waitMs: 300, pollMs: 50 }),
+    (error) => error.transient === true && /recuperar \(processo morto\?\)/.test(error.message)
+  );
+  assert.ok(Date.now() - started < 3000, 'nao fica a rodar sem pausa');
+});
+
+test('withHistoryLock: no fim so tira o trinco se ainda for o seu', (t) => {
+  const dir = mkdtempSync(join(tmpdir(), 'hist-lock-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const lock = join(dir, 'boneco.json.lock');
+  withHistoryLock(dir, 'boneco', () => {
+    // como se outro processo o tivesse tomado entretanto
+    writeFileSync(lock, '{"pid":"outro"}');
+  });
+  assert.equal(readFileSync(lock, 'utf-8'), '{"pid":"outro"}');
+});
+
+// Revisao do Codex (12/11/2026): dois processos a ver o mesmo trinco velho
+// apagavam o trinco um do outro e gravavam os dois ao mesmo tempo, perdendo dias.
+test('withHistoryLock: varios processos a disputar um trinco velho nao perdem nenhuma linha', async (t) => {
+  const dir = mkdtempSync(join(tmpdir(), 'hist-race-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const lock = join(dir, 'boneco.json.lock');
+  writeFileSync(lock, DEAD);
+  const old = new Date(Date.now() - LOCK_STALE_MS - 60_000);
+  utimesSync(lock, old, old);
+  const lib = pathToFileURL(join(import.meta.dirname, 'guildstatsHistory.mjs')).href;
+  const child = (n) => `
+    const { updateHistory } = await import(${JSON.stringify(lib)});
+    updateHistory(${JSON.stringify(dir)}, 'boneco', (h) => {
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 150);
+      return [...h, { date: '2026-11-0${n}', level: 1, experience: ${n} }];
+    });`;
+  const run = (n) =>
+    new Promise((resolve) => {
+      const p = spawn(process.execPath, ['--input-type=module', '-e', child(n)], { stdio: 'inherit' });
+      p.on('exit', resolve);
+    });
+  const codes = await Promise.all([1, 2, 3, 4, 5].map(run));
+  assert.deepEqual(codes, [0, 0, 0, 0, 0]);
+  const saved = JSON.parse(readFileSync(join(dir, 'boneco.json'), 'utf-8'));
+  assert.deepEqual(saved.map((e) => e.experience).sort(), [1, 2, 3, 4, 5]);
+  assert.deepEqual(readdirSync(dir), ['boneco.json']);
+});
+
+test('missingDates ignora datas que nao existem em vez de andar ate ao ano 10000', () => {
+  const started = Date.now();
+  const holes = missingDates([
+    { date: '2026-11-01' }, { date: 'x' }, { date: '2026-02-30' }, { date: '2026-13-01' }, { date: '2026-11-32' },
+    { date: null }, {}, { date: '2026-11-03' },
+  ]);
+  assert.deepEqual(holes, ['2026-11-02']);
+  assert.ok(Date.now() - started < 1000);
 });
 
 test('missingDates aponta os buracos do meio da série', () => {

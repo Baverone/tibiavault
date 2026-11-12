@@ -15,7 +15,19 @@
 // character page loads its "Experience" tab via this internal AJAX route,
 // which returns a small self-contained HTML fragment (no JS execution
 // needed to read it).
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import {
+  closeSync,
+  existsSync,
+  fsyncSync,
+  linkSync,
+  mkdirSync,
+  openSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'fs';
 import { join } from 'path';
 import * as cheerio from 'cheerio';
 
@@ -242,9 +254,229 @@ export function loadExistingHistory(dataDir, id) {
   return parsed;
 }
 
+/** Espera sem largar o processo (as recolhas são scripts curtos, sem nada mais a correr). */
+function sleepSync(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
+// Erros do Windows que passam sozinhos: um antivírus, o indexador ou o git com
+// o ficheiro aberto por instantes.
+const BUSY_CODES = new Set(['EPERM', 'EBUSY', 'EACCES']);
+
+/**
+ * Escreve `content` em `path` de uma vez: primeiro num ficheiro temporário ao
+ * lado, forçado para o disco, e só depois troca um pelo outro.
+ *
+ * 12/11/2026 (proposta 3 da auditoria, do Codex, aprovada pelo André): o
+ * `writeFileSync` direto escrevia por cima do histórico. Um corte de luz ou um
+ * processo morto a meio deixava um JSON cortado, e daí em diante a recolha
+ * desse boneco falhava (o loadExistingHistory recusa-o, de propósito) até
+ * alguém o reparar à mão. Com a troca, quem lê vê o ficheiro antigo inteiro ou
+ * o novo inteiro, nunca um meio.
+ */
+export function writeFileAtomic(path, content, { renameImpl = renameSync, writeImpl = writeFileSync } = {}) {
+  const tmp = `${path}.${process.pid}.tmp`;
+  // Qualquer falha (abrir, escrever, forçar para o disco, trocar) tira o
+  // temporário: o ficheiro antigo fica como estava e não sobra lixo.
+  try {
+    const fd = openSync(tmp, 'w');
+    try {
+      writeImpl(fd, content);
+      fsyncSync(fd);
+    } finally {
+      closeSync(fd);
+    }
+    for (let attempt = 1; ; attempt++) {
+      try {
+        renameImpl(tmp, path);
+        return;
+      } catch (error) {
+        if (attempt >= 5 || !BUSY_CODES.has(error.code)) throw error;
+        sleepSync(100 * attempt);
+      }
+    }
+  } catch (error) {
+    rmSync(tmp, { force: true });
+    throw error;
+  }
+}
+
 export function saveHistory(dataDir, id, history) {
   mkdirSync(dataDir, { recursive: true });
-  writeFileSync(historyPath(dataDir, id), `${JSON.stringify(history, null, 2)}\n`);
+  writeFileAtomic(historyPath(dataDir, id), `${JSON.stringify(history, null, 2)}\n`);
+}
+
+/** Um trinco esquecido por um processo morto deixa de contar ao fim disto. */
+export const LOCK_STALE_MS = 10 * 60_000;
+
+/** Cria `path` só se não existir, com `content`; devolve false se já existir. */
+function createExclusive(path, content) {
+  let fd;
+  try {
+    fd = openSync(path, 'wx');
+  } catch (error) {
+    if (error.code === 'EEXIST') return false;
+    throw error;
+  }
+  try {
+    writeFileSync(fd, content);
+  } finally {
+    closeSync(fd);
+  }
+  return true;
+}
+
+function ageOf(path) {
+  try {
+    return Date.now() - statSync(path).mtimeMs;
+  } catch {
+    return null; // já não existe
+  }
+}
+
+function readOrNull(path) {
+  try {
+    return readFileSync(path, 'utf-8');
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Tira um trinco esquecido sem nunca tocar no de outro. Devolve true se tirou.
+ * Exportada só para os testes.
+ *
+ * Três rondas de revisão do Codex (12/11/2026). «Está velho → apaga» deixava
+ * A e B verem o mesmo trinco velho; A apagava-o e criava o seu, e B apagava o
+ * de A. Um segundo trinco de recuperação tinha o mesmo problema um nível
+ * acima, e tirar o trinco do lugar para o conferir deixava-o livre (ou
+ * abandonado) se a devolução corresse mal.
+ *
+ * Agora o trinco nunca sai do lugar enquanto se confere. Quem recupera cria
+ * primeiro uma segunda ligação (hard link) para o ficheiro que lá está,
+ * `<id>.json.lock.recuperar`, em modo exclusivo: só um processo de cada vez
+ * pode estar a recuperar. Pela ligação lê o conteúdo desse mesmo ficheiro. Se
+ * for o trinco velho que viu (as marcas são únicas), continuar velho e o
+ * processo dono (o pid da marca) já não existir, apaga-o; se não, não toca em
+ * nada. Enquanto a ligação existe, o trinco não pode
+ * mudar: o dono do velho morreu, nenhum outro pode recuperar, e ninguém cria
+ * um trinco novo enquanto o nome está ocupado.
+ *
+ * Se um processo morrer nos microssegundos em que tem a ligação, ela fica e a
+ * recuperação deixa de ser possível. As recolhas passam a falhar como
+ * temporárias, com a mensagem a apontar o ficheiro, e o alarme de frescura
+ * fica vermelho. Prefere-se isso a um caminho automático que possa deixar
+ * entrar dois escritores.
+ */
+export function recoverStaleLock(lockPath, seenContent, staleMs = LOCK_STALE_MS, { isAlive = processIsAlive } = {}) {
+  // 4.ª ronda do Codex: velho não prova morto (um processo suspenso retoma e
+  // grava por cima). Só se tira o trinco de um dono que já não existe; sem
+  // forma de o confirmar, fica.
+  const ownerPid = pidIn(seenContent);
+  if (ownerPid === null || isAlive(ownerPid)) return false;
+  const claim = `${lockPath}.recuperar`;
+  const fail = (what, error) =>
+    Object.assign(new Error(`não consegui ${what} (${error.message}) — tentar mais tarde`), { transient: true });
+  try {
+    linkSync(lockPath, claim);
+  } catch (error) {
+    if (error.code === 'ENOENT' || error.code === 'EEXIST') return false; // saiu entretanto / outro está a recuperar
+    throw fail(`prender o trinco ${lockPath}`, error);
+  }
+  let removed = false;
+  let failure = null;
+  try {
+    const age = ageOf(claim);
+    if (readOrNull(claim) === seenContent && age !== null && age > staleMs) {
+      rmSync(lockPath, { force: true });
+      removed = true;
+    }
+  } catch (error) {
+    failure = fail(`tirar o trinco esquecido ${lockPath}`, error);
+  }
+  try {
+    rmSync(claim, { force: true });
+  } catch (error) {
+    failure ??= fail(`tirar ${claim}`, error); // o primeiro erro é o que conta
+  }
+  if (failure) throw failure;
+  return removed;
+}
+
+/** O pid gravado na marca de um trinco, ou null se não tiver um. */
+function pidIn(content) {
+  try {
+    const pid = JSON.parse(content)?.pid;
+    return Number.isInteger(pid) && pid > 0 ? pid : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Se o processo existe. ESRCH = não existe; EPERM = existe (de outro utilizador). */
+export function processIsAlive(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    return error.code !== 'ESRCH';
+  }
+}
+
+/**
+ * Corre `fn` com o histórico do boneco trancado: ninguém mais lê-junta-grava
+ * esse ficheiro ao mesmo tempo.
+ *
+ * 12/11/2026 (proposta 3, com a escrita atómica): o histórico tem dois
+ * escritores no PC, a tarefa tibia-xp (highscores) e a tibia-xp-chrome
+ * (junta.mjs do ai-pc). Se um corresse por cima do outro, os dois liam o mesmo
+ * ficheiro, cada um juntava o seu dia e o segundo a gravar apagava o dia do
+ * primeiro. O trinco é um ficheiro `<id>.json.lock` criado em modo exclusivo,
+ * com uma marca única de quem o tem: quem chega depois espera até `waitMs` e,
+ * se não abrir, falha como temporário (a próxima corrida tenta outra vez). Um
+ * trinco com mais de `staleMs` é de um processo que morreu e é retirado (ver
+ * recoverStaleLock). No fim, cada um só tira o trinco se ainda tiver a sua marca.
+ */
+export function withHistoryLock(dataDir, id, fn, { waitMs = 30_000, staleMs = LOCK_STALE_MS, pollMs = 200 } = {}) {
+  mkdirSync(dataDir, { recursive: true });
+  const lockPath = `${historyPath(dataDir, id)}.lock`;
+  const token = JSON.stringify({ pid: process.pid, at: new Date().toISOString(), n: Math.random() });
+  const deadline = Date.now() + waitMs;
+  while (!createExclusive(lockPath, token)) {
+    const seen = readOrNull(lockPath);
+    const age = ageOf(lockPath);
+    // Só volta logo ao início se tirou mesmo um trinco velho; senão conta o
+    // prazo e espera, como qualquer outra volta.
+    if (seen !== null && age !== null && age > staleMs && recoverStaleLock(lockPath, seen, staleMs)) continue;
+    if (Date.now() >= deadline) {
+      const stuck = existsSync(`${lockPath}.recuperar`)
+        ? ` Há uma recuperação presa em ${lockPath}.recuperar (processo morto?): se nenhuma recolha estiver a correr, apaga esse ficheiro e o .lock.`
+        : '';
+      throw Object.assign(
+        new Error(`o histórico de ${id} está trancado por outra recolha (${lockPath}) — tentar mais tarde.${stuck}`),
+        { transient: true }
+      );
+    }
+    sleepSync(pollMs);
+  }
+  try {
+    return fn();
+  } finally {
+    if (readOrNull(lockPath) === token) rmSync(lockPath, { force: true });
+  }
+}
+
+/**
+ * Lê, deixa `change` decidir, e grava — tudo dentro do trinco. `change` recebe
+ * o histórico e devolve o novo (que é gravado) ou `null` (nada a gravar).
+ * Devolve o que `change` devolveu.
+ */
+export function updateHistory(dataDir, id, change) {
+  return withHistoryLock(dataDir, id, () => {
+    const next = change(loadExistingHistory(dataDir, id));
+    if (next) saveHistory(dataDir, id, next);
+    return next;
+  });
 }
 
 /**
@@ -279,8 +511,18 @@ export function mergeRows(history, rows, scrapedAt) {
  * alarme de frescura mostra: um buraco no meio não atrasa o «último dia» e,
  * sem isto, ficava calado.
  */
+/** Uma data AAAA-MM-DD que existe no calendário ("2026-02-30" e "2026-13-01" não). */
+export function isRealDate(value) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}
+
 export function missingDates(history) {
-  const dates = new Set(history.map((entry) => entry.date));
+  // 12/11/2026: só datas reais. Uma linha com `date: "x"` ficava em último na
+  // ordenação, e o ciclo de baixo andava dia a dia até ao ano 10000 à procura
+  // dela (o alarme de frescura levava mais de um minuto e rebentava no fim).
+  const dates = new Set(history.map((entry) => entry?.date).filter(isRealDate));
   const sorted = [...dates].sort();
   const out = [];
   if (sorted.length < 2) return out;

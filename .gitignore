@@ -48,3 +48,9 @@ scripts/publicar.ps1
 # (.colab/: registos e respostas) e o arranque do canal.
 .colab/
 canal-tibiavault.md
+
+# 12/11/2026: o trinco (e as sobras da recuperacao) e o ficheiro temporario da gravacao atomica do historico
+# (scripts/lib/guildstatsHistory.mjs). Se um processo morrer a meio ficam no
+# disco; nunca podem ir no `git add -- data/scraped-history` das recolhas.
+data/scraped-history/*.lock*
+data/scraped-history/*.tmp

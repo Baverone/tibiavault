@@ -29,6 +29,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -36,6 +37,12 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # 12/11/2026 (proposta 1 da auditoria, aprovada pelo André): os testes, o
+      # lint e os tipos travam o deploy. Até aqui corriam à parte (testes.yml),
+      # e uma regressão nas contas que compilasse chegava ao site na mesma. O
+      # testes.yml passou em Linux a 11/11 e saiu: era o mesmo trabalho duas vezes.
+      - run: npm run lint
+      - run: npm test
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:

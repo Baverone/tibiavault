@@ -118,3 +118,70 @@ prioridade.
   `push-hunts.log` iguais). Os testes seguintes correram só na cópia.
 - Backup antes de escrever: ramo local `backup/pre-auditoria-2026-11-11`
   (commit `8423509`), mais cópias do `publicar.ps1` e do `package-lock.json`.
+
+## 12/11/2026 — as 4 propostas de prioridade alta
+
+O André escolheu «As de prioridade alta». Backup antes de escrever: ramo local
+`backup/pre-propostas-alta-2026-11-12`, e cópias `.bak-2026-11-12` do
+`junta.mjs` e do `junta.test.mjs` no ai-pc.
+
+| # | Proposta | O que mudou |
+|---|---|---|
+| 1 | Testes a travar o deploy | O `pages.yml` corre `lint` e `test` antes do `build` (que já faz o `tsc`): sem tudo verde, não publica. O `testes.yml` saiu, porque fazia o mesmo trabalho duas vezes. |
+| 2 | Hora de cada leitura dos highscores | A resposta da API tem de trazer `information.timestamp` e `highscore_age` válidos, e a lista não pode dizer ser do futuro; se não, a corrida falha como temporária e nada é gravado. Cada linha nova guarda `snapshotAt`. Um nível que não bata com a fórmula passou de aviso a erro (nos 21 dias de highscores gravados nunca aconteceu). |
+| 3 | Gravar o histórico sem ficar a meio | `writeFileAtomic`: primeiro grava num temporário, força-o para o disco e só depois faz a troca; se algo falhar, o temporário é apagado. `withHistoryLock` / `updateHistory`: quem escreve (a tarefa `tibia-xp` e o `junta.mjs` do `tibia-xp-chrome`) lê, junta e grava dentro de um trinco. O segundo espera até 30 s; se não conseguir, falha como temporário e não apaga o dia do primeiro. Os `.lock` e `.tmp` estão no `.gitignore`. |
+| 4 | O caso «85.5» | O ponto só é aceite a separar milhares, em grupos de três. «85.5» e «2.5» dão a mensagem «ponto fora do sítio» (verificado no browser), em vez de 855 e 25. |
+
+**Encontrado pelo caminho:** o `missingDates` andava dia a dia até ao ano
+10000 quando havia uma linha com uma data inválida. O teste do alarme de
+frescura demorava 71 s e a bateria toda 2 minutos; agora corre em 1 s. A
+correção foi ignorar as datas que não existem.
+
+**Revisão do Codex: cinco rondas, quase todas sobre o trinco.**
+- **1.ª ronda:**
+  - **[grave]** Dois processos a recuperar ao mesmo tempo um trinco esquecido
+    (de um processo morto) podiam apagar o trinco um do outro.
+  - **[médio]** Datas como `2026-13-01` ainda rebentavam o `missingDates`.
+  - **[menor]** Uma falha na escrita, antes da troca, deixava o temporário no
+    disco.
+
+  Corrigi os três.
+- **2.ª e 3.ª rondas:** as minhas duas primeiras tentativas de recuperação
+  ainda tinham corridas.
+  - Um segundo trinco «de recuperação» tinha o mesmo problema um nível acima.
+  - Tirar o trinco do lugar para o conferir deixava-o livre, ou abandonado, se
+    a devolução corresse mal.
+
+  O Codex tinha razão nas duas.
+- **Método final:** o trinco nunca sai do lugar enquanto se confere.
+  1. Quem recupera prende o ficheiro com uma segunda ligação exclusiva,
+     `.lock.recuperar`.
+  2. Confirma, por essa ligação, que é o trinco velho que viu.
+  3. Só então o apaga, e só se o processo dono (o `pid` da marca) já não
+     existir. Isto veio da 4.ª ronda: ter mais de 10 minutos não prova que o
+     processo morreu, porque pode estar suspenso e retomar.
+
+  Enquanto essa ligação existe, ninguém mais pode mexer no trinco. Se um
+  processo morrer exatamente nesse instante, as recolhas falham com a mensagem
+  a apontar o ficheiro a apagar. Preferi uma falha visível a um caminho
+  automático que deixe entrar dois escritores.
+- **Testes do trinco:** há testes para cada caso e um teste com 5 processos a
+  disputar um trinco esquecido. A recuperação ingénua de antes falhou esse
+  teste 2 vezes em 3.
+
+**Verificação:**
+- 327 testes verdes, lint limpo e build ok; os 9 testes do `junta.mjs` também
+  passam.
+- Recolha real pelos highscores gravada numa pasta temporária: a API traz as
+  duas horas e o nível bate com a fórmula. A linha saiu com
+  `snapshotAt: 2026-11-12T07:40:20Z`.
+- `junta.mjs` com o trinco ocupado: esperou 30 s, deu um problema para esse
+  boneco e não gravou nada.
+
+**Uma correção ao que prometi ontem.** Na proposta 2 escrevi que, com a hora
+guardada, «o jogo do próprio dia deixa de ser contado no dia anterior». Não é
+verdade, e não foi feito. Guardar o `snapshotAt` torna visível, em cada linha,
+quanto tempo depois do server save a lista foi feita, mas não tira esse jogo
+da linha. Para o tirar há duas opções, e ambas são uma decisão do André:
+- ler os highscores antes do save, mudando a hora da tarefa `tibia-xp`;
+- deixar o guildstats (pelo Chrome) ter prioridade no Baverone.

@@ -178,7 +178,7 @@ Agendador de Tarefas de hora a hora e de 5 em 5 minutos, que já não existe.*
 | ai-pc, tarefa `tibia-push` | [`scripts/push-hunts.ps1`](scripts/push-hunts.ps1) — a **única porta de saída** para o GitHub | 10:20, 13:20, 20:20 |
 | ai-pc, tarefa `tibia-site` | confirma que https://tibia.baverone.com/ está de pé | 10:40, 20:40 |
 | GitHub Actions | [`scrape-experience.yml`](.github/workflows/scrape-experience.yml) — só o alarme de frescura | 1×/dia (12:00 UTC) |
-| GitHub Actions | [`testes.yml`](.github/workflows/testes.yml) — tipos, lint e testes | em cada push de código |
+| GitHub Actions | [`pages.yml`](.github/workflows/pages.yml) — lint, testes, tipos e build; só publica se tudo passar | em cada push de código |
 
 O `scrape-xp-local.ps1` e a tarefa `\CalculadoraTibia-RecolhaXP` do Agendador
 estão **desligados**; as tarefas `tibia-celesta`/`tibia-reservas` (Discord)
@@ -226,6 +226,23 @@ de `guildstatsHistory.mjs`; faz commit, o push é do `tibia-push`.
    Fica bloqueado só se nenhum dia em comum bater.
 4. Cada personagem é independente, mas a corrida só sai 0 se todos os de
    fonte automática forem recolhidos; um que falhe sai 1, com o nome e o motivo.
+5. *(12/11/2026)* Cada linha dos highscores guarda `snapshotAt`, a hora a que
+   o tibia.com fez a lista (hora da resposta da API menos `highscore_age`).
+   Uma resposta sem essas duas horas, com idade negativa, ou que diga ser do
+   futuro, não entra; um nível que não bata com a fórmula também não (era só
+   aviso). Falham como temporários, e a corrida seguinte tenta outra vez.
+6. *(12/11/2026)* O histórico grava-se de uma vez (ficheiro temporário,
+   forçado para o disco, e troca), por isso um corte de luz nunca deixa um
+   JSON a meio. E quem escreve (o `tibia-xp` e o `junta.mjs` do
+   `tibia-xp-chrome`) lê-junta-grava dentro de um trinco,
+   `data/scraped-history/<id>.json.lock`: o segundo espera até 30 s e, se não
+   abrir, falha como temporário em vez de apagar o dia do primeiro. Um trinco
+   com mais de 10 min cujo processo dono (o `pid` da marca) já não existe sai,
+   mas só depois de quem o
+   tira o prender com `<id>.json.lock.recuperar` e confirmar que é mesmo esse
+   (nunca o de outro). Se uma recolha disser que há uma recuperação presa, e
+   nenhuma estiver a correr, apaga-se esse ficheiro e o `.lock`. Os `.lock*`
+   e `.tmp` estão no `.gitignore`.
 
 ### O alarme
 
@@ -549,6 +566,10 @@ countdown, a atualizar ao segundo (`src/hooks/useRashidClock.ts`).
 Mensagens de erro aparecem sempre sob o respetivo formulário. Quem valida o
 quê, hoje:
 
+- **Números** (`src/domain/validation.ts`, desde 12/11/2026): o ponto só
+  é aceite a separar milhares em grupos de três («1.500», «3.581.151.352»); a
+  vírgula é a decimal. «85.5» ou «2.5» dão erro, em vez de 855 e 25 sem aviso
+  como até aí.
 - **Treino de skills** (`src/domain/validation.ts`): nível atual —
   `parseNonNegativeInteger`, inteiro e não negativo, mais um mínimo por skill
   (10 nas de combate, 0 no Magic Level); % que falta — `parsePercentMissing`,

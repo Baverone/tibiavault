@@ -27,8 +27,25 @@ test('parseNonNegativeInteger rejeita vazio, negativos e "so pontuacao"', () => 
   assert.equal(parseNonNegativeInteger(',', 'x').ok, false);
 });
 
-test('parseNonNegativeInteger: o ponto e separador de milhares, nao decimal ("1.5" = 15)', () => {
-  assert.deepEqual(parseNonNegativeInteger('1.5', 'x'), { ok: true, value: 15 });
+// 12/11/2026 (proposta 4 da auditoria, decisao do Andre): ate aqui "1.5" dava
+// 15 e "85.5" dava 855 sem aviso. O ponto so passa em grupos de tres.
+test('parseNonNegativeInteger: o ponto so e aceite como separador de milhares', () => {
+  assert.deepEqual(parseNonNegativeInteger('1.500', 'x'), { ok: true, value: 1500 });
+  assert.deepEqual(parseNonNegativeInteger('3.581.151.352', 'x'), { ok: true, value: 3_581_151_352 });
+  assert.deepEqual(parseNonNegativeInteger(' 12.000 ', 'x'), { ok: true, value: 12_000 });
+  for (const errado of ['1.5', '85.5', '1.50', '1.5000', '1..500', '.500', '1.500.', '12.34.567']) {
+    const resultado = parseNonNegativeInteger(errado, 'o nivel');
+    assert.equal(resultado.ok, false, errado);
+    if (!resultado.ok) assert.match(resultado.error, /ponto fora do s/, errado);
+  }
+});
+
+test('parseNonNegativeNumber e parsePositiveNumber: "2.5" ja nao vira 25', () => {
+  assert.equal(parseNonNegativeNumber('2.5', 'x').ok, false);
+  assert.equal(parsePositiveNumber('2.5', 'x').ok, false);
+  assert.deepEqual(parsePositiveNumber('2,5', 'x'), { ok: true, value: 2.5 });
+  assert.deepEqual(parsePositiveNumber('1.500,5', 'x'), { ok: true, value: 1500.5 });
+  assert.equal(parseNonNegativeNumber('-1.500', 'x').ok, false); // negativo, nao ponto errado
 });
 
 test('parseNonNegativeInteger: a virgula e o separador decimal, "1,5" rejeita como nao-inteiro', () => {

@@ -16,12 +16,7 @@
 // guildstats grava `source: 'guildstats'`, para se perceber mais tarde de onde
 // veio cada dia (e porque é que um tem buracos e o outro não). As linhas de
 // antes de 21/10 não têm `source`.
-import {
-  isAfterLisbonServerSave,
-  levelForExperience,
-  loadExistingHistory,
-  saveHistory,
-} from './guildstatsHistory.mjs';
+import { isAfterLisbonServerSave, levelForExperience, updateHistory } from './guildstatsHistory.mjs';
 
 export function highscoresUrl(world, page) {
   return `https://api.tibiadata.com/v4/highscores/${encodeURIComponent(world)}/experience/all/${page}`;
@@ -120,6 +115,40 @@ export async function fetchHighscoresPage(world, page, { fetchImpl = fetch, atte
   });
 }
 
+/**
+ * A hora a que o tibia.com fez a lista: a hora da resposta da API menos a
+ * idade da lista.
+ *
+ * 12/11/2026 (proposta 2 da auditoria, do Codex, aprovada pelo André): sem a
+ * hora da resposta assumia-se «agora», e sem a idade assumia-se 0. Uma resposta
+ * antiga guardada numa cache entrava assim como leitura fresca, e podia ir
+ * parar ao dia errado. Agora as duas são obrigatórias e têm de fazer sentido
+ * (número ≥ 0, lista que não é do futuro); se não, a corrida falha e a próxima
+ * tenta outra vez.
+ */
+export function snapshotTime(body, page, nowInstant) {
+  const apiTime = Date.parse(body?.information?.timestamp);
+  if (!Number.isFinite(apiTime)) throw unreliableTime(page, 'falta information.timestamp ou não é uma data');
+  const rawAge = body?.highscores?.highscore_age;
+  const ageMinutes =
+    typeof rawAge === 'number' ? rawAge : typeof rawAge === 'string' && rawAge.trim() !== '' ? Number(rawAge) : NaN;
+  if (!Number.isFinite(ageMinutes) || ageMinutes < 0) {
+    throw unreliableTime(page, `highscores.highscore_age inválido (${JSON.stringify(rawAge)})`);
+  }
+  const snapshotAt = new Date(apiTime - ageMinutes * 60_000);
+  // 5 min de folga para relógios ligeiramente desacertados.
+  if (snapshotAt.getTime() > nowInstant.getTime() + 5 * 60_000) {
+    throw unreliableTime(page, `a lista diz ser de ${snapshotAt.toISOString()}, depois de agora`);
+  }
+  return snapshotAt;
+}
+
+function unreliableTime(page, detail) {
+  return Object.assign(new Error(`hora da lista na página ${page} da API do TibiaData não é fiável: ${detail}`), {
+    transient: true,
+  });
+}
+
 function formatError(page, detail) {
   // Não é temporário: o mesmo pedido amanhã dá o mesmo resultado.
   return Object.assign(new Error(`formato inesperado na página ${page} da API do TibiaData: ${detail}`), {
@@ -160,10 +189,7 @@ export async function findInHighscores(name, { world, fetchImpl = fetch, retryDe
 
     // highscore_age: minutos desde que o tibia.com atualizou a lista. É a
     // hora da leitura que decide a que dia ela pertence, não a do pedido.
-    const apiTime = Date.parse(body?.information?.timestamp);
-    const ageMinutes = Number(highscores.highscore_age);
-    const base = Number.isFinite(apiTime) ? apiTime : now().getTime();
-    const snapshotAt = new Date(base - (Number.isFinite(ageMinutes) ? ageMinutes : 0) * 60_000);
+    const snapshotAt = snapshotTime(body, page, now());
 
     return { rank: entry.rank, page, totalPages, level, experience, snapshotAt };
   }
@@ -196,29 +222,44 @@ export async function syncFromHighscores({ id, nick, world, dataDir, fetchImpl, 
   }
 
   const date = historyDateFor(found.snapshotAt);
-  const history = loadExistingHistory(dataDir, id);
-  if (history.some((entry) => entry.date === date)) {
-    console.log(`[${id}] já está em dia (${date}; ${where}, ${found.experience} XP) — nada a fazer.`);
-    return { added: 0, date, ...found };
-  }
 
+  // 12/11/2026 (proposta 2): era só um aviso, e a linha gravava-se na mesma.
+  // Nível e XP que não batem querem dizer uma lista apanhada a meio ou lida
+  // mal, e uma linha errada nunca mais sai (nada sobrescreve o histórico).
+  // Nos 21 dias de highscores gravados até hoje bateram sempre.
   const expectedLevel = levelForExperience(found.experience);
   if (expectedLevel !== found.level) {
-    console.warn(
-      `[${id}] aviso: nível dos highscores (${found.level}) difere do calculado pela fórmula (${expectedLevel}) para ${found.experience} XP.`
+    throw Object.assign(
+      new Error(
+        `nível dos highscores (${found.level}) não bate com a fórmula (${expectedLevel}) para ${found.experience} XP — não gravo; tentar mais tarde`
+      ),
+      { transient: true }
     );
   }
 
-  history.push({
-    date,
-    level: found.level,
-    experience: found.experience,
-    scrapedAt: now().toISOString(),
-    source: 'highscores',
+  const saved = updateHistory(dataDir, id, (history) => {
+    if (history.some((entry) => entry.date === date)) return null;
+    return [
+      ...history,
+      {
+        date,
+        level: found.level,
+        experience: found.experience,
+        scrapedAt: now().toISOString(),
+        source: 'highscores',
+        // 12/11/2026 (proposta 2): a hora da lista, para se poder ver mais
+        // tarde quanto jogo do dia seguinte a linha apanhou.
+        snapshotAt: found.snapshotAt.toISOString(),
+      },
+    ].sort((a, b) => a.date.localeCompare(b.date));
   });
-  history.sort((a, b) => a.date.localeCompare(b.date));
-  saveHistory(dataDir, id, history);
-  console.log(`[${id}] guardado ${date}: nível ${found.level}, ${found.experience} XP (${where}).`);
+  if (!saved) {
+    console.log(`[${id}] já está em dia (${date}; ${where}, ${found.experience} XP) — nada a fazer.`);
+    return { added: 0, date, ...found };
+  }
+  console.log(
+    `[${id}] guardado ${date}: nível ${found.level}, ${found.experience} XP (${where}; lista de ${found.snapshotAt.toISOString()}).`
+  );
   return { added: 1, date, ...found };
 }
 
