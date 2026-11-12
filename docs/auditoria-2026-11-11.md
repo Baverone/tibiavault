@@ -185,3 +185,31 @@ quanto tempo depois do server save a lista foi feita, mas não tira esse jogo
 da linha. Para o tirar há duas opções, e ambas são uma decisão do André:
 - ler os highscores antes do save, mudando a hora da tarefa `tibia-xp`;
 - deixar o guildstats (pelo Chrome) ter prioridade no Baverone.
+
+## 12/11/2026 — prioridade ao guildstats no Baverone
+
+O André perguntou qual das duas opções eu recomendava e respondeu «faz como
+recomendas». A recomendação foi dar prioridade ao guildstats.
+
+- **Porquê.** O Baverone faz em mediana ~9,5 M de XP por dia, e os erros dos
+  highscores chegavam a 25–45 % de um dia. Ler os highscores antes do save só
+  trocava o erro de lado.
+- **O que mudou** (no ai-pc, tarefa `tibia-xp-chrome`):
+  - a página do Baverone é lida todos os dias;
+  - o `junta.mjs` substitui o dia dos highscores pelo do guildstats, quando o
+    guildstats dá menos ou igual XP e há um dia em comum que bate;
+  - a linha guarda o valor antigo em `substituiu`;
+  - uma falha da página do Baverone, com o dia já coberto pelos highscores,
+    passa a ser aviso e não falha.
+
+  O `test.py` da tarefa confere cada substituição por fora.
+- **Simulação com a leitura real de 03/11:** 26 dias iguais e 4 substituídos
+  (20, 23, 24 e 28/10; os highscores estavam entre 60 mil e 4,2 M acima).
+- **Revisão do Codex, ponto aplicado:** a página do Baverone em erro punha a
+  tarefa vermelha mesmo com os highscores a cobrir o dia. Corrigido.
+- **Revisão do Codex, ponto não aplicado, com a razão:** pediu para «substituir»
+  também os dias iguais. Esses dias não têm nada para mudar e são a prova de
+  alinhamento. Trocar só a etiqueta não muda os dados.
+- **Backups:** ramos `backup/pre-guildstats-prioridade-2026-11-12` no tibiavault
+  e no ai-pc, e cópias `.bak-2026-11-12b` / `.bak-2026-11-12` dos ficheiros da
+  tarefa.

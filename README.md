@@ -224,6 +224,20 @@ de `guildstatsHistory.mjs`; faz commit, o push é do `tibia-push`.
    dos highscores apanha jogo de D+1 — e não impede a reserva do Baverone de
    tapar os dias em falta (28/10/2026; o 20, 23 e 24/10 divergem para sempre).
    Fica bloqueado só se nenhum dia em comum bater.
+   **Desde 12/11/2026 o guildstats passa à frente no Baverone** (decisão do
+   André). A página dele é lida todos os dias e, quando dá a um dia dos
+   highscores **menos ou igual** XP, esse dia é substituído pelo do guildstats.
+   Há três condições:
+   - pelo menos um dia em comum tem de bater, para provar que a leitura está
+     alinhada;
+   - a linha nova guarda o valor antigo em `substituiu`;
+   - com o guildstats a dar **mais** XP, fica o valor dos highscores.
+
+   É a única exceção ao «nunca reescreve». Os highscores continuam a ser a
+   rede: se a página do Baverone falhar, fica o valor deles e a tarefa não fica
+   vermelha. Na leitura de 03/11 isto teria mudado 4 de 30 dias (20, 23, 24 e
+   28/10), com os highscores entre 60 mil e 4,2 milhões de XP acima. O código
+   está no `junta.mjs` e no `run.py` da tarefa `tibia-xp-chrome` do ai-pc.
 4. Cada personagem é independente, mas a corrida só sai 0 se todos os de
    fonte automática forem recolhidos; um que falhe sai 1, com o nome e o motivo.
 5. *(12/11/2026)* Cada linha dos highscores guarda `snapshotAt`, a hora a que
