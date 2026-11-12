@@ -759,9 +759,15 @@
   {
     "date": "2026-10-20",
     "level": 1176,
-    "experience": 27018385736,
-    "scrapedAt": "2026-10-21T09:05:29.280Z",
-    "source": "highscores"
+    "experience": 27015901990,
+    "scrapedAt": "2026-11-12T10:31:04.005Z",
+    "source": "guildstats",
+    "substituiu": {
+      "level": 1176,
+      "experience": 27018385736,
+      "source": "highscores",
+      "scrapedAt": "2026-10-21T09:05:29.280Z"
+    }
   },
   {
     "date": "2026-10-21",
@@ -780,16 +786,28 @@
   {
     "date": "2026-10-23",
     "level": 1177,
-    "experience": 27077403477,
-    "scrapedAt": "2026-10-24T09:05:11.943Z",
-    "source": "highscores"
+    "experience": 27077343477,
+    "scrapedAt": "2026-11-12T10:31:04.005Z",
+    "source": "guildstats",
+    "substituiu": {
+      "level": 1177,
+      "experience": 27077403477,
+      "source": "highscores",
+      "scrapedAt": "2026-10-24T09:05:11.943Z"
+    }
   },
   {
     "date": "2026-10-24",
     "level": 1177,
-    "experience": 27081641547,
-    "scrapedAt": "2026-10-25T10:05:22.436Z",
-    "source": "highscores"
+    "experience": 27077403477,
+    "scrapedAt": "2026-11-12T10:31:04.005Z",
+    "source": "guildstats",
+    "substituiu": {
+      "level": 1177,
+      "experience": 27081641547,
+      "source": "highscores",
+      "scrapedAt": "2026-10-25T10:05:22.436Z"
+    }
   },
   {
     "date": "2026-10-25",
@@ -815,9 +833,15 @@
   {
     "date": "2026-10-28",
     "level": 1180,
-    "experience": 27271896252,
-    "scrapedAt": "2026-10-29T10:05:30.390Z",
-    "source": "highscores"
+    "experience": 27269118524,
+    "scrapedAt": "2026-11-12T10:31:04.005Z",
+    "source": "guildstats",
+    "substituiu": {
+      "level": 1180,
+      "experience": 27271896252,
+      "source": "highscores",
+      "scrapedAt": "2026-10-29T10:05:30.390Z"
+    }
   },
   {
     "date": "2026-10-29",
@@ -906,16 +930,28 @@
   {
     "date": "2026-11-10",
     "level": 1185,
-    "experience": 27649634638,
-    "scrapedAt": "2026-11-11T10:05:07.084Z",
-    "source": "highscores"
+    "experience": 27640089101,
+    "scrapedAt": "2026-11-12T10:31:04.005Z",
+    "source": "guildstats",
+    "substituiu": {
+      "level": 1185,
+      "experience": 27649634638,
+      "source": "highscores",
+      "scrapedAt": "2026-11-11T10:05:07.084Z"
+    }
   },
   {
     "date": "2026-11-11",
     "level": 1185,
-    "experience": 27659605510,
-    "scrapedAt": "2026-11-12T10:05:29.758Z",
-    "source": "highscores",
-    "snapshotAt": "2026-11-12T09:40:29.000Z"
+    "experience": 27659604738,
+    "scrapedAt": "2026-11-12T10:31:04.005Z",
+    "source": "guildstats",
+    "substituiu": {
+      "level": 1185,
+      "experience": 27659605510,
+      "source": "highscores",
+      "scrapedAt": "2026-11-12T10:05:29.758Z",
+      "snapshotAt": "2026-11-12T09:40:29.000Z"
+    }
   }
 ]
