@@ -953,5 +953,13 @@
       "scrapedAt": "2026-11-12T10:05:29.758Z",
       "snapshotAt": "2026-11-12T09:40:29.000Z"
     }
+  },
+  {
+    "date": "2026-11-12",
+    "level": 1186,
+    "experience": 27684615848,
+    "scrapedAt": "2026-11-13T10:05:17.170Z",
+    "source": "highscores",
+    "snapshotAt": "2026-11-13T09:40:17.000Z"
   }
 ]
