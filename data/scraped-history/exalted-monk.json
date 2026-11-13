@@ -903,5 +903,12 @@
     "experience": 3851380534,
     "source": "guildstats",
     "scrapedAt": "2026-11-12T10:31:04.005Z"
+  },
+  {
+    "date": "2026-11-12",
+    "level": 617,
+    "experience": 3882307114,
+    "source": "guildstats",
+    "scrapedAt": "2026-11-13T10:31:34.778Z"
   }
 ]
