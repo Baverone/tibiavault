@@ -56,6 +56,28 @@ O repositório é público e serve de base de dados só-leitura: a app lê
 `raw.githubusercontent.com`. O par utilizador/repositório está em
 [`src/config.ts`](src/config.ts) (`GITHUB_REPO`).
 
+## Histórico dos skills (20/11/2026)
+
+Pedido do André: os skills escritos nas **Varinhas de treino** ficam gravados,
+para ver a evolução e comparar os eventos. O botão **«Gravar leitura»** escreve
+em `data/skills-history/<personagem>.json`; os eventos (nome, início, fim) vão
+para `data/skills-history/eventos.json`. A secção **Evolução dos skills** mostra
+um gráfico por skill, com os eventos sombreados, e o ritmo em níveis por dia
+dentro e fora dos eventos. Desenho:
+[`docs/superpowers/specs/2026-11-20-historico-skills-design.md`](docs/superpowers/specs/2026-11-20-historico-skills-design.md).
+
+- **Quem grava é o browser**, pela API de conteúdos do GitHub, com uma chave
+  *fine-grained* do André (só o `Baverone/tibiavault`, **Contents: Read and
+  write**), colada uma vez em cada aparelho e guardada só no `localStorage`
+  (`tibiavault:github-token`). Nunca vai para o repositório.
+- **Lê-se pela API** (`api.github.com`), não pelo `raw.githubusercontent.com`:
+  o raw guarda cache e a leitura acabada de gravar «desaparecia».
+- A tarefa `tibia-push` nunca escreve nesta pasta, e o `git pull --rebase
+  --autostash` dela junta os commits do browser sem conflito.
+- No Treino há também o **objetivo por varinhas**: escreve-se quantas Lasting
+  Exercise se quer gastar e a calculadora diz o skill com que se fica (sem
+  evento e com Double Skill), em vez do nível objetivo.
+
 ## Como correr o projeto
 
 ```bash
