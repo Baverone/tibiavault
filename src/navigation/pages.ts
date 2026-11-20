@@ -29,7 +29,6 @@ export type PageId =
   | 'partilha'
   | 'stamina'
   | 'flechas'
-  | 'celesta'
   | 'mundo';
 
 export interface PageMeta {
@@ -91,14 +90,6 @@ export const PAGES: PageMeta[] = [
     subtitle: 'Quantas flechas por minuto gastaste numa caçada, e a tabela de totais para as taxas mais comuns.',
   },
   {
-    id: 'celesta',
-    section: 'Hunt',
-    label: 'Janelas do Celesta',
-    note: 'recolha desligada',
-    icon: 'mapa',
-    subtitle: 'As janelas livres dos spots do Celesta, lidas do Discord. A recolha está desligada — ver o aviso abaixo.',
-  },
-  {
     id: 'mundo',
     section: 'Tibia',
     label: 'Rashid e Tibiadrome',
@@ -151,9 +142,9 @@ export const CASA = { href: 'https://baverone.com', label: 'baverone.com' };
  * reconhece deixa o Início a piscar para lado nenhum.
  */
 export const ATALHOS_INICIO: { page: PageId; icon: IconName; label: string; note: string }[] = [
+  { page: 'partilha', icon: 'previsao', label: 'Partilha de XP', note: 'quando dá para sharear' },
   { page: 'stamina', icon: 'stamina', label: 'Stamina', note: 'quando chegas às 42h' },
   { page: 'flechas', icon: 'flecha', label: 'Flechas', note: 'consumo por minuto' },
-  { page: 'celesta', icon: 'mapa', label: 'Janelas do Celesta', note: 'recolha desligada' },
   { page: 'mundo', icon: 'mundo', label: 'Rashid e Tibiadrome', note: 'onde está hoje' },
 ];
 

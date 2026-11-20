@@ -6,7 +6,6 @@ import { AppShell } from './components/shell/AppShell';
 import { TimersPanel } from './components/timers/TimersPanel';
 import { HomePage } from './pages/HomePage';
 import { CharacterPage } from './pages/CharacterPage';
-import { CelestaPage } from './pages/CelestaPage';
 import { MundoPage } from './pages/MundoPage';
 import { PartilhaPage } from './pages/PartilhaPage';
 import { StaminaCalculator } from './components/stamina/StaminaCalculator';
@@ -63,8 +62,6 @@ function App() {
     content = <StaminaCalculator />;
   } else if (page === 'flechas') {
     content = <ArrowsCalculator />;
-  } else if (page === 'celesta') {
-    content = <CelestaPage />;
   } else {
     content = <MundoPage />;
   }

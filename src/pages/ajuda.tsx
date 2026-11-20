@@ -106,24 +106,6 @@ export const PAGE_AJUDA: Partial<Record<PageId, ReactNode>> = {
       <p>A linha e a coluna que mais se aproximam do que escreveste ficam marcadas.</p>
     </>
   ),
-  celesta: (
-    <>
-      <p>
-        <b>A recolha está desligada</b> desde 15/09/2026, por ordem do André. O que está aqui é o último ficheiro que
-        entrou; enquanto isto estiver assim, não muda.
-      </p>
-      <p>
-        <b>Como funcionava.</b> Um robô lia o canal do Discord onde os spots são reservados com <code>/book</code>,
-        calculava as janelas livres de 30 minutos ou mais e escrevia-as num ficheiro no repositório. As janelas não
-        trazem data: são «HH:MM - HH:MM» numa volta de 24 horas que começa na hora do resumo do bot.
-      </p>
-      <p>
-        <b>«Livre agora»</b> compara o relógio com o desvio de cada janela dentro dessa volta. Recusa-se a responder
-        quando o ficheiro tem 24 horas ou mais — ao fim de uma volta completa a conta dava a volta e uma janela de ontem
-        passava por «livre agora»: errada e confiante, que é o pior que há.
-      </p>
-    </>
-  ),
   mundo: (
     <>
       <p>
