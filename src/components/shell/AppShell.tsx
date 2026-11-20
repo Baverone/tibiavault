@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { CASA, pageById, pageTitle, sections, type PageId } from '../../navigation/pages';
 import { Icon } from './icons';
+import { TibiadromeBadge } from './TibiadromeBadge';
 
 interface AppShellProps {
   page: PageId;
@@ -162,31 +163,34 @@ export function AppShell({ page, onNavigate, subtitle, actions, timers, help, ch
 
           <div className="pgh">
             <div className="pghin">
-              <nav className="crumbs" aria-label="Migalhas">
-                {page === 'inicio' ? (
-                  <b>{meta.label}</b>
-                ) : (
-                  <>
-                    <a
-                      href="#inicio"
-                      onClick={(event) => {
-                        event.preventDefault();
-                        go('inicio');
-                      }}
-                    >
-                      Início
-                    </a>
-                    {meta.section && (
-                      <>
-                        <i>›</i>
-                        <span>{meta.section}</span>
-                      </>
-                    )}
-                    <i>›</i>
+              <div className="crumbrow">
+                <nav className="crumbs" aria-label="Migalhas">
+                  {page === 'inicio' ? (
                     <b>{meta.label}</b>
-                  </>
-                )}
-              </nav>
+                  ) : (
+                    <>
+                      <a
+                        href="#inicio"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          go('inicio');
+                        }}
+                      >
+                        Início
+                      </a>
+                      {meta.section && (
+                        <>
+                          <i>›</i>
+                          <span>{meta.section}</span>
+                        </>
+                      )}
+                      <i>›</i>
+                      <b>{meta.label}</b>
+                    </>
+                  )}
+                </nav>
+                <TibiadromeBadge onNavigate={go} />
+              </div>
 
               <div className="pgtop">
                 <div className="pgtit">
