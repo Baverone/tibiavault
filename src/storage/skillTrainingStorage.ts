@@ -13,7 +13,12 @@ export interface SkillEntryInput {
   /** Optional goal the user is training towards. Older saved drafts don't
    *  have it, so every read has to tolerate it being undefined. */
   target?: string;
+  /** Lasting Exercise que quer gastar (20/11/2026), para ver com que skill fica. */
+  wands?: string;
 }
+
+/** Como se escreve o objetivo: um nível a atingir ou as varinhas a gastar. */
+export type TargetMode = 'level' | 'wands';
 
 export interface SkillTrainingConfig {
   knightWeapons: ('axe' | 'sword' | 'club')[];
@@ -21,6 +26,8 @@ export interface SkillTrainingConfig {
   specialDummy: boolean;
   /** Account's Loyalty bonus (0, 5, 10, ... 50), since it inflates the displayed skill level. */
   loyaltyBonusPercent: number;
+  /** Sem a chave (rascunhos de antes de 20/11/2026) é 'level', como era. */
+  targetMode: TargetMode;
 }
 
 const STORAGE_PREFIX = 'tibia-xp-calc:skill-training:';
@@ -30,6 +37,7 @@ const DEFAULT_CONFIG: SkillTrainingConfig = {
   skills: {},
   specialDummy: false,
   loyaltyBonusPercent: 0,
+  targetMode: 'level',
 };
 
 function storageKey(characterId: CharacterId): string {
@@ -43,7 +51,12 @@ function sanitizeEntry(value: unknown): SkillEntryInput | null {
   if (typeof value !== 'object' || value === null) return null;
   const v = value as Record<string, unknown>;
   if (typeof v.level !== 'string' || typeof v.percent !== 'string') return null;
-  return { level: v.level, percent: v.percent, ...(typeof v.target === 'string' ? { target: v.target } : {}) };
+  return {
+    level: v.level,
+    percent: v.percent,
+    ...(typeof v.target === 'string' ? { target: v.target } : {}),
+    ...(typeof v.wands === 'string' ? { wands: v.wands } : {}),
+  };
 }
 
 /**
@@ -72,6 +85,7 @@ export function sanitizeSkillTrainingConfig(parsed: unknown): SkillTrainingConfi
       typeof loyalty === 'number' && Number.isInteger(loyalty) && loyalty >= 0 && loyalty <= 50 && loyalty % 5 === 0
         ? loyalty
         : 0,
+    targetMode: p.targetMode === 'wands' ? 'wands' : 'level',
   };
 }
 

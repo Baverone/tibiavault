@@ -55,6 +55,10 @@ export function SkillTrainingCalculator({ player }: SkillTrainingCalculatorProps
     updateConfig((current) => ({ ...current, loyaltyBonusPercent }));
   }
 
+  function setTargetMode(targetMode: 'level' | 'wands') {
+    updateConfig((current) => ({ ...current, targetMode }));
+  }
+
   function setSkillEntry(skill: TrainableSkill, entry: SkillEntryInput) {
     updateConfig((current) => ({ ...current, skills: { ...current.skills, [skill]: entry } }));
   }
@@ -168,6 +172,30 @@ export function SkillTrainingCalculator({ player }: SkillTrainingCalculatorProps
         </>
       )}
 
+      {vocation && (
+        <div className="hunt-form__field" style={{ marginBottom: 14 }}>
+          <label>Objetivo</label>
+          <div className="seg">
+            <button
+              type="button"
+              aria-pressed={config.targetMode === 'level'}
+              className={config.targetMode === 'level' ? 'on' : undefined}
+              onClick={() => setTargetMode('level')}
+            >
+              Nível que quero
+            </button>
+            <button
+              type="button"
+              aria-pressed={config.targetMode === 'wands'}
+              className={config.targetMode === 'wands' ? 'on' : undefined}
+              onClick={() => setTargetMode('wands')}
+            >
+              Varinhas que gasto
+            </button>
+          </div>
+        </div>
+      )}
+
       {vocation === 'knight' && skills.length === 0 && (
         <p className="vazio">Seleciona pelo menos uma arma para o Knight treinar.</p>
       )}
@@ -182,6 +210,7 @@ export function SkillTrainingCalculator({ player }: SkillTrainingCalculatorProps
               entry={config.skills[skill] ?? EMPTY_ENTRY}
               specialDummy={config.specialDummy}
               loyaltyBonusPercent={config.loyaltyBonusPercent}
+              targetMode={config.targetMode}
               onChange={(entry) => setSkillEntry(skill, entry)}
               accentColor={accentColor}
             />

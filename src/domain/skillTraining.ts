@@ -277,3 +277,63 @@ export function calculateTrainingToTarget(
   };
 }
 
+
+export interface SkillLevelPercent {
+  level: number;
+  /** % JÁ FEITO do nível (no jogo vê-se o que falta: 100 − isto). */
+  percent: number;
+}
+
+export interface SkillFromWandsResult {
+  /** O skill real (sem Loyalty) depois das varinhas, sem evento. */
+  base: SkillLevelPercent;
+  /** O que o jogo vai mostrar (com Loyalty), sem evento. */
+  displayed: SkillLevelPercent;
+  baseDouble: SkillLevelPercent;
+  displayedDouble: SkillLevelPercent;
+  /** As varinhas passam do nível máximo da calculadora; os níveis param lá. */
+  capped: boolean;
+}
+
+/**
+ * O inverso do nível objetivo (20/11/2026, pedido do André): com N Lasting
+ * Exercise, com que skill fico? Os pontos das varinhas somam-se aos pontos
+ * REAIS (a Loyalty não acelera o treino); o nível do jogo é esse total
+ * multiplicado pela Loyalty, como em `calculateSkillTraining`.
+ */
+export function calculateSkillFromWands(
+  skill: TrainableSkill,
+  vocation: Vocation,
+  displayedCurrentLevel: number,
+  displayedCurrentPercent: number,
+  lastingWands: number,
+  useSpecialDummy: boolean,
+  loyaltyBonusPercent: number
+): SkillFromWandsResult {
+  const loyaltyMultiplier = 1 + loyaltyBonusPercent / 100;
+  const displayedPointsAtCurrent =
+    totalPointsAtLevel(skill, vocation, displayedCurrentLevel) +
+    (displayedCurrentPercent / 100) * pointsForNextLevel(skill, vocation, displayedCurrentLevel);
+  const basePointsAtCurrent = displayedPointsAtCurrent / loyaltyMultiplier;
+
+  const perCharge = SKILL_CONFIG[skill].pointsPerCharge * (useSpecialDummy ? SPECIAL_DUMMY_EFFICIENCY : 1);
+  const gained = Math.max(0, lastingWands) * LASTING_EXERCISE_CHARGES * perCharge;
+  const maxPoints = totalPointsAtLevel(skill, vocation, MAX_SKILL_LEVEL);
+
+  let capped = false;
+  const at = (points: number): SkillLevelPercent => {
+    if (points >= maxPoints) {
+      capped = true;
+      return { level: MAX_SKILL_LEVEL, percent: 0 };
+    }
+    return levelPercentFromPoints(skill, vocation, points);
+  };
+
+  const baseNormal = basePointsAtCurrent + gained;
+  const baseDouble = basePointsAtCurrent + gained * 2;
+  const base = at(baseNormal);
+  const displayed = at(baseNormal * loyaltyMultiplier);
+  const baseDoubleResult = at(baseDouble);
+  const displayedDouble = at(baseDouble * loyaltyMultiplier);
+  return { base, displayed, baseDouble: baseDoubleResult, displayedDouble, capped };
+}

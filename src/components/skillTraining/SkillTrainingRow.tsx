@@ -1,5 +1,6 @@
 import { useId } from 'react';
 import {
+  calculateSkillFromWands,
   calculateSkillTraining,
   calculateTrainingToTarget,
   LASTING_EXERCISE_CHARGES,
@@ -10,7 +11,7 @@ import {
   type Vocation,
 } from '../../domain/skillTraining';
 import { parseNonNegativeInteger, parsePercentMissing } from '../../domain/validation';
-import type { SkillEntryInput } from '../../storage/skillTrainingStorage';
+import type { SkillEntryInput, TargetMode } from '../../storage/skillTrainingStorage';
 import '../../styles/skillTraining.css';
 
 interface SkillTrainingRowProps {
@@ -19,6 +20,7 @@ interface SkillTrainingRowProps {
   entry: SkillEntryInput;
   specialDummy: boolean;
   loyaltyBonusPercent: number;
+  targetMode: TargetMode;
   onChange: (entry: SkillEntryInput) => void;
   accentColor: string;
 }
@@ -26,12 +28,18 @@ interface SkillTrainingRowProps {
 const lastingFormatter = new Intl.NumberFormat('pt-PT');
 const pointsFormatter = new Intl.NumberFormat('pt-PT', { maximumFractionDigits: 0 });
 
+/** O jogo mostra o que FALTA para o nível seguinte; as contas dão o que está feito. */
+function missingText(percentDone: number): string {
+  return (100 - percentDone).toFixed(2).replace('.', ',');
+}
+
 export function SkillTrainingRow({
   skill,
   vocation,
   entry,
   specialDummy,
   loyaltyBonusPercent,
+  targetMode,
   onChange,
   accentColor,
 }: SkillTrainingRowProps) {
@@ -71,7 +79,7 @@ export function SkillTrainingRow({
   const lastingDoubleEventBase = result ? Math.ceil(result.chargesDoubleEventBase / LASTING_EXERCISE_CHARGES) : 0;
 
   const targetResult = parseNonNegativeInteger(entry.target ?? '', 'o nível objetivo');
-  const targetTyped = (entry.target ?? '').trim() !== '';
+  const targetTyped = targetMode === 'level' && (entry.target ?? '').trim() !== '';
 
   // O objetivo é comparado com o nível BASE, não com o que aparece no jogo:
   // com Loyalty, o número do jogo vai à frente do skill real.
@@ -86,6 +94,22 @@ export function SkillTrainingRow({
           levelResult.value,
           100 - percentMissingResult.value,
           targetResult.value,
+          specialDummy,
+          loyaltyBonusPercent
+        )
+      : null;
+
+  // Modo por varinhas (20/11/2026): quantas Lasting Exercise quer gastar.
+  const wandsTyped = targetMode === 'wands' && (entry.wands ?? '').trim() !== '';
+  const wandsResult = parseNonNegativeInteger(entry.wands ?? '', 'as varinhas');
+  const fromWands =
+    canCalculate && levelResult.ok && percentMissingResult.ok && wandsTyped && wandsResult.ok && wandsResult.value > 0
+      ? calculateSkillFromWands(
+          skill,
+          vocation,
+          levelResult.value,
+          100 - percentMissingResult.value,
+          wandsResult.value,
           specialDummy,
           loyaltyBonusPercent
         )
@@ -133,17 +157,31 @@ export function SkillTrainingRow({
             onChange={(e) => onChange({ ...entry, percent: e.target.value })}
           />
         </div>
-        <div className="hunt-form__field">
-          <label htmlFor={`${fieldId}-target`}>Nível objetivo — base, sem Loyalty (opcional)</label>
-          <input
-            id={`${fieldId}-target`}
-            type="text"
-            inputMode="numeric"
-            placeholder={result ? `ex: ${result.baseLevel + 10}` : 'ex: 100'}
-            value={entry.target ?? ''}
-            onChange={(e) => onChange({ ...entry, target: e.target.value })}
-          />
-        </div>
+        {targetMode === 'level' ? (
+          <div className="hunt-form__field">
+            <label htmlFor={`${fieldId}-target`}>Nível objetivo — base, sem Loyalty (opcional)</label>
+            <input
+              id={`${fieldId}-target`}
+              type="text"
+              inputMode="numeric"
+              placeholder={result ? `ex: ${result.baseLevel + 10}` : 'ex: 100'}
+              value={entry.target ?? ''}
+              onChange={(e) => onChange({ ...entry, target: e.target.value })}
+            />
+          </div>
+        ) : (
+          <div className="hunt-form__field">
+            <label htmlFor={`${fieldId}-wands`}>Lasting Exercise a gastar</label>
+            <input
+              id={`${fieldId}-wands`}
+              type="text"
+              inputMode="numeric"
+              placeholder="ex: 5"
+              value={entry.wands ?? ''}
+              onChange={(e) => onChange({ ...entry, wands: e.target.value })}
+            />
+          </div>
+        )}
       </div>
 
       {mensagemErro && <p className="field-error">{mensagemErro}</p>}
@@ -179,6 +217,30 @@ export function SkillTrainingRow({
             {pointsFormatter.format(Math.ceil(toTarget.pointsRemaining))}{' '}
             {skill === 'magic' ? 'de mana' : 'hits'} · {lastingFormatter.format(toTarget.chargesNormal)} cargas
           </span>
+        </div>
+      )}
+
+      {wandsTyped && !wandsResult.ok && <p className="field-error">{!wandsResult.ok ? wandsResult.error : ''}</p>}
+
+      {fromWands && wandsResult.ok && (
+        <div className="skill-training-target">
+          <span className="skill-training-target__label">
+            Com {lastingFormatter.format(wandsResult.value)} Lasting Exercise ficas com
+          </span>
+          <span className="skill-training-target__value" style={{ color: accentColor }}>
+            {SKILL_LABELS[skill]} {fromWands.displayed.level}, faltam {missingText(fromWands.displayed.percent)}%
+          </span>
+          <span className="skill-training-target__detail">
+            {hasLoyalty &&
+              `base, sem Loyalty: ${fromWands.base.level}, faltam ${missingText(fromWands.base.percent)}% · `}
+            com Double Skill Event: {fromWands.displayedDouble.level}, faltam {missingText(fromWands.displayedDouble.percent)}%
+            {hasLoyalty && ` (base ${fromWands.baseDouble.level})`}
+          </span>
+          {fromWands.capped && (
+            <span className="skill-training-target__detail">
+              Passa do nível {MAX_SKILL_LEVEL}, o máximo da calculadora — os números param aí.
+            </span>
+          )}
         </div>
       )}
 

@@ -23,6 +23,12 @@ test('treino de skills: forma errada nao passa, o que esta certo fica', () => {
     skills: { magic: { level: '80', percent: '40', target: '90' } },
     specialDummy: false,
     loyaltyBonusPercent: 0,
+    targetMode: 'level',
   });
   assert.equal(sanitizeSkillTrainingConfig('lixo').loyaltyBonusPercent, 0);
+  // 20/11/2026: o modo por varinhas e o campo das varinhas sobrevivem a recarregar.
+  const varinhas = sanitizeSkillTrainingConfig({ targetMode: 'wands', skills: { magic: { level: '80', percent: '40', wands: '12' } } });
+  assert.equal(varinhas.targetMode, 'wands');
+  assert.equal(varinhas.skills.magic?.wands, '12');
+  assert.equal(sanitizeSkillTrainingConfig({ targetMode: 'outra' }).targetMode, 'level');
 });
