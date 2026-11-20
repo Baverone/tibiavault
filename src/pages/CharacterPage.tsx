@@ -14,6 +14,8 @@ import { XpForecastCard } from '../components/xp/XpForecastCard';
 import { HuntPlannerCard } from '../components/xp/HuntPlannerCard';
 import { RecentHistoryList } from '../components/charts/RecentHistoryList';
 import { SkillTrainingCalculator } from '../components/skillTraining/SkillTrainingCalculator';
+import { SkillHistoryPanel } from '../components/skillTraining/SkillHistoryPanel';
+import { useSkillsHistory } from '../hooks/useSkillsHistory';
 
 /**
  * O gráfico arrasta o Recharts atrás dele — sozinho, dois terços do JavaScript
@@ -25,7 +27,7 @@ const XpProgressChart = lazy(() =>
 
 /** Os blocos, por ordem. A lista está em `navigation/pages.ts` para o índice
  *  vertical e as âncoras das secções não poderem discordar. */
-const [NIVEL, PROGRESSAO, PREVISAO, HUNT, TREINO] = CHARACTER_SECTIONS;
+const [NIVEL, PROGRESSAO, PREVISAO, HUNT, TREINO, SKILLS] = CHARACTER_SECTIONS;
 
 interface CharacterPageProps {
   player: PlayerMeta;
@@ -57,6 +59,7 @@ function useScrollToSection(section: string | null | undefined, ready: boolean) 
  */
 export function CharacterPage({ player, section }: CharacterPageProps) {
   const { history, loading, error, retry } = useCharacterState(player.id);
+  const skillsHistory = useSkillsHistory(player.id);
   const now = Date.now();
   const summary = summarizeCharacter(history, now);
   const progress = summary.experience !== null ? getLevelProgress(summary.experience) : null;
@@ -157,7 +160,17 @@ export function CharacterPage({ player, section }: CharacterPageProps) {
               {TREINO.label}
             </h2>
           </div>
-          <SkillTrainingCalculator player={player} />
+          <SkillTrainingCalculator player={player} history={skillsHistory} />
+        </section>
+
+        <section className="card secao" id={SKILLS.id}>
+          <div className="cardh">
+            <h2>
+              <Icon name={SKILLS.icon} size={16} />
+              {SKILLS.label}
+            </h2>
+          </div>
+          <SkillHistoryPanel history={skillsHistory} accentColor={player.accentColor} />
         </section>
       </div>
     </div>

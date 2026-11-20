@@ -16,9 +16,13 @@ import { useSkillTrainingConfig } from '../../hooks/useSkillTrainingConfig';
 import type { SkillEntryInput } from '../../storage/skillTrainingStorage';
 import { Icon } from '../shell/icons';
 import { SkillTrainingRow } from './SkillTrainingRow';
+import { SaveReadingBar } from './SaveReadingBar';
+import type { SkillsHistoryState } from '../../hooks/useSkillsHistory';
 
 interface SkillTrainingCalculatorProps {
   player: PlayerMeta;
+  /** O histórico dos skills (20/11/2026): o botão «Gravar leitura» grava aqui. */
+  history: SkillsHistoryState;
 }
 
 const VOCATIONS: Vocation[] = ['knight', 'paladin', 'sorcerer', 'druid', 'monk'];
@@ -32,7 +36,7 @@ function activeSkills(vocation: Vocation, knightWeapons: ('axe' | 'sword' | 'clu
   return [...knightWeapons, 'magic'];
 }
 
-export function SkillTrainingCalculator({ player }: SkillTrainingCalculatorProps) {
+export function SkillTrainingCalculator({ player, history }: SkillTrainingCalculatorProps) {
   const accentColor = player.accentColor;
   const { vocation, loading, detect, setManualVocation } = useCharacterVocation(player.id, player.name);
   const { config, updateConfig } = useSkillTrainingConfig(player.id);
@@ -217,6 +221,8 @@ export function SkillTrainingCalculator({ player }: SkillTrainingCalculatorProps
           ))}
         </div>
       )}
+
+      {vocation && skills.length > 0 && <SaveReadingBar config={config} skills={skills} history={history} />}
 
       {cheapestBase.length >= 2 && (
         <p className="skill-training-cheapest">

@@ -171,6 +171,8 @@ export const CHARACTER_SECTIONS: { id: string; label: string; icon: IconName }[]
   { id: 'previsao', label: 'Previsão', icon: 'previsao' },
   { id: 'hunt', label: 'Calculadora de hunt', icon: 'calculadora' },
   { id: 'treino', label: 'Varinhas de treino', icon: 'varinha' },
+  // 20/11/2026: as leituras gravadas no Treino, ao longo do tempo e nos eventos.
+  { id: 'skills', label: 'Evolução dos skills', icon: 'previsao' },
 ];
 
 const SECTION_IDS = new Set(CHARACTER_SECTIONS.map((section) => section.id));

@@ -33,3 +33,17 @@
   font-variant-numeric: tabular-nums;
   line-height: 1.5;
 }
+
+/* Histórico dos skills (20/11/2026). */
+.skills-save {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.skills-token .btn.sm { margin-left: 4px; }
+.skills-chart { margin-top: 18px; }
+.skills-chart h3,
+.skills-events h3 { margin: 0 0 4px; font-size: 15px; }
+.skills-events { margin-top: 22px; }
+.skills-events__list { margin: 6px 0 12px; padding-left: 18px; }
+.skills-events__list li { margin-bottom: 6px; }
