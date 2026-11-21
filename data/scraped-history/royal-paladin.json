@@ -1027,9 +1027,15 @@
   {
     "date": "2026-11-20",
     "level": 1190,
-    "experience": 27987648668,
-    "scrapedAt": "2026-11-21T10:05:04.454Z",
-    "source": "highscores",
-    "snapshotAt": "2026-11-21T09:39:44.000Z"
+    "experience": 27967873192,
+    "scrapedAt": "2026-11-21T10:30:51.526Z",
+    "source": "guildstats",
+    "substituiu": {
+      "level": 1190,
+      "experience": 27987648668,
+      "source": "highscores",
+      "scrapedAt": "2026-11-21T10:05:04.454Z",
+      "snapshotAt": "2026-11-21T09:39:44.000Z"
+    }
   }
 ]

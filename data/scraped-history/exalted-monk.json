@@ -952,5 +952,19 @@
     "experience": 3935382690,
     "source": "guildstats",
     "scrapedAt": "2026-11-19T10:31:23.841Z"
+  },
+  {
+    "date": "2026-11-19",
+    "level": 620,
+    "experience": 3935382690,
+    "source": "guildstats",
+    "scrapedAt": "2026-11-21T10:30:51.526Z"
+  },
+  {
+    "date": "2026-11-20",
+    "level": 620,
+    "experience": 3940071044,
+    "source": "guildstats",
+    "scrapedAt": "2026-11-21T10:30:51.526Z"
   }
 ]
