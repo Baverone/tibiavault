@@ -47,3 +47,19 @@
 .skills-events { margin-top: 22px; }
 .skills-events__list { margin: 6px 0 12px; padding-left: 18px; }
 .skills-events__list li { margin-bottom: 6px; }
+
+/* Cargas → tempo que sobra (21/11/2026). */
+.charges-left {
+  margin-top: 18px;
+  padding-block: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.charges-left .hunt-form {
+  max-width: 260px;
+}
+
+.charges-left__out {
+  margin: 8px 0 0;
+  font-variant-numeric: tabular-nums;
+}

@@ -211,6 +211,27 @@ export function calculateSkillTraining(
 /** A Lasting Exercise weapon (the largest purchasable tier) has this many charges. */
 export const LASTING_EXERCISE_CHARGES = 14400;
 
+/** An exercise weapon spends one charge every 2 seconds (14 400 charges = 8 hours). */
+export const SECONDS_PER_CHARGE = 2;
+
+export interface ChargesTime {
+  hours: number;
+  minutes: number;
+  seconds: number;
+  totalSeconds: number;
+}
+
+/** Quanto tempo de treino sobra com estas cargas (21/11/2026). As horas não dão a volta às 24. */
+export function chargesTimeLeft(charges: number): ChargesTime {
+  const totalSeconds = Math.max(0, Math.floor(charges)) * SECONDS_PER_CHARGE;
+  return {
+    hours: Math.floor(totalSeconds / 3600),
+    minutes: Math.floor((totalSeconds % 3600) / 60),
+    seconds: totalSeconds % 60,
+    totalSeconds,
+  };
+}
+
 export interface SkillTargetResult {
   /** Nível-alvo, em nível BASE (skill real, sem a inflação da Loyalty). */
   targetLevel: number;

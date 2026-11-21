@@ -8,6 +8,7 @@ import {
   calculateSkillTraining,
   calculateSkillFromWands,
   calculateTrainingToTarget,
+  chargesTimeLeft,
   LASTING_EXERCISE_CHARGES,
   MAX_SKILL_LEVEL,
   minSkillLevel,
@@ -109,4 +110,19 @@ test('varinhas → skill: acima do teto para no máximo e diz isso', () => {
   const r = calculateSkillFromWands('fist', 'monk', 100, 0, 1e30, false, 0);
   assert.equal(r.capped, true);
   assert.equal(r.base.level, MAX_SKILL_LEVEL);
+});
+
+// 21/11/2026: o André escreve as cargas que sobram na varinha e quer o tempo.
+test('uma Lasting Exercise inteira (14 400 cargas) dura 8 horas certas', () => {
+  assert.deepEqual(chargesTimeLeft(LASTING_EXERCISE_CHARGES), { hours: 8, minutes: 0, seconds: 0, totalSeconds: 28800 });
+});
+
+test('cada carga são 2 segundos', () => {
+  assert.deepEqual(chargesTimeLeft(1), { hours: 0, minutes: 0, seconds: 2, totalSeconds: 2 });
+  assert.deepEqual(chargesTimeLeft(1234), { hours: 0, minutes: 41, seconds: 8, totalSeconds: 2468 });
+  assert.deepEqual(chargesTimeLeft(0), { hours: 0, minutes: 0, seconds: 0, totalSeconds: 0 });
+});
+
+test('mais cargas do que uma varinha também dá (as horas passam das 24)', () => {
+  assert.deepEqual(chargesTimeLeft(50000), { hours: 27, minutes: 46, seconds: 40, totalSeconds: 100000 });
 });

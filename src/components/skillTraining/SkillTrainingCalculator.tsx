@@ -17,6 +17,7 @@ import type { SkillEntryInput } from '../../storage/skillTrainingStorage';
 import { Icon } from '../shell/icons';
 import { SkillTrainingRow } from './SkillTrainingRow';
 import { SaveReadingBar } from './SaveReadingBar';
+import { ChargesTimeLeft } from './ChargesTimeLeft';
 import type { SkillsHistoryState } from '../../hooks/useSkillsHistory';
 
 interface SkillTrainingCalculatorProps {
@@ -221,6 +222,8 @@ export function SkillTrainingCalculator({ player, history }: SkillTrainingCalcul
           ))}
         </div>
       )}
+
+      <ChargesTimeLeft accentColor={accentColor} />
 
       {vocation && skills.length > 0 && <SaveReadingBar config={config} skills={skills} history={history} />}
 
