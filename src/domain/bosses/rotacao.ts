@@ -1,14 +1,13 @@
 // A rotação de bosses de hoje, solo e team (22/11/2026). Regras: secção
 // «Regras de omissão» de docs/superpowers/specs/2026-11-22-bosses-design.md.
+//
+// Sem contagem de cooldown (22/11/2026, o André: «não preciso que contes o
+// cooldown do boss»): o jogo já mostra os cooldowns, e os da pesquisa eram
+// incertos. Uma kill conta para o Bosstiary e não mexe na rota.
 import { chegouAoObjetivo, objetivoOmissao } from './bosstiary.ts';
 import { acessoEfetivo, estadoDe, type EstadoBoss, type EstadoPersonagem } from './estado.ts';
 import type { Bloco, Boss, Catalogo, Marca, Modo } from './types.ts';
 
-const HORA = 3600_000;
-/** Um cooldown que a pesquisa não encontrou conta como o diário normal. */
-const COOLDOWN_OMISSAO_H = 20;
-/** Bosses de team com cooldown acima disto (finais de 68 h, 14 dias…) só aparecem quando estão disponíveis. */
-const FINAL_ACIMA_DE_H = 24;
 /** O Monk sem nível estimado para ele usa o do RP com esta margem. */
 const MARGEM_MONK = 150;
 /** O bloco que leva o boss boosted para o topo da rota solo. */
@@ -21,8 +20,6 @@ export interface Entrada {
   boss: Boss;
   estado: EstadoBoss;
   marca: Marca;
-  /** `null` = disponível agora; senão, o instante em que volta. */
-  disponivelEm: number | null;
   boosted: boolean;
   /** O nível que o filtrou é uma estimativa (mostra-se com «~»). */
   nivelEstimado: boolean;
@@ -31,7 +28,7 @@ export interface Entrada {
 export interface BlocoHoje {
   bloco: Bloco;
   entradas: Entrada[];
-  /** A soma dos minutos estimados dos bosses disponíveis. */
+  /** A soma dos minutos estimados dos bosses do bloco. */
   minutos: number;
 }
 
@@ -50,12 +47,6 @@ export function marcaEfetiva(boss: Boss, eb: EstadoBoss, modo: Modo): Marca {
   if (escolhida) return escolhida;
   const valor = modo === 'solo' ? boss.solo?.valor : boss.team?.valor;
   return valor === 'bosstiary' ? 'bosstiary' : 'sempre';
-}
-
-function disponivelEm(boss: Boss, eb: EstadoBoss, agora: number): number | null {
-  if (!eb.ultimaKill) return null;
-  const volta = Date.parse(eb.ultimaKill) + (boss.cooldownH ?? COOLDOWN_OMISSAO_H) * HORA;
-  return volta > agora ? volta : null;
 }
 
 /** A marca, se o boss entra; `null` se fica de fora (fora, sem acesso, objetivo atingido). */
@@ -81,7 +72,6 @@ function entrada(boss: Boss, eb: EstadoBoss, marca: Marca, ctx: Contexto, nivelE
     boss,
     estado: eb,
     marca,
-    disponivelEm: disponivelEm(boss, eb, ctx.agora),
     boosted: eBoosted(boss, ctx),
     nivelEstimado,
   };
@@ -95,7 +85,7 @@ function montar(blocos: Bloco[], porBloco: Map<string, Entrada[]>, modo: Modo): 
     .map((bloco) => {
       // O boosted à frente dentro do bloco; o resto pela ordem da rota.
       const entradas = [...(porBloco.get(bloco.id) ?? [])].sort((a, b) => Number(b.boosted) - Number(a.boosted) || ordem(a) - ordem(b));
-      return { bloco, entradas, minutos: entradas.filter((e) => e.disponivelEm === null).reduce((s, e) => s + minutos(e), 0) };
+      return { bloco, entradas, minutos: entradas.reduce((s, e) => s + minutos(e), 0) };
     })
     .filter((b) => b.entradas.length > 0);
 }
@@ -140,9 +130,7 @@ export function rotacaoTeam(cat: Catalogo, est: EstadoPersonagem, ctx: Contexto)
     const eb = estadoDe(est, boss.id);
     const marca = marcaSeEntra(boss, eb, 'team');
     if (!marca) continue;
-    const e = entrada(boss, eb, marca, ctx, boss.incerto);
-    if ((boss.cooldownH ?? COOLDOWN_OMISSAO_H) > FINAL_ACIMA_DE_H && e.disponivelEm !== null) continue;
-    porBloco.set(boss.team.bloco, [...(porBloco.get(boss.team.bloco) ?? []), e]);
+    porBloco.set(boss.team.bloco, [...(porBloco.get(boss.team.bloco) ?? []), entrada(boss, eb, marca, ctx, boss.incerto)]);
   }
   const comBoosted = (b: BlocoHoje) => Number(b.entradas.some((e) => e.boosted));
   const todos = montar(cat.blocos.filter((b) => b.tipo === 'team'), porBloco, 'team').sort((a, b) => comBoosted(b) - comBoosted(a));

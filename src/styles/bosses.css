@@ -78,9 +78,6 @@
 .bosses-linha + .bosses-linha {
   margin-top: 6px;
 }
-.bosses-linha.em-cooldown {
-  opacity: 0.5;
-}
 .bosses-linha.boosted {
   border-color: var(--accent-line);
   background: var(--accent-soft);

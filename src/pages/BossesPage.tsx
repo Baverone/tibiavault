@@ -100,7 +100,7 @@ function PaginaPersonagem({
 }) {
   const b = useBosstiary(player.id);
   const [separador, setSeparador] = useState<Separador>('solo');
-  // A rota recalcula-se a cada minuto (os cooldowns acabam sozinhos).
+  // A rota recalcula-se a cada minuto (o dia da semana vira no server save).
   const [agora, setAgora] = useState(() => Date.now());
   useEffect(() => {
     const t = setInterval(() => setAgora(Date.now()), 60_000);

@@ -5,8 +5,6 @@ import { NOME_PATAMAR, textoProgresso } from './texto';
 import type { Entrada } from '../../domain/bosses/rotacao';
 import type { Marca, Modo } from '../../domain/bosses/types';
 
-const horas = new Intl.DateTimeFormat('pt-PT', { weekday: 'short', hour: '2-digit', minute: '2-digit' });
-
 const MARCAS: { valor: Marca; rotulo: string }[] = [
   { valor: 'sempre', rotulo: 'sempre' },
   { valor: 'bosstiary', rotulo: 'Bosstiary' },
@@ -40,7 +38,7 @@ interface LinhaBossProps {
 
 /** Uma linha da rotação: o boss, o progresso no Bosstiary, a marca e o +1. */
 export function LinhaBoss({ entrada, modo, mudar, aTestar = false }: LinhaBossProps) {
-  const { boss, estado, marca, disponivelEm, boosted, nivelEstimado } = entrada;
+  const { boss, estado, marca, boosted, nivelEstimado } = entrada;
   const quantas = boosted ? 3 : 1;
   const acesso = acessoEfetivo(estado);
   const nivel = modo === 'solo' ? null : boss.team?.nivel ?? null;
@@ -50,7 +48,7 @@ export function LinhaBoss({ entrada, modo, mudar, aTestar = false }: LinhaBossPr
     .join('\n');
 
   return (
-    <li className={`bosses-linha${disponivelEm !== null ? ' em-cooldown' : ''}${boosted ? ' boosted' : ''}`}>
+    <li className={`bosses-linha${boosted ? ' boosted' : ''}`}>
       <div className="bosses-linha__nome" title={titulo}>
         <b>{boss.nome}</b>
         {boosted && <span className="bosses-tag boosted">boosted ×3</span>}
@@ -65,7 +63,6 @@ export function LinhaBoss({ entrada, modo, mudar, aTestar = false }: LinhaBossPr
         <span className="nota">{NOME_PATAMAR[patamar(estado.kills, boss.categoria)]}</span>
       </div>
       <div className="bosses-linha__acoes">
-        {disponivelEm !== null && <span className="nota">volta {horas.format(new Date(disponivelEm))}</span>}
         {acesso === null && (
           <span className="bosses-acesso">
             acesso?{' '}
@@ -87,7 +84,7 @@ export function LinhaBoss({ entrada, modo, mudar, aTestar = false }: LinhaBossPr
           type="button"
           className="btn sm pri"
           onClick={() => mudar({ tipo: 'kill', id: boss.id, quantas, quando: new Date().toISOString() })}
-          title={boosted ? 'boosted: conta 3 kills' : 'conta 1 kill e guarda a hora (cooldown)'}
+          title={boosted ? 'boosted: conta 3 kills' : 'conta 1 kill'}
         >
           +{quantas}
         </button>

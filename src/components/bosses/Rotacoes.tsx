@@ -11,13 +11,13 @@ function duracao(min: number): string {
 }
 
 function BlocoLista({ bloco, i, modo, mudar }: { bloco: BlocoHoje; i: number; modo: Modo; mudar: (a: Alteracao) => void }) {
-  const disponiveis = bloco.entradas.filter((e) => e.disponivelEm === null).length;
+  const n = bloco.entradas.length;
   return (
     <section className="bosses-bloco">
       <h3>
         <span className="bosses-bloco__n">{i + 1}</span> {bloco.bloco.nome}
         <span className="nota">
-          {disponiveis}/{bloco.entradas.length} disponíveis {duracao(bloco.minutos)}
+          {n} {n === 1 ? 'boss' : 'bosses'} {duracao(bloco.minutos)}
         </span>
       </h3>
       <ul>
@@ -44,7 +44,8 @@ export function RotacaoSolo({
     <>
       <p className="nota">
         A rota de hoje, pela ordem das áreas: os bosses de equipamento de todos os dias e o varrimento do Bosstiary do
-        dia da semana. Estimativa: {duracao(totalMin(blocos)) || '—'} (tempos aproximados, sem fonte).
+        dia da semana. Estimativa: {duracao(totalMin(blocos)) || '—'} (tempos aproximados, sem fonte). Os cooldowns
+        vês no jogo: aqui não se contam.
       </p>
       {blocos.length === 0 && <p className="nota">Nada disponível hoje com as marcas atuais.</p>}
       {blocos.map((b, i) => (
@@ -78,8 +79,8 @@ export function RotacaoTeam({
   return (
     <>
       <p className="nota">
-        As sessões de team com equipamento ou lucro que têm pelo menos um boss em jogo. Faz a que o grupo conseguir; os
-        finais de 68 h e de 14 dias só aparecem quando estão disponíveis.
+        As sessões de team com equipamento ou lucro que têm pelo menos um boss em jogo. Faz a que o grupo conseguir e
+        estiver fora de cooldown no jogo.
       </p>
       {principais.map((b, i) => (
         <BlocoLista key={b.bloco.id} bloco={b} i={i} modo="team" mudar={mudar} />

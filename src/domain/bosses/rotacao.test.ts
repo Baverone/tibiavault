@@ -81,13 +81,13 @@ test('o Monk só vê os bosses do nível dele; sem nível do Monk usa RP + 150, 
   assert.equal(vlark.nivelEstimado, true);
 });
 
-test('cooldown: uma kill há 10 h num boss de 20 h volta daqui a 10 h', () => {
-  const est: EstadoPersonagem = { bosses: { drume: { kills: 1, ultimaKill: new Date(AGORA - 10 * H).toISOString(), acesso: true } }, pontosJogo: null, aplicadas: [] };
-  const drume = rotacaoSolo(catalogo, est, ctx()).blocos[0].entradas.find((e) => e.boss.id === 'drume');
-  assert.equal(drume?.disponivelEm, AGORA + 10 * H);
-  // e os minutos do bloco só contam os disponíveis
+// 22/11/2026, o André: «não preciso que contes o cooldown do boss» — o jogo
+// já o mostra. Uma kill recente não tira o boss da rota nem o põe de parte.
+test('sem contagem de cooldown: uma kill há 1 h fica na rota e conta nos minutos', () => {
+  const est: EstadoPersonagem = { bosses: { drume: { kills: 1, ultimaKill: new Date(AGORA - 1 * H).toISOString(), acesso: true } }, pontosJogo: null, aplicadas: [] };
   const bloco = rotacaoSolo(catalogo, est, ctx()).blocos[0];
-  assert.equal(bloco.minutos, bloco.entradas.filter((e) => e.disponivelEm === null).length * 10);
+  assert.ok(bloco.entradas.some((e) => e.boss.id === 'drume'));
+  assert.equal(bloco.minutos, bloco.entradas.length * 10);
 });
 
 test('o varrimento da semana só entra no seu dia; os selos (f44) todos os dias', () => {
@@ -123,7 +123,7 @@ test('team: sessões com equipamento são principais, só-Bosstiary ficam à par
   assert.deepEqual(r.soBosstiary.map((b) => b.bloco.id), ['t2']);
 });
 
-test('team: um final de 68 h em cooldown não aparece; um de 20 h aparece a cinzento', () => {
+test('team: sem contagem de cooldown, um final de 68 h morto há 10 h continua na sessão', () => {
   const est: EstadoPersonagem = {
     bosses: {
       bakragore: { kills: 1, ultimaKill: new Date(AGORA - 10 * H).toISOString(), acesso: true },
@@ -133,8 +133,7 @@ test('team: um final de 68 h em cooldown não aparece; um de 20 h aparece a cinz
     aplicadas: [],
   };
   const t1 = rotacaoTeam(catalogo, est, ctx()).principais[0];
-  assert.ok(!t1.entradas.some((e) => e.boss.id === 'bakragore'));
-  assert.ok(t1.entradas.some((e) => e.boss.id === 'murcion' && e.disponivelEm !== null));
+  assert.deepEqual(t1.entradas.map((e) => e.boss.id).sort(), ['bakragore', 'murcion']);
 });
 
 test('o boosted sobe para o topo, mesmo que seja de outro dia da semana', () => {

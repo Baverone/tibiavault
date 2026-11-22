@@ -138,7 +138,7 @@ Bosses                                   [Baverone ▾]   gravado ✓
 - Mostra os blocos pela ordem da rota.
 - Inclui os bosses marcados «sempre», mais os «Bosstiary» que ainda não chegaram ao objetivo e são do bloco do dia da semana.
 - Esconde os que estão sem acesso ou «fora».
-- Um boss em cooldown fica cinzento, com a hora a que volta.
+- ~~Um boss em cooldown fica cinzento, com a hora a que volta.~~ **Mudou a 22/11/2026:** o André não quer que se conte o cooldown («não preciso que contes o cooldown do boss»); o jogo já o mostra. A rota não esconde nem acinzenta ninguém por causa de uma kill, e os finais de team de 68 h e 14 dias também ficam sempre à vista. A exceção que ele admite: bosses raros de aparecer, se houver uma página que os siga e se consiga ler.
 - O boosted sobe para o topo.
 - `+1` soma uma kill (3 se for o boosted) e guarda a hora da kill.
 
