@@ -1,0 +1,16 @@
+[
+  {
+    "timestamp": 1795328952962,
+    "loyaltyBonusPercent": 50,
+    "skills": {
+      "magic": {
+        "level": 50,
+        "percentMissing": 99
+      },
+      "fist": {
+        "level": 120,
+        "percentMissing": 82
+      }
+    }
+  }
+]
