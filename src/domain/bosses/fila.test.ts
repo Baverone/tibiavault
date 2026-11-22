@@ -2,7 +2,7 @@
 // gravam-se num commit só, 2 s depois do último.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { juntar } from './fila.ts';
+import { devolver, juntar, tirar } from './fila.ts';
 import type { Alteracao } from './estado.ts';
 
 const kill: Alteracao = { tipo: 'kill', id: 'drume', quantas: 1, quando: '2026-11-22T20:00:00.000Z' };
@@ -36,4 +36,22 @@ test('pontos no jogo: fica o último', () => {
   let fila = juntar([], { tipo: 'pontosJogo', valor: 100 });
   fila = juntar(fila, { tipo: 'pontosJogo', valor: 200 });
   assert.deepEqual(fila, [{ tipo: 'pontosJogo', valor: 200 }]);
+});
+
+test('depois de gravar saem as alterações gravadas, pelo uid — não pela contagem', () => {
+  // O lote em gravação levou «marca X = fora». Entretanto: +1 no Y e outra marca no X.
+  const gravado: Alteracao[] = [{ tipo: 'marca', id: 'x', modo: 'solo', marca: 'fora', uid: 'm1' }];
+  let fila: Alteracao[] = [];
+  fila = juntar(fila, { tipo: 'kill', id: 'y', quantas: 1, quando: '2026-11-22T20:00:00.000Z', uid: 'k1' });
+  fila = juntar(fila, { tipo: 'marca', id: 'x', modo: 'solo', marca: 'bosstiary', uid: 'm2' });
+  assert.deepEqual(tirar(fila, gravado).map((a) => a.uid), ['k1', 'm2']);
+});
+
+test('se a gravação falha, o lote volta para a frente da fila, e o mais recente ganha', () => {
+  const lote: Alteracao[] = [
+    { tipo: 'kill', id: 'y', quantas: 1, quando: '2026-11-22T20:00:00.000Z', uid: 'k1' },
+    { tipo: 'marca', id: 'x', modo: 'solo', marca: 'fora', uid: 'm1' },
+  ];
+  const fila: Alteracao[] = [{ tipo: 'marca', id: 'x', modo: 'solo', marca: 'sempre', uid: 'm2' }];
+  assert.deepEqual(devolver(lote, fila).map((a) => a.uid), ['k1', 'm2']);
 });

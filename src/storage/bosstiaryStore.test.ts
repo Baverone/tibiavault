@@ -9,7 +9,7 @@ const QUANDO = '2026-11-22T20:00:00.000Z';
 
 test('sem ficheiro ainda (404) o Bosstiary está vazio', async () => {
   const { fetchFn, calls } = fakeGithub([new Response('', { status: 404 })]);
-  assert.deepEqual(await carregarBosstiary('royal-paladin', null, fetchFn), { bosses: {}, pontosJogo: null });
+  assert.deepEqual(await carregarBosstiary('royal-paladin', null, fetchFn), { bosses: {}, pontosJogo: null, aplicadas: [] });
   assert.match(calls[0].url, /data\/bosstiary\/royal-paladin\.json/);
 });
 
@@ -38,4 +38,14 @@ test('dois aparelhos ao mesmo tempo: em 409 relê e as duas kills ficam', async 
   assert.equal(gravado.bosses['grand-master-oberon'].kills, 5);
   assert.equal(gravado.bosses.drume.kills, 1);
   assert.equal(calls[3].body!.sha, 'b');
+});
+
+test('o mesmo lote enviado duas vezes (página fechada a meio da gravação) não conta a dobrar', async () => {
+  const kill = { tipo: 'kill' as const, id: 'drume', quantas: 1, quando: QUANDO, uid: 'k1' };
+  const { fetchFn } = fakeGithub([
+    ficheiro({ bosses: { drume: { kills: 1, ultimaKill: QUANDO, acesso: null } }, pontosJogo: null, aplicadas: ['k1'] }, 'a'),
+    new Response('{}', { status: 200 }),
+  ]);
+  const out = await gravarAlteracoes('royal-paladin', [kill], 'tok', fetchFn);
+  assert.equal(out.bosses.drume.kills, 1);
 });

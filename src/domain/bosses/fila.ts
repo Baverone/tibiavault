@@ -24,3 +24,18 @@ function substitui(nova: Alteracao, antiga: Alteracao): boolean {
 export function juntar(pendentes: Alteracao[], nova: Alteracao): Alteracao[] {
   return [...pendentes.filter((antiga) => !substitui(nova, antiga)), nova];
 }
+
+/**
+ * Tira da fila as alterações que acabaram de ser gravadas, pelo `uid` — nunca
+ * pela contagem: o `juntar` reordena a fila, e cortar as primeiras N levava
+ * as erradas (22/11/2026, revisão final).
+ */
+export function tirar(fila: Alteracao[], gravadas: Alteracao[]): Alteracao[] {
+  const uids = new Set(gravadas.map((a) => a.uid));
+  return fila.filter((a) => a.uid === undefined || !uids.has(a.uid));
+}
+
+/** A gravação falhou: o lote volta à frente da fila, e o que chegou depois ganha. */
+export function devolver(lote: Alteracao[], fila: Alteracao[]): Alteracao[] {
+  return [...lote, ...fila].reduce<Alteracao[]>((acc, a) => juntar(acc, a), []);
+}

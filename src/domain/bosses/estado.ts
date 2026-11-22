@@ -24,16 +24,26 @@ export interface EstadoPersonagem {
   bosses: Record<string, EstadoBoss>;
   /** O total de pontos que ele vê no Bosstiary do jogo (inclui bosses fora do catálogo). */
   pontosJogo: number | null;
+  /**
+   * Os `uid` das últimas alterações já gravadas (as 300 mais recentes). Se a
+   * página fechar a meio de uma gravação, a fila guardada no aparelho volta a
+   * ser enviada — e o que já tinha entrado não conta duas vezes.
+   */
+  aplicadas: string[];
 }
 
-export type Alteracao =
+/** `uid`: identifica a alteração na fila e no ficheiro (ver `aplicadas`). */
+export type Alteracao = (
   | { tipo: 'kill'; id: string; quantas: number; quando: string }
   | { tipo: 'kills'; id: string; valor: number }
   | { tipo: 'marca'; id: string; modo: Modo; marca: Marca }
   | { tipo: 'acesso'; id: string; acesso: boolean | null }
   | { tipo: 'objetivo'; id: string; objetivo: Patamar }
   | { tipo: 'passou'; id: string; passou: boolean }
-  | { tipo: 'pontosJogo'; valor: number | null };
+  | { tipo: 'pontosJogo'; valor: number | null }
+) & { uid?: string };
+
+const MAX_APLICADAS = 300;
 
 const MARCAS: readonly string[] = ['sempre', 'bosstiary', 'fora'];
 const PATAMARES: readonly string[] = ['nenhum', 'prowess', 'expertise', 'mastery'];
@@ -64,7 +74,8 @@ export function limparEstado(raw: unknown): EstadoPersonagem {
   const bosses: Record<string, EstadoBoss> = {};
   if (isObj(r.bosses)) for (const [id, b] of Object.entries(r.bosses)) bosses[id] = limparBoss(b);
   const pj = r.pontosJogo;
-  return { bosses, pontosJogo: typeof pj === 'number' && Number.isFinite(pj) && pj >= 0 ? Math.floor(pj) : null };
+  const aplicadas = Array.isArray(r.aplicadas) ? r.aplicadas.filter((u): u is string => typeof u === 'string').slice(-MAX_APLICADAS) : [];
+  return { bosses, pontosJogo: typeof pj === 'number' && Number.isFinite(pj) && pj >= 0 ? Math.floor(pj) : null, aplicadas };
 }
 
 export function estadoDe(estado: EstadoPersonagem, id: string): EstadoBoss {
@@ -75,7 +86,14 @@ export function estadoDe(estado: EstadoPersonagem, id: string): EstadoBoss {
 export function aplicar(estado: EstadoPersonagem, alteracoes: Alteracao[]): EstadoPersonagem {
   const bosses: Record<string, EstadoBoss> = { ...estado.bosses };
   let pontosJogo = estado.pontosJogo;
+  const aplicadas = [...estado.aplicadas];
+  const vistas = new Set(aplicadas);
   for (const a of alteracoes) {
+    if (a.uid !== undefined) {
+      if (vistas.has(a.uid)) continue;
+      vistas.add(a.uid);
+      aplicadas.push(a.uid);
+    }
     if (a.tipo === 'pontosJogo') {
       pontosJogo = a.valor === null ? null : inteiro(a.valor);
       continue;
@@ -93,7 +111,7 @@ export function aplicar(estado: EstadoPersonagem, alteracoes: Alteracao[]): Esta
     else if (a.tipo === 'passou') eb.passou = a.passou;
     bosses[a.id] = eb;
   }
-  return { bosses, pontosJogo };
+  return { bosses, pontosJogo, aplicadas: aplicadas.slice(-MAX_APLICADAS) };
 }
 
 /**

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { CharacterId } from '../domain/types';
-import { aplicar, type Alteracao, type EstadoPersonagem } from '../domain/bosses/estado';
-import { juntar } from '../domain/bosses/fila';
+import { aplicar, limparEstado, type Alteracao, type EstadoPersonagem } from '../domain/bosses/estado';
+import { devolver, juntar, tirar } from '../domain/bosses/fila';
 import { carregarBosstiary, gravarAlteracoes } from '../storage/bosstiaryStore';
 import { getGithubToken, setGithubToken } from '../storage/githubToken';
 import { historyErrorText } from '../storage/sharedHistory';
@@ -27,29 +27,64 @@ export interface Bosstiary {
   definirChave: (token: string | null) => void;
 }
 
-const VAZIO: EstadoPersonagem = { bosses: {}, pontosJogo: null };
+const VAZIO: EstadoPersonagem = { bosses: {}, pontosJogo: null, aplicadas: [] };
+
+// A fila por gravar fica também no aparelho (22/11/2026, revisão final): no
+// telemóvel o «tens alterações por gravar» não aparece ao fechar o separador,
+// e trocar de personagem ou de página desmonta isto. Ao voltar, a fila é lida
+// daqui e gravada; os `uid` impedem que o que já tinha entrado conte duas vezes.
+const chaveFila = (id: CharacterId) => `tibiavault:bosses-fila:${id}`;
+
+function lerFila(id: CharacterId): Alteracao[] {
+  try {
+    const raw = JSON.parse(localStorage.getItem(chaveFila(id)) ?? '[]') as unknown;
+    if (!Array.isArray(raw)) return [];
+    // Só passa o que o `aplicar` reconhece (o mesmo filtro do ficheiro).
+    return raw.filter((a): a is Alteracao => typeof a === 'object' && a !== null && typeof (a as Alteracao).tipo === 'string');
+  } catch {
+    return [];
+  }
+}
+
+function guardarFila(id: CharacterId, fila: Alteracao[]): void {
+  try {
+    if (fila.length === 0) localStorage.removeItem(chaveFila(id));
+    else localStorage.setItem(chaveFila(id), JSON.stringify(fila));
+  } catch {
+    // sem armazenamento: a fila vive só nesta página
+  }
+}
+
+function novoUid(): string {
+  try {
+    return crypto.randomUUID();
+  } catch {
+    return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+  }
+}
 
 /**
  * O Bosstiary de um personagem (22/11/2026): lê `data/bosstiary/<id>.json` e
- * grava as alterações em fila, 2 s depois do último clique. Enquanto houver
- * alterações por gravar, sair da página pede confirmação; uma falha fica à
- * vista com «tentar outra vez» e as alterações continuam na fila.
+ * grava as alterações em fila, 2 s depois do último clique. O lote em gravação
+ * fica à parte da fila: o que chega entretanto não se mistura com ele, e no fim
+ * sai da fila só o que foi gravado (pelo `uid`). Uma falha deixa o lote de
+ * volta na fila, à vista com «tentar outra vez».
  */
 export function useBosstiary(id: CharacterId): Bosstiary {
   const [gravado, setGravado] = useState<EstadoPersonagem>(VAZIO);
-  const [pendentes, setPendentes] = useState<Alteracao[]>([]);
+  const [fila, setFila] = useState<Alteracao[]>(() => lerFila(id));
+  const [emVoo, setEmVoo] = useState<Alteracao[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
-  const [aGravar, setAGravar] = useState(false);
   const [erroGravacao, setErroGravacao] = useState<string | null>(null);
   const [tentativa, setTentativa] = useState(0);
   const [leitura, setLeitura] = useState(0);
   const [token, setToken] = useState<string | null>(() => getGithubToken());
 
-  // A fila também num ref: a gravação e a saída da página precisam do valor
-  // atual sem esperar por um render.
-  const filaRef = useRef<Alteracao[]>([]);
-  filaRef.current = pendentes;
+  const filaRef = useRef<Alteracao[]>(fila);
+  useEffect(() => {
+    filaRef.current = fila;
+  }, [fila]);
 
   useEffect(() => {
     let cancelado = false;
@@ -71,48 +106,48 @@ export function useBosstiary(id: CharacterId): Bosstiary {
     };
   }, [id, token, leitura]);
 
-  // Gravar: 2 s depois da última alteração, se não estiver já a gravar.
+  // O que falta gravar fica no aparelho até estar gravado.
   useEffect(() => {
-    if (pendentes.length === 0 || !token || aGravar || erroGravacao) return;
+    guardarFila(id, [...emVoo, ...fila]);
+  }, [id, emVoo, fila]);
+
+  // Gravar: 2 s depois da última alteração, um lote de cada vez.
+  const aGravar = emVoo.length > 0;
+  useEffect(() => {
+    if (fila.length === 0 || !token || aGravar || erroGravacao) return;
     const timer = setTimeout(() => {
       const lote = filaRef.current;
       if (lote.length === 0) return;
-      setAGravar(true);
+      setEmVoo(lote);
+      setFila((atual) => tirar(atual, lote));
       gravarAlteracoes(id, lote, token)
         .then((novo) => {
           setGravado(novo);
-          // Sai da fila só o que foi gravado; o que chegou entretanto fica.
-          setPendentes((atual) => atual.slice(lote.length));
+          setEmVoo([]);
         })
-        .catch((err: unknown) => setErroGravacao(err instanceof Error ? err.message : String(err)))
-        .finally(() => setAGravar(false));
+        .catch((err: unknown) => {
+          setFila((atual) => devolver(lote, atual));
+          setEmVoo([]);
+          setErroGravacao(err instanceof Error ? err.message : String(err));
+        });
     }, ESPERA_MS);
     return () => clearTimeout(timer);
-  }, [pendentes, token, aGravar, erroGravacao, id, tentativa]);
+  }, [fila, token, aGravar, erroGravacao, id, tentativa]);
 
-  // Sair da página com alterações por gravar pede confirmação.
+  // Sair da página com alterações por gravar pede confirmação (no computador;
+  // no telemóvel vale a fila guardada no aparelho).
+  const pendentes = emVoo.length + fila.length;
   useEffect(() => {
-    if (pendentes.length === 0) return;
+    if (pendentes === 0) return;
     const aviso = (ev: BeforeUnloadEvent) => {
       ev.preventDefault();
       ev.returnValue = '';
     };
     window.addEventListener('beforeunload', aviso);
     return () => window.removeEventListener('beforeunload', aviso);
-  }, [pendentes.length]);
+  }, [pendentes]);
 
-  // Trocar de personagem (o componente desmonta) com alterações na fila:
-  // grava-as logo, sem esperar.
-  useEffect(
-    () => () => {
-      const lote = filaRef.current;
-      const chave = getGithubToken();
-      if (lote.length > 0 && chave) void gravarAlteracoes(id, lote, chave).catch(() => undefined);
-    },
-    [id]
-  );
-
-  const mudar = useCallback((a: Alteracao) => setPendentes((atual) => juntar(atual, a)), []);
+  const mudar = useCallback((a: Alteracao) => setFila((atual) => juntar(atual, { ...a, uid: novoUid() })), []);
   const tentarOutraVez = useCallback(() => {
     setErroGravacao(null);
     setTentativa((n) => n + 1);
@@ -125,13 +160,14 @@ export function useBosstiary(id: CharacterId): Bosstiary {
   }, []);
 
   let gravacao: EstadoGravacao = 'gravado';
-  if (!token && pendentes.length > 0) gravacao = 'sem chave';
+  if (!token && pendentes > 0) gravacao = 'sem chave';
   else if (erroGravacao) gravacao = 'falhou';
   else if (aGravar) gravacao = 'a gravar';
-  else if (pendentes.length > 0) gravacao = 'pendente';
+  else if (pendentes > 0) gravacao = 'pendente';
 
   return {
-    estado: aplicar(gravado, pendentes),
+    // Os `uid` já gravados não contam duas vezes (ver `aplicadas`).
+    estado: aplicar(limparEstado(gravado), [...emVoo, ...fila]),
     carregando,
     erro,
     gravacao,

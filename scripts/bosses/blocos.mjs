@@ -9,23 +9,18 @@
 // tempos); o gerador divide-a pelos bosses do bloco.
 
 export const BLOCOS_SOLO = [
-  // A rota de todos os dias (RP 1192; o Monk vê os mesmos, filtrados pelo nível).
+  // A rota de todos os dias: SÓ bosses de equipamento (RP 1192; o Monk vê os
+  // mesmos, filtrados pelo nível). Os de lucro e os do Bosstiary que a pesquisa
+  // punha no caminho foram para o varrimento da cidade deles (revisão final de
+  // 22/11: a rota diária é curta, como o desenho pede).
   { id: 'd1', nome: 'Edron · Isle of Ada e Bounac', tipo: 'diario', minutos: 22, bosses: ['Court Warlock', 'Drume'] },
-  { id: 'd2', nome: 'Cemitérios de Edron e Cormaya', tipo: 'diario', minutos: 17, bosses: ['Count Vlarkorth', 'Earl Osam'] },
-  { id: 'd3', nome: 'Ingol', tipo: 'diario', minutos: 12, bosses: ['The Monster'] },
-  {
-    id: 'd4', nome: 'Farmine · Falcon Bastion', tipo: 'diario', minutos: 12,
-    bosses: ['Grand Canon Dominus', 'Grand Chaplain Gaunder', 'Grand Commander Soeren', 'Preceptor Lazare', 'Grand Master Oberon'],
-  },
-  {
-    id: 'd5', nome: 'Ankrahmun · Cobra Bastion', tipo: 'diario', minutos: 12,
-    bosses: ['Custodian', 'Gaffir', 'Guard Captain Quaid', 'Scarlett Etzel'],
-  },
-  { id: 'd6', nome: 'Port Hope · Iksupan', tipo: 'diario', minutos: 17, bosses: ['Mitmah Vanguard', 'Ahau', 'Atab'] },
+  { id: 'd4', nome: 'Farmine · Falcon Bastion', tipo: 'diario', minutos: 10, bosses: ['Grand Master Oberon'] },
+  { id: 'd5', nome: 'Ankrahmun · Cobra Bastion', tipo: 'diario', minutos: 10, bosses: ['Scarlett Etzel'] },
+  { id: 'd6', nome: 'Port Hope · Iksupan', tipo: 'diario', minutos: 12, bosses: ['Mitmah Vanguard'] },
   { id: 'd7', nome: 'Marapur', tipo: 'diario', minutos: 18, bosses: ['The Moonsnow Magnolia', 'Timira the Many-Headed'] },
   {
-    id: 'd8', nome: 'Kazordoon · Warzones 4–6', tipo: 'diario', minutos: 25,
-    bosses: ['The Baron from Below', 'The Count of the Core', 'The Duke of the Depths', 'Ancient Spawn of Morgathla'],
+    id: 'd8', nome: 'Kazordoon · Warzones 4–6', tipo: 'diario', minutos: 22,
+    bosses: ['The Baron from Below', 'The Count of the Core', 'The Duke of the Depths'],
   },
   // Testar uma vez (a 0 taints) antes de contar com eles.
   {
@@ -57,6 +52,7 @@ export const BLOCOS_SOLO = [
     bosses: [
       'Lord Azaram', 'Essence of Malice', 'Ravenous Hunger', 'Lloyd', 'Lady Tenebris', 'The Enraged Thorn Knight',
       'The Time Guardian', 'Melting Frozen Horror', 'Soul of Dragonking Zyrtarch', 'Dragon Pack', 'Raging Mage',
+      'Grand Canon Dominus', 'Grand Chaplain Gaunder', 'Grand Commander Soeren', 'Preceptor Lazare',
     ],
   },
   {
@@ -76,7 +72,10 @@ export const BLOCOS_SOLO = [
   },
   {
     id: 'sex', nome: 'Sexta · Kazordoon e Otherworld', tipo: 'semana', diaSemana: 5, minutos: 60,
-    bosses: ['Deathstrike', 'Gnomevil', 'Abyssador', 'The Mega Magmaoid', 'Anomaly', 'Outburst', 'Eradicator', 'Realityquake', 'Rupture'],
+    bosses: [
+      'Deathstrike', 'Gnomevil', 'Abyssador', 'The Mega Magmaoid', 'Anomaly', 'Outburst', 'Eradicator', 'Realityquake', 'Rupture',
+      'Ancient Spawn of Morgathla',
+    ],
   },
   {
     id: 'sab', nome: 'Sábado · Feyrist, Roshamuul, Port Hope e Ankrahmun', tipo: 'semana', diaSemana: 6, minutos: 60,
@@ -85,6 +84,7 @@ export const BLOCOS_SOLO = [
       'The Source of Corruption', 'Kroazur', 'The Flaming Orchid', 'The Moonlight Aster', 'The Winter Bloom',
       'The Blazing Rose', 'The Diamond Blossom', 'The Lily of Night', 'Kusuma',
       'Ashmunrah', 'Dipthrah', 'Mahrdis', 'Morguthis', 'Omruc', 'Rahemos', 'Thalas', 'Vashresamun', 'Rakesh Moonfang',
+      'Custodian', 'Gaffir', 'Guard Captain Quaid', 'Ahau', 'Atab',
     ],
   },
   {
@@ -94,6 +94,7 @@ export const BLOCOS_SOLO = [
       'Adlerauge', 'Clavius', 'Michael the Stalwart', 'Overseer Osverger',
       'Bloodback', 'Darkfang', 'Sharpclaw', 'Black Vixen', 'Shadowpelt', 'Lord of the Elements',
       'Glooth Fairy', 'Bullwark', 'Lisa', 'Deep Terror', 'Professor Maxxen',
+      'Count Vlarkorth', 'Earl Osam', 'The Monster',
     ],
   },
 ];

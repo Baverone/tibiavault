@@ -149,7 +149,7 @@ function PaginaPersonagem({
             )}
           </div>
         </div>
-        {!b.temChave && <GithubTokenField hasToken={b.temChave} setToken={b.definirChave} />}
+        <GithubTokenField hasToken={b.temChave} setToken={b.definirChave} />
         {b.erro && (
           <p className="field-error">
             Não deu para ler o Bosstiary: {b.erro}{' '}

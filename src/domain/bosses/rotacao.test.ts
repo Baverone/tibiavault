@@ -47,7 +47,7 @@ const catalogo: Catalogo = {
 const ctx = (extra: Partial<Contexto> = {}): Contexto => ({
   agora: AGORA, diaSemana: 1, nivel: 1192, personagem: 'royal-paladin', boosted: null, ...extra,
 });
-const vazio = (): EstadoPersonagem => ({ bosses: {}, pontosJogo: null });
+const vazio = (): EstadoPersonagem => ({ bosses: {}, pontosJogo: null, aplicadas: [] });
 const ids = (r: ReturnType<typeof rotacaoSolo>) => r.blocos.flatMap((b) => b.entradas.map((e) => e.boss.id));
 
 test('marca por omissão: equipamento/lucro «sempre», bosstiary «bosstiary»', () => {
@@ -58,14 +58,14 @@ test('marca por omissão: equipamento/lucro «sempre», bosstiary «bosstiary»'
 });
 
 test('um boss «fora» ou sem acesso não aparece', () => {
-  const est: EstadoPersonagem = { bosses: { drume: { kills: 0, ultimaKill: null, acesso: null, marcaSolo: 'fora' }, oberon: { kills: 4, ultimaKill: null, acesso: false } }, pontosJogo: null };
+  const est: EstadoPersonagem = { bosses: { drume: { kills: 0, ultimaKill: null, acesso: null, marcaSolo: 'fora' }, oberon: { kills: 4, ultimaKill: null, acesso: false } }, pontosJogo: null, aplicadas: [] };
   const r = ids(rotacaoSolo(catalogo, est, ctx()));
   assert.ok(!r.includes('drume'));
   assert.ok(!r.includes('oberon'));
 });
 
 test('um boss «bosstiary» que chegou ao objetivo sai', () => {
-  const est: EstadoPersonagem = { bosses: { bane: { kills: 25, ultimaKill: null, acesso: true } }, pontosJogo: null };
+  const est: EstadoPersonagem = { bosses: { bane: { kills: 25, ultimaKill: null, acesso: true } }, pontosJogo: null, aplicadas: [] };
   assert.ok(!ids(rotacaoSolo(catalogo, est, ctx())).includes('bane'));
   assert.ok(ids(rotacaoSolo(catalogo, vazio(), ctx())).includes('bane'));
 });
@@ -82,7 +82,7 @@ test('o Monk só vê os bosses do nível dele; sem nível do Monk usa RP + 150, 
 });
 
 test('cooldown: uma kill há 10 h num boss de 20 h volta daqui a 10 h', () => {
-  const est: EstadoPersonagem = { bosses: { drume: { kills: 1, ultimaKill: new Date(AGORA - 10 * H).toISOString(), acesso: true } }, pontosJogo: null };
+  const est: EstadoPersonagem = { bosses: { drume: { kills: 1, ultimaKill: new Date(AGORA - 10 * H).toISOString(), acesso: true } }, pontosJogo: null, aplicadas: [] };
   const drume = rotacaoSolo(catalogo, est, ctx()).blocos[0].entradas.find((e) => e.boss.id === 'drume');
   assert.equal(drume?.disponivelEm, AGORA + 10 * H);
   // e os minutos do bloco só contam os disponíveis
@@ -105,7 +105,7 @@ test('endgame: sem «passou» fica à parte; com «passou» entra na rota', () =
   const r = rotacaoSolo(catalogo, vazio(), ctx());
   assert.ok(!ids(r).includes('murcion'));
   assert.deepEqual(r.endgame.map((e) => e.boss.id), ['murcion']);
-  const est: EstadoPersonagem = { bosses: { murcion: { kills: 0, ultimaKill: null, acesso: true, passou: true } }, pontosJogo: null };
+  const est: EstadoPersonagem = { bosses: { murcion: { kills: 0, ultimaKill: null, acesso: true, passou: true } }, pontosJogo: null, aplicadas: [] };
   const r2 = rotacaoSolo(catalogo, est, ctx());
   assert.ok(ids(r2).includes('murcion'));
   assert.equal(r2.endgame.length, 0);
@@ -130,8 +130,26 @@ test('team: um final de 68 h em cooldown não aparece; um de 20 h aparece a cinz
       murcion: { kills: 1, ultimaKill: new Date(AGORA - 10 * H).toISOString(), acesso: true },
     },
     pontosJogo: null,
+    aplicadas: [],
   };
   const t1 = rotacaoTeam(catalogo, est, ctx()).principais[0];
   assert.ok(!t1.entradas.some((e) => e.boss.id === 'bakragore'));
   assert.ok(t1.entradas.some((e) => e.boss.id === 'murcion' && e.disponivelEm !== null));
+});
+
+test('o boosted sobe para o topo, mesmo que seja de outro dia da semana', () => {
+  // lloyd é do varrimento de terça; hoje é segunda.
+  const r = rotacaoSolo(catalogo, vazio(), ctx({ diaSemana: 1, boosted: 'Lloyd' }));
+  assert.equal(r.blocos[0].bloco.id, 'boosted');
+  assert.deepEqual(r.blocos[0].entradas.map((e) => e.boss.id), ['lloyd']);
+  assert.equal(r.blocos[0].entradas[0].boosted, true);
+  // e não aparece duas vezes
+  assert.equal(ids(r).filter((id) => id === 'lloyd').length, 1);
+});
+
+test('team: a sessão com o boosted vem primeiro', () => {
+  const r = rotacaoTeam(catalogo, vazio(), ctx({ boosted: 'leiden' }));
+  assert.equal(r.soBosstiary[0].bloco.id, 't2');
+  const r2 = rotacaoTeam(catalogo, vazio(), ctx({ boosted: 'bakragore' }));
+  assert.equal(r2.principais[0].entradas[0].boss.id, 'bakragore');
 });

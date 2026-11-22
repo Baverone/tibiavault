@@ -3,6 +3,7 @@ import { bonusLoot, objetivoOmissao, patamar, pontos, proximo } from '../../doma
 import { acessoEfetivo, estadoDe, type Alteracao, type EstadoPersonagem } from '../../domain/bosses/estado';
 import { marcaEfetiva } from '../../domain/bosses/rotacao';
 import type { Catalogo, Categoria, Patamar } from '../../domain/bosses/types';
+import { lerNumero } from '../../domain/bosses/numero';
 import { SeletorMarca } from './LinhaBoss';
 import { NOME_PATAMAR, textoProgresso } from './texto';
 
@@ -10,14 +11,26 @@ const SEGUNDO_SLOT = 1500;
 
 type FiltroModo = 'todos' | 'solo' | 'team';
 
-/** Um número escrito à mão, gravado ao sair do campo (Enter também). */
-function CampoNumero({ valor, onGravar, rotulo }: { valor: number | null; onGravar: (n: number | null) => void; rotulo: string }) {
+/**
+ * Um número escrito à mão, gravado ao sair do campo (Enter também). Vazio ou
+ * lixo não grava: o campo volta ao que estava (`permitirVazio` = vazio limpa).
+ */
+function CampoNumero({
+  valor,
+  onGravar,
+  rotulo,
+  permitirVazio = false,
+}: {
+  valor: number | null;
+  onGravar: (n: number | null) => void;
+  rotulo: string;
+  permitirVazio?: boolean;
+}) {
   const [rascunho, setRascunho] = useState<string | null>(null);
   const gravar = () => {
     if (rascunho === null) return;
-    const t = rascunho.trim();
-    const n = t === '' ? null : Math.max(0, Math.floor(Number(t)));
-    if (n === null || Number.isFinite(n)) onGravar(n);
+    const n = lerNumero(rascunho, permitirVazio);
+    if (n !== undefined && n !== valor) onGravar(n);
     setRascunho(null);
   };
   return (
@@ -79,6 +92,7 @@ export function BosstiaryTabela({
           <CampoNumero
             valor={estado.pontosJogo}
             rotulo="Pontos no jogo"
+            permitirVazio
             onGravar={(n) => mudar({ tipo: 'pontosJogo', valor: n })}
           />
         </div>

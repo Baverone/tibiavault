@@ -8,106 +8,94 @@
    "ordem": 0
   },
   {
-   "id": "d2",
-   "nome": "Cemitérios de Edron e Cormaya",
-   "tipo": "diario",
-   "ordem": 1
-  },
-  {
-   "id": "d3",
-   "nome": "Ingol",
-   "tipo": "diario",
-   "ordem": 2
-  },
-  {
    "id": "d4",
    "nome": "Farmine · Falcon Bastion",
    "tipo": "diario",
-   "ordem": 3
+   "ordem": 1
   },
   {
    "id": "d5",
    "nome": "Ankrahmun · Cobra Bastion",
    "tipo": "diario",
-   "ordem": 4
+   "ordem": 2
   },
   {
    "id": "d6",
    "nome": "Port Hope · Iksupan",
    "tipo": "diario",
-   "ordem": 5
+   "ordem": 3
   },
   {
    "id": "d7",
    "nome": "Marapur",
    "tipo": "diario",
-   "ordem": 6
+   "ordem": 4
   },
   {
    "id": "d8",
    "nome": "Kazordoon · Warzones 4–6",
    "tipo": "diario",
-   "ordem": 7
+   "ordem": 5
   },
   {
    "id": "endgame",
    "nome": "Endgame a testar",
    "tipo": "endgame",
-   "ordem": 8
+   "ordem": 6
   },
   {
    "id": "f44",
    "nome": "Ferumbras · selos (cada 2 dias)",
    "tipo": "semana",
-   "ordem": 9
+   "ordem": 7
   },
   {
    "id": "seg",
    "nome": "Segunda · Darashia e Thais",
    "tipo": "semana",
-   "ordem": 10,
+   "ordem": 8,
    "diaSemana": 1
   },
   {
    "id": "ter",
    "nome": "Terça · Carlin, Ab’Dendriel, Zao e Forgotten Knowledge",
    "tipo": "semana",
-   "ordem": 11,
+   "ordem": 9,
    "diaSemana": 2
   },
   {
    "id": "qua",
    "nome": "Quarta · Venore, Liberty Bay e Yalahar",
    "tipo": "semana",
-   "ordem": 12,
+   "ordem": 10,
    "diaSemana": 3
   },
   {
    "id": "qui",
    "nome": "Quinta · Issavi",
    "tipo": "semana",
-   "ordem": 13,
+   "ordem": 11,
    "diaSemana": 4
   },
   {
    "id": "sex",
    "nome": "Sexta · Kazordoon e Otherworld",
    "tipo": "semana",
-   "ordem": 14,
+   "ordem": 12,
    "diaSemana": 5
   },
   {
    "id": "sab",
    "nome": "Sábado · Feyrist, Roshamuul, Port Hope e Ankrahmun",
    "tipo": "semana",
-   "ordem": 15,
+   "ordem": 13,
    "diaSemana": 6
   },
   {
    "id": "dom",
    "nome": "Domingo · Edron e Oramond",
    "tipo": "semana",
-   "ordem": 16,
+   "ordem": 14,
    "diaSemana": 0
   },
   {
@@ -216,7 +204,7 @@
     "valor": "bosstiary",
     "bloco": "sex",
     "ordem": 2,
-    "minutos": 7
+    "minutos": 6
    },
    "team": {
     "tamanhoMin": 3,
@@ -316,9 +304,9 @@
     "nivelRp": 300,
     "nivelMonk": 350,
     "valor": "bosstiary",
-    "bloco": "d6",
-    "ordem": 1,
-    "minutos": 6
+    "bloco": "sab",
+    "ordem": 27,
+    "minutos": 3
    }
   },
   {
@@ -412,8 +400,8 @@
     "nivelRp": 500,
     "nivelMonk": 600,
     "valor": "lucro",
-    "bloco": "d8",
-    "ordem": 3,
+    "bloco": "sex",
+    "ordem": 9,
     "minutos": 6
    },
    "team": {
@@ -479,7 +467,7 @@
     "valor": "bosstiary",
     "bloco": "sex",
     "ordem": 4,
-    "minutos": 7
+    "minutos": 6
    },
    "team": {
     "tamanhoMin": 2,
@@ -580,9 +568,9 @@
     "nivelRp": 300,
     "nivelMonk": 300,
     "valor": "bosstiary",
-    "bloco": "d6",
-    "ordem": 2,
-    "minutos": 6
+    "bloco": "sab",
+    "ordem": 28,
+    "minutos": 3
    }
   },
   {
@@ -986,9 +974,9 @@
     "nivelRp": 450,
     "nivelMonk": 600,
     "valor": "lucro",
-    "bloco": "d2",
-    "ordem": 0,
-    "minutos": 9
+    "bloco": "dom",
+    "ordem": 22,
+    "minutos": 3
    },
    "team": {
     "tamanhoMin": 2,
@@ -1064,8 +1052,8 @@
     "nivelRp": 300,
     "nivelMonk": 300,
     "valor": "lucro",
-    "bloco": "d5",
-    "ordem": 0,
+    "bloco": "sab",
+    "ordem": 24,
     "minutos": 3
    }
   },
@@ -1123,7 +1111,7 @@
     "valor": "bosstiary",
     "bloco": "sex",
     "ordem": 0,
-    "minutos": 7
+    "minutos": 6
    },
    "team": {
     "tamanhoMin": 3,
@@ -1218,7 +1206,7 @@
     "valor": "bosstiary",
     "bloco": "ter",
     "ordem": 9,
-    "minutos": 5
+    "minutos": 4
    },
    "team": {
     "tamanhoMin": 3,
@@ -1336,9 +1324,9 @@
     "nivelRp": 450,
     "nivelMonk": 600,
     "valor": "lucro",
-    "bloco": "d2",
-    "ordem": 1,
-    "minutos": 9
+    "bloco": "dom",
+    "ordem": 23,
+    "minutos": 3
    },
    "team": {
     "tamanhoMin": 2,
@@ -1469,7 +1457,7 @@
     "valor": "bosstiary",
     "bloco": "sex",
     "ordem": 6,
-    "minutos": 7
+    "minutos": 6
    },
    "team": {
     "tamanhoMin": 2,
@@ -1507,7 +1495,7 @@
     "valor": "bosstiary",
     "bloco": "ter",
     "ordem": 1,
-    "minutos": 5
+    "minutos": 4
    },
    "team": {
     "tamanhoMin": 1,
@@ -1637,8 +1625,8 @@
     "nivelRp": 300,
     "nivelMonk": 300,
     "valor": "lucro",
-    "bloco": "d5",
-    "ordem": 1,
+    "bloco": "sab",
+    "ordem": 25,
     "minutos": 3
    }
   },
@@ -1750,7 +1738,7 @@
     "valor": "bosstiary",
     "bloco": "sex",
     "ordem": 1,
-    "minutos": 7
+    "minutos": 6
    },
    "team": {
     "tamanhoMin": 3,
@@ -2097,9 +2085,9 @@
     "nivelRp": 300,
     "nivelMonk": 300,
     "valor": "lucro",
-    "bloco": "d4",
-    "ordem": 0,
-    "minutos": 3
+    "bloco": "ter",
+    "ordem": 11,
+    "minutos": 4
    }
   },
   {
@@ -2124,9 +2112,9 @@
     "nivelRp": 300,
     "nivelMonk": 300,
     "valor": "lucro",
-    "bloco": "d4",
-    "ordem": 1,
-    "minutos": 3
+    "bloco": "ter",
+    "ordem": 12,
+    "minutos": 4
    }
   },
   {
@@ -2151,9 +2139,9 @@
     "nivelRp": 300,
     "nivelMonk": 300,
     "valor": "lucro",
-    "bloco": "d4",
-    "ordem": 2,
-    "minutos": 3
+    "bloco": "ter",
+    "ordem": 13,
+    "minutos": 4
    }
   },
   {
@@ -2183,8 +2171,8 @@
     "nivelMonk": 450,
     "valor": "equipamento",
     "bloco": "d4",
-    "ordem": 4,
-    "minutos": 3
+    "ordem": 0,
+    "minutos": 10
    },
    "team": {
     "tamanhoMin": 1,
@@ -2220,8 +2208,8 @@
     "nivelRp": 300,
     "nivelMonk": 300,
     "valor": "lucro",
-    "bloco": "d5",
-    "ordem": 2,
+    "bloco": "sab",
+    "ordem": 26,
     "minutos": 3
    }
   },
@@ -2560,7 +2548,7 @@
     "valor": "bosstiary",
     "bloco": "ter",
     "ordem": 4,
-    "minutos": 5
+    "minutos": 4
    },
    "team": {
     "tamanhoMin": 2,
@@ -2709,7 +2697,7 @@
     "valor": "bosstiary",
     "bloco": "ter",
     "ordem": 3,
-    "minutos": 5
+    "minutos": 4
    },
    "team": {
     "tamanhoMin": 2,
@@ -2777,7 +2765,7 @@
     "valor": "lucro",
     "bloco": "ter",
     "ordem": 0,
-    "minutos": 5
+    "minutos": 4
    },
    "team": {
     "tamanhoMin": 2,
@@ -3203,7 +3191,7 @@
     "valor": "bosstiary",
     "bloco": "ter",
     "ordem": 7,
-    "minutos": 5
+    "minutos": 4
    },
    "team": {
     "tamanhoMin": 2,
@@ -3296,7 +3284,7 @@
     "valor": "equipamento",
     "bloco": "d6",
     "ordem": 0,
-    "minutos": 6
+    "minutos": 12
    }
   },
   {
@@ -3532,7 +3520,7 @@
     "valor": "bosstiary",
     "bloco": "sex",
     "ordem": 5,
-    "minutos": 7
+    "minutos": 6
    },
    "team": {
     "tamanhoMin": 2,
@@ -3701,9 +3689,9 @@
     "nivelRp": 300,
     "nivelMonk": 300,
     "valor": "lucro",
-    "bloco": "d4",
-    "ordem": 3,
-    "minutos": 3
+    "bloco": "ter",
+    "ordem": 14,
+    "minutos": 4
    }
   },
   {
@@ -3794,7 +3782,7 @@
     "valor": "lucro",
     "bloco": "ter",
     "ordem": 10,
-    "minutos": 5
+    "minutos": 4
    }
   },
   {
@@ -3915,7 +3903,7 @@
     "valor": "bosstiary",
     "bloco": "ter",
     "ordem": 2,
-    "minutos": 5
+    "minutos": 4
    },
    "team": {
     "tamanhoMin": 1,
@@ -3993,7 +3981,7 @@
     "valor": "bosstiary",
     "bloco": "sex",
     "ordem": 7,
-    "minutos": 7
+    "minutos": 6
    },
    "team": {
     "tamanhoMin": 2,
@@ -4059,7 +4047,7 @@
     "valor": "bosstiary",
     "bloco": "sex",
     "ordem": 8,
-    "minutos": 7
+    "minutos": 6
    },
    "team": {
     "tamanhoMin": 2,
@@ -4097,8 +4085,8 @@
     "nivelMonk": 300,
     "valor": "equipamento",
     "bloco": "d5",
-    "ordem": 3,
-    "minutos": 3
+    "ordem": 0,
+    "minutos": 10
    }
   },
   {
@@ -4355,7 +4343,7 @@
     "valor": "bosstiary",
     "bloco": "ter",
     "ordem": 8,
-    "minutos": 5
+    "minutos": 4
    },
    "team": {
     "tamanhoMin": 2,
@@ -4555,7 +4543,7 @@
     "valor": "equipamento",
     "bloco": "d8",
     "ordem": 0,
-    "minutos": 6
+    "minutos": 7
    },
    "team": {
     "tamanhoMin": 2,
@@ -4661,7 +4649,7 @@
     "valor": "equipamento",
     "bloco": "d8",
     "ordem": 1,
-    "minutos": 6
+    "minutos": 7
    },
    "team": {
     "tamanhoMin": 2,
@@ -4767,7 +4755,7 @@
     "valor": "equipamento",
     "bloco": "d8",
     "ordem": 2,
-    "minutos": 6
+    "minutos": 7
    },
    "team": {
     "tamanhoMin": 2,
@@ -4806,7 +4794,7 @@
     "valor": "bosstiary",
     "bloco": "ter",
     "ordem": 5,
-    "minutos": 5
+    "minutos": 4
    },
    "team": {
     "tamanhoMin": 2,
@@ -5070,7 +5058,7 @@
     "valor": "bosstiary",
     "bloco": "sex",
     "ordem": 3,
-    "minutos": 7
+    "minutos": 6
    },
    "team": {
     "tamanhoMin": 2,
@@ -5108,9 +5096,9 @@
     "nivelRp": 300,
     "nivelMonk": 350,
     "valor": "lucro",
-    "bloco": "d3",
-    "ordem": 0,
-    "minutos": 12
+    "bloco": "dom",
+    "ordem": 24,
+    "minutos": 3
    },
    "team": {
     "tamanhoMin": 2,
@@ -5491,7 +5479,7 @@
     "valor": "bosstiary",
     "bloco": "ter",
     "ordem": 6,
-    "minutos": 5
+    "minutos": 4
    },
    "team": {
     "tamanhoMin": 2,

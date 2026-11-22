@@ -11,6 +11,11 @@ const COOLDOWN_OMISSAO_H = 20;
 const FINAL_ACIMA_DE_H = 24;
 /** O Monk sem nível estimado para ele usa o do RP com esta margem. */
 const MARGEM_MONK = 150;
+/** O bloco que leva o boss boosted para o topo da rota solo. */
+const BLOCO_BOOSTED: Bloco = { id: 'boosted', nome: 'Boosted hoje (conta 3)', tipo: 'diario', ordem: -1 };
+
+const eBoosted = (boss: Boss, ctx: Contexto) =>
+  ctx.boosted !== null && boss.nome.toLowerCase() === ctx.boosted.trim().toLowerCase();
 
 export interface Entrada {
   boss: Boss;
@@ -77,7 +82,7 @@ function entrada(boss: Boss, eb: EstadoBoss, marca: Marca, ctx: Contexto, nivelE
     estado: eb,
     marca,
     disponivelEm: disponivelEm(boss, eb, ctx.agora),
-    boosted: ctx.boosted !== null && boss.nome.toLowerCase() === ctx.boosted.trim().toLowerCase(),
+    boosted: eBoosted(boss, ctx),
     nivelEstimado,
   };
 }
@@ -88,7 +93,8 @@ function montar(blocos: Bloco[], porBloco: Map<string, Entrada[]>, modo: Modo): 
   return [...blocos]
     .sort((a, b) => a.ordem - b.ordem)
     .map((bloco) => {
-      const entradas = [...(porBloco.get(bloco.id) ?? [])].sort((a, b) => ordem(a) - ordem(b));
+      // O boosted à frente dentro do bloco; o resto pela ordem da rota.
+      const entradas = [...(porBloco.get(bloco.id) ?? [])].sort((a, b) => Number(b.boosted) - Number(a.boosted) || ordem(a) - ordem(b));
       return { bloco, entradas, minutos: entradas.filter((e) => e.disponivelEm === null).reduce((s, e) => s + minutos(e), 0) };
     })
     .filter((b) => b.entradas.length > 0);
@@ -98,17 +104,24 @@ export function rotacaoSolo(cat: Catalogo, est: EstadoPersonagem, ctx: Contexto)
   const blocos = new Map(cat.blocos.map((b) => [b.id, b]));
   const porBloco = new Map<string, Entrada[]>();
   const endgame: Entrada[] = [];
+  const boosted: Entrada[] = [];
   for (const boss of cat.bosses) {
     const s = boss.solo;
     const bloco = s ? blocos.get(s.bloco) : undefined;
     if (!s || !bloco) continue;
-    if (bloco.tipo === 'semana' && bloco.diaSemana !== undefined && bloco.diaSemana !== ctx.diaSemana) continue;
+    // O boosted entra em qualquer dia (vale ×3): sobe para o topo.
+    const outroDia = bloco.tipo === 'semana' && bloco.diaSemana !== undefined && bloco.diaSemana !== ctx.diaSemana;
+    if (outroDia && !eBoosted(boss, ctx)) continue;
     const eb = estadoDe(est, boss.id);
     const marca = marcaSeEntra(boss, eb, 'solo');
     if (!marca) continue;
     const minimo = nivelMinimo(boss, ctx);
     if (minimo.nivel !== null && ctx.nivel !== null && minimo.nivel > ctx.nivel) continue;
     const e = entrada(boss, eb, marca, ctx, minimo.estimado);
+    if (e.boosted) {
+      boosted.push(e);
+      continue;
+    }
     if (bloco.tipo === 'endgame' && !eb.passou) {
       endgame.push(e);
       continue;
@@ -116,7 +129,8 @@ export function rotacaoSolo(cat: Catalogo, est: EstadoPersonagem, ctx: Contexto)
     porBloco.set(bloco.id, [...(porBloco.get(bloco.id) ?? []), e]);
   }
   endgame.sort((a, b) => (a.boss.solo?.ordem ?? 0) - (b.boss.solo?.ordem ?? 0));
-  return { blocos: montar(cat.blocos.filter((b) => b.tipo !== 'team'), porBloco, 'solo'), endgame };
+  if (boosted.length > 0) porBloco.set(BLOCO_BOOSTED.id, boosted);
+  return { blocos: montar([BLOCO_BOOSTED, ...cat.blocos.filter((b) => b.tipo !== 'team')], porBloco, 'solo'), endgame };
 }
 
 export function rotacaoTeam(cat: Catalogo, est: EstadoPersonagem, ctx: Contexto): { principais: BlocoHoje[]; soBosstiary: BlocoHoje[] } {
@@ -130,7 +144,8 @@ export function rotacaoTeam(cat: Catalogo, est: EstadoPersonagem, ctx: Contexto)
     if ((boss.cooldownH ?? COOLDOWN_OMISSAO_H) > FINAL_ACIMA_DE_H && e.disponivelEm !== null) continue;
     porBloco.set(boss.team.bloco, [...(porBloco.get(boss.team.bloco) ?? []), e]);
   }
-  const todos = montar(cat.blocos.filter((b) => b.tipo === 'team'), porBloco, 'team');
+  const comBoosted = (b: BlocoHoje) => Number(b.entradas.some((e) => e.boosted));
+  const todos = montar(cat.blocos.filter((b) => b.tipo === 'team'), porBloco, 'team').sort((a, b) => comBoosted(b) - comBoosted(a));
   const principal = (b: BlocoHoje) => b.entradas.some((e) => e.boss.team?.valor !== 'bosstiary');
   return { principais: todos.filter(principal), soBosstiary: todos.filter((b) => !principal(b)) };
 }

@@ -4,11 +4,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { acessoEfetivo, aplicar, estadoDe, limparEstado, type EstadoPersonagem } from './estado.ts';
 
-const vazio = (): EstadoPersonagem => ({ bosses: {}, pontosJogo: null });
+const vazio = (): EstadoPersonagem => ({ bosses: {}, pontosJogo: null, aplicadas: [] });
 
 test('limparEstado: lixo dá um estado vazio, kills ficam inteiros ≥ 0', () => {
-  assert.deepEqual(limparEstado(null), { bosses: {}, pontosJogo: null });
-  assert.deepEqual(limparEstado('x'), { bosses: {}, pontosJogo: null });
+  assert.deepEqual(limparEstado(null), { bosses: {}, pontosJogo: null, aplicadas: [] });
+  assert.deepEqual(limparEstado('x'), { bosses: {}, pontosJogo: null, aplicadas: [] });
   const e = limparEstado({ bosses: { a: { kills: -3 }, b: { kills: 'abc' }, c: { kills: 7.9, marcaSolo: 'nada' } }, pontosJogo: 'x' });
   assert.equal(e.bosses.a.kills, 0);
   assert.equal(e.bosses.b.kills, 0);
@@ -59,4 +59,22 @@ test('acesso efetivo: quem tem kills tem acesso, salvo «sem acesso» explícito
   assert.equal(acessoEfetivo({ kills: 0, ultimaKill: null, acesso: null }), null);
   assert.equal(acessoEfetivo({ kills: 3, ultimaKill: null, acesso: false }), false);
   assert.equal(acessoEfetivo({ kills: 0, ultimaKill: null, acesso: true }), true);
+});
+
+test('uma alteração com uid já aplicado não conta duas vezes (o mesmo lote gravado duas vezes)', () => {
+  const kill = { tipo: 'kill' as const, id: 'drume', quantas: 1, quando: '2026-11-22T20:00:00.000Z', uid: 'u1' };
+  const uma = aplicar(vazio(), [kill]);
+  assert.equal(uma.bosses.drume.kills, 1);
+  assert.deepEqual(uma.aplicadas, ['u1']);
+  const outraVez = aplicar(uma, [kill]);
+  assert.equal(outraVez.bosses.drume.kills, 1);
+  assert.deepEqual(limparEstado(JSON.parse(JSON.stringify(outraVez))).aplicadas, ['u1']);
+});
+
+test('a lista de uids aplicados fica com os 300 mais recentes', () => {
+  const muitas = Array.from({ length: 305 }, (_, i) => ({ tipo: 'kill' as const, id: 'a', quantas: 1, quando: '2026-11-22T20:00:00.000Z', uid: `u${i}` }));
+  const e = aplicar(vazio(), muitas);
+  assert.equal(e.bosses.a.kills, 305);
+  assert.equal(e.aplicadas.length, 300);
+  assert.equal(e.aplicadas[299], 'u304');
 });

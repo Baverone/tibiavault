@@ -44,3 +44,12 @@ test('o catálogo tem os bosses das duas pesquisas', () => {
   assert.ok(catalogo.bosses.filter((b) => b.solo).length >= 150);
   assert.ok(catalogo.bosses.filter((b) => b.team).length >= 100);
 });
+
+test('a rota de todos os dias só tem bosses de equipamento; o lucro vai para o varrimento da cidade', () => {
+  const diarios = new Set(catalogo.blocos.filter((b) => b.tipo === 'diario').map((b) => b.id));
+  for (const b of catalogo.bosses) {
+    if (b.solo && diarios.has(b.solo.bloco)) assert.equal(b.solo.valor, 'equipamento', `${b.nome} está na rota diária`);
+  }
+  assert.equal(porNome('Count Vlarkorth').solo?.bloco, 'dom');
+  assert.equal(porNome('Grand Canon Dominus').solo?.bloco, 'ter');
+});
