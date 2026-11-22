@@ -1,28 +1,25 @@
-// Lê as previsões dos bosses raros do Celesta no GuildStats e grava
-// data/bosses-raros/celesta.json quando mudam (22/11/2026). Corre no PC, na
-// tarefa tibia-raros do ai-pc (10:10, 13:10, 20:10), que commita sem push; o
-// tibia-push envia. Escreve uma linha de JSON no stdout:
+// Junta uma leitura das previsões dos bosses raros do Celesta (22/11/2026):
 //
-//   {"estado": "atualizado" | "igual" | "falhou", "n": 69, "lidoEm": "...",
+//   node scripts/bosses/lerRaros.mjs <página guardada do GuildStats.html>
+//
+// A página (https://guildstats.eu/bosses?world=Celesta) é lida no Chrome do
+// André: o GuildStats NUNCA se pede por fetch, headless ou com cabeçalhos
+// falsos (regra de 21/10/2026 do ai-pc, REGRAS.md). Este script só lê o
+// ficheiro, grava data/bosses-raros/celesta.json quando as previsões mudam, e
+// escreve uma linha de JSON no stdout:
+//
+//   {"estado": "atualizado" | "igual" | "falhou", "n": 74, "lidoEm": "...",
 //    "ficheiro": "data/bosses-raros/celesta.json", "semFicha": [...], "erro": "..."}
 //
 // `semFicha` são raros que o GuildStats segue e que data/bosses-fontes/raros.json
 // ainda não tem: correr scripts/bosses/fontesRaros.mjs e gerar o catálogo.
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
-import { fileURLToPath, pathToFileURL } from 'node:url';
-import { USER_AGENT, httpErrorFor } from '../lib/guildstatsHistory.mjs';
-import { URL_RAROS, juntarLeitura, lerTabelaRaros } from './guildstatsRaros.mjs';
+import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
+import { juntarLeitura, lerTabelaRaros } from './guildstatsRaros.mjs';
 
 export const FICHEIRO = 'data/bosses-raros/celesta.json';
 /** A 22/11/2026 vinham 74; muito menos do que isto é a página cortada ou mudada. */
 const MINIMO = 30;
-
-const CABECALHOS = {
-  'User-Agent': USER_AGENT,
-  Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-  'Accept-Language': 'en-US,en;q=0.9',
-  Referer: 'https://guildstats.eu/',
-};
 
 function lerJson(url) {
   try {
@@ -32,15 +29,8 @@ function lerJson(url) {
   }
 }
 
-export async function executar({ fetchFn = fetch, raiz = new URL('../../', import.meta.url), agora = new Date(), minimo = MINIMO } = {}) {
-  let r;
-  try {
-    r = await fetchFn(URL_RAROS, { headers: CABECALHOS, signal: AbortSignal.timeout(30_000) });
-  } catch (e) {
-    throw new Error(`sem ligação ao GuildStats: ${e.message}`);
-  }
-  if (!r.ok) throw httpErrorFor(r);
-  const bosses = lerTabelaRaros(await r.text());
+export function executar({ html, raiz = new URL('../../', import.meta.url), agora = new Date(), minimo = MINIMO }) {
+  const bosses = lerTabelaRaros(html);
   if (bosses.length < minimo) throw new Error(`só ${bosses.length} bosses com previsão (esperava ${minimo}+): a página veio cortada ou mudou`);
 
   const destino = new URL(FICHEIRO, raiz);
@@ -62,11 +52,13 @@ export async function executar({ fetchFn = fetch, raiz = new URL('../../', impor
   };
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href && existsSync(fileURLToPath(import.meta.url))) {
-  executar()
-    .then((r) => console.log(JSON.stringify(r)))
-    .catch((e) => {
-      console.log(JSON.stringify({ estado: 'falhou', erro: e.message, ficheiro: FICHEIRO }));
-      process.exit(1);
-    });
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  try {
+    const caminho = process.argv[2];
+    if (!caminho) throw new Error('falta a página guardada: node scripts/bosses/lerRaros.mjs <ficheiro.html>');
+    console.log(JSON.stringify(executar({ html: readFileSync(caminho, 'utf8') })));
+  } catch (e) {
+    console.log(JSON.stringify({ estado: 'falhou', erro: e.message, ficheiro: FICHEIRO }));
+    process.exit(1);
+  }
 }

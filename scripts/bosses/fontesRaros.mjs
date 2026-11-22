@@ -1,16 +1,16 @@
-// A ficha dos bosses raros (22/11/2026): quais o GuildStats segue no Celesta e,
-// para cada um, a classe do Bosstiary e o local tirados da TibiaWiki. Corre-se
-// à mão quando aparece um raro novo (o lerRaros.mjs avisa: «sem ficha»):
+// A ficha dos bosses raros (22/11/2026): quais o GuildStats segue no Celesta
+// (a última leitura gravada, data/bosses-raros/celesta.json — o GuildStats não
+// se pede daqui) e, para cada um, a classe do Bosstiary e o local tirados da
+// TibiaWiki. Corre-se à mão quando aparece um raro novo (o lerRaros.mjs avisa:
+// «semFicha»):
 //
 //   node scripts/bosses/fontesRaros.mjs
 //
 // Escreve data/bosses-fontes/raros.json. Os que não têm classe do Bosstiary
 // (bosses de Rookgaard, criaturas de raid como os yetis) ficam lá com
 // `categoria: null`, e o gerador do catálogo deixa-os de fora.
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
-import { USER_AGENT, httpErrorFor } from '../lib/guildstatsHistory.mjs';
-import { URL_RAROS, lerTabelaRaros } from './guildstatsRaros.mjs';
 
 const CATEGORIAS = new Set(['Bane', 'Archfoe', 'Nemesis']);
 const PEQUENAS = new Set(['the', 'of', 'in', 'a', 'an', 'and', 'on', 'from']);
@@ -69,9 +69,8 @@ async function wikitextDe(titulo) {
 }
 
 async function principal() {
-  const r = await fetch(URL_RAROS, { headers: { 'User-Agent': USER_AGENT, Referer: 'https://guildstats.eu/' } });
-  if (!r.ok) throw httpErrorFor(r);
-  const raros = lerTabelaRaros(await r.text());
+  const leitura = JSON.parse(readFileSync(new URL('../../data/bosses-raros/celesta.json', import.meta.url), 'utf8'));
+  const raros = leitura.bosses;
   const fichas = [];
   for (const raro of raros) {
     let pagina = null;

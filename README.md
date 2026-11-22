@@ -99,10 +99,11 @@ de team à parte, tudo interativo no site. Desenho em
   com «~». As regras do Bosstiary (kills e pontos) estão confirmadas; o bónus de loot é a fórmula de 2022.
 - **Sem cooldowns** (22/11/2026, pedido do André): a rota não conta cooldowns, o jogo já os mostra.
 - **Raros** (22/11/2026): os bosses de spawn raro que contam para o Bosstiary (65 a 22/11), com a chance
-  de hoje do GuildStats (`https://guildstats.eu/bosses?world=Celesta`). A tarefa `tibia-raros` do ai-pc
-  corre `node scripts/bosses/lerRaros.mjs` às 10:10, 13:10 e 20:10 (o GuildStats recusa o GitHub), grava
-  `data/bosses-raros/celesta.json` só quando a previsão muda e commita sem push; o `tibia-push` envia. A
-  ficha de cada raro (classe do Bosstiary e local, da TibiaWiki) está em `data/bosses-fontes/raros.json`,
+  de hoje do GuildStats (`https://guildstats.eu/bosses?world=Celesta`). O GuildStats só se lê no Chrome
+  do André (regra de 21/10 do ai-pc: nada de fetch nem headless), por isso
+  `node scripts/bosses/lerRaros.mjs <página.html>` só junta uma página já guardada: grava
+  `data/bosses-raros/celesta.json` quando a previsão muda. A leitura diária no Chrome está à espera do
+  sim do André (seria a 3.ª página do GuildStats por dia). A ficha de cada raro (classe do Bosstiary e local, da TibiaWiki) está em `data/bosses-fontes/raros.json`,
   feita por `node scripts/bosses/fontesRaros.mjs`; quando o `lerRaros` disser `semFicha`, corre-se esse
   script e o gerador do catálogo.
 

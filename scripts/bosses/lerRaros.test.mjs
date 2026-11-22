@@ -1,5 +1,7 @@
-// O comando da tarefa tibia-raros (22/11/2026): lê o GuildStats e grava
-// data/bosses-raros/celesta.json só quando as previsões mudam.
+// O comando que junta uma leitura dos raros (22/11/2026): recebe a página do
+// GuildStats já guardada (lida no Chrome do André — o GuildStats nunca se pede
+// por fetch, regra de 21/10 do ai-pc) e grava data/bosses-raros/celesta.json só
+// quando as previsões mudam.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
@@ -9,7 +11,6 @@ import { pathToFileURL } from 'node:url';
 import { executar } from './lerRaros.mjs';
 
 const HTML = readFileSync(new URL('./fixtures/guildstats-raros.html', import.meta.url), 'utf8');
-const pagina = (html, status = 200, headers = {}) => async () => new Response(html, { status, headers });
 
 function raiz() {
   const d = mkdtempSync(join(tmpdir(), 'raros-'));
@@ -19,9 +20,9 @@ function raiz() {
 }
 const ficheiro = (d) => join(d, 'data', 'bosses-raros', 'celesta.json');
 
-test('a primeira leitura grava; a mesma outra vez não mexe no ficheiro', async () => {
+test('a primeira leitura grava; a mesma outra vez não mexe no ficheiro', () => {
   const { dir, url } = raiz();
-  const r1 = await executar({ fetchFn: pagina(HTML), raiz: url, agora: new Date('2026-11-22T10:10:00Z'), minimo: 3 });
+  const r1 = executar({ html: HTML, raiz: url, agora: new Date('2026-11-22T10:10:00Z'), minimo: 3 });
   assert.equal(r1.estado, 'atualizado');
   assert.equal(r1.n, 3);
   assert.equal(r1.lidoEm, '2026-11-22T10:10:00.000Z');
@@ -29,22 +30,19 @@ test('a primeira leitura grava; a mesma outra vez não mexe no ficheiro', async 
   const gravado = readFileSync(ficheiro(dir), 'utf8');
   assert.equal(JSON.parse(gravado).bosses.length, 3);
 
-  const r2 = await executar({ fetchFn: pagina(HTML), raiz: url, agora: new Date('2026-11-22T13:10:00Z'), minimo: 3 });
+  const r2 = executar({ html: HTML, raiz: url, agora: new Date('2026-11-22T13:10:00Z'), minimo: 3 });
   assert.equal(r2.estado, 'igual');
   assert.equal(r2.lidoEm, '2026-11-22T10:10:00.000Z');
   assert.equal(readFileSync(ficheiro(dir), 'utf8'), gravado);
 });
 
-test('poucas linhas (layout a meio, página cortada) rebentam sem tocar no ficheiro', async () => {
+test('poucas linhas (página cortada ou mudada) rebentam sem tocar no ficheiro', () => {
   const { dir, url } = raiz();
-  await assert.rejects(executar({ fetchFn: pagina(HTML), raiz: url, agora: new Date(), minimo: 30 }), /só 3 bosses/);
+  assert.throws(() => executar({ html: HTML, raiz: url, agora: new Date(), minimo: 30 }), /só 3 bosses/);
   assert.equal(existsSync(ficheiro(dir)), false);
 });
 
-test('o desafio do Cloudflare rebenta com a razão certa', async () => {
+test('a página do desafio do Cloudflare rebenta a dizer que o layout não está lá', () => {
   const { url } = raiz();
-  await assert.rejects(
-    executar({ fetchFn: pagina('x', 403, { 'cf-mitigated': 'challenge' }), raiz: url, agora: new Date(), minimo: 3 }),
-    /challenge do Cloudflare/,
-  );
+  assert.throws(() => executar({ html: '<title>Just a moment...</title>', raiz: url, agora: new Date(), minimo: 3 }), /layout/);
 });
