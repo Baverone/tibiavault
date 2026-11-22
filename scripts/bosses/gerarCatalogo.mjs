@@ -10,6 +10,7 @@ import { ALIASES_TEAM, BLOCOS_SOLO, BLOCOS_TEAM } from './blocos.mjs';
 
 const raiz = new URL('../../', import.meta.url);
 const ler = (p) => JSON.parse(readFileSync(new URL(p, raiz), 'utf8'));
+// (22/11/2026: e dos raros, data/bosses-fontes/raros.json — ver fontesRaros.mjs)
 const solo = ler('data/bosses-fontes/solo.json');
 const team = ler('data/bosses-fontes/team.json');
 
@@ -99,6 +100,33 @@ for (const x of team) {
 
 for (const b of [...BLOCOS_SOLO, ...BLOCOS_TEAM]) {
   for (const nome of b.bosses) if (!bosses.has(nome)) erros.push(`o bloco ${b.id} cita ${nome}, que as pesquisas não têm`);
+}
+
+// Os raros que o GuildStats segue no Celesta (22/11/2026): só os que contam
+// para o Bosstiary. Um que já venha das pesquisas fica o mesmo boss, marcado.
+const porNomeMinusculo = new Map([...bosses.values()].map((b) => [b.nome.toLowerCase(), b]));
+for (const r of ler('data/bosses-fontes/raros.json')) {
+  if (!r.categoria) continue;
+  const existente = porNomeMinusculo.get(r.nome.toLowerCase());
+  if (existente) {
+    existente.raro = { nomeGuildstats: r.nomeGuildstats };
+    if (r.wiki && !existente.fontes.includes(r.wiki)) existente.fontes.push(r.wiki);
+    continue;
+  }
+  bosses.set(r.nome, {
+    id: slug(r.nome),
+    nome: r.nome,
+    area: r.area,
+    regiao: '',
+    categoria: r.categoria,
+    cooldownH: null,
+    acesso: '',
+    loot: '',
+    notas: 'Spawn raro: a chance de hoje vem do GuildStats.',
+    incerto: false,
+    fontes: r.wiki ? [r.wiki] : [],
+    raro: { nomeGuildstats: r.nomeGuildstats },
+  });
 }
 
 if (erros.length > 0) {

@@ -119,6 +119,15 @@
 .bosses-tag.warn {
   color: var(--warn);
 }
+/* Raros (22/11/2026): a chance de hoje à vista; fora da janela, apagado. */
+.bosses-tag.raro-chance {
+  color: var(--accent-hi);
+  border-color: var(--accent-line);
+  font-weight: 600;
+}
+.bosses-tag.raro-fora {
+  opacity: 0.6;
+}
 
 .bosses-marca,
 .bosses-num,

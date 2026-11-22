@@ -8,6 +8,10 @@ import { computeTibiaDayBoundary } from '../domain/tibiaDay';
 import type { HistoriesByCharacter } from '../hooks/useAllCharacters';
 import { useBosstiary, type EstadoGravacao } from '../hooks/useBosstiary';
 import { lerBoosted } from '../storage/boostedBoss';
+import { lerRaros } from '../storage/rarosStore';
+import { listaRaros, type LeituraRaros } from '../domain/bosses/raros';
+import { ListaRaros } from '../components/bosses/Raros';
+import { historyErrorText } from '../storage/sharedHistory';
 import { GithubTokenField } from '../components/skillTraining/GithubTokenField';
 import { RotacaoSolo, RotacaoTeam } from '../components/bosses/Rotacoes';
 import { BosstiaryTabela } from '../components/bosses/BosstiaryTabela';
@@ -16,7 +20,13 @@ import '../styles/bosses.css';
 const catalogo = catalogoJson as Catalogo;
 
 const CHAVE_PERSONAGEM = 'tibiavault:bosses-personagem';
-type Separador = 'solo' | 'team' | 'bosstiary';
+type Separador = 'solo' | 'team' | 'raros' | 'bosstiary';
+
+/** As previsões dos raros (do GuildStats, gravadas no repositório): lidas uma vez por visita. */
+interface Raros {
+  leitura: LeituraRaros | null;
+  erro: string | null;
+}
 
 function lerPersonagem(): string {
   try {
@@ -43,6 +53,7 @@ export function BossesPage({ histories }: { histories: HistoriesByCharacter }) {
   const [slug, setSlug] = useState(lerPersonagem);
   const [boosted, setBoosted] = useState<string | null>(null);
   const [boostedLido, setBoostedLido] = useState(false);
+  const [raros, setRaros] = useState<Raros>({ leitura: null, erro: null });
 
   useEffect(() => {
     let cancelado = false;
@@ -51,6 +62,13 @@ export function BossesPage({ histories }: { histories: HistoriesByCharacter }) {
       setBoosted(nome);
       setBoostedLido(true);
     });
+    lerRaros()
+      .then((leitura) => {
+        if (!cancelado) setRaros({ leitura, erro: null });
+      })
+      .catch((err: unknown) => {
+        if (!cancelado) setRaros({ leitura: null, erro: historyErrorText(err) });
+      });
     return () => {
       cancelado = true;
     };
@@ -82,7 +100,7 @@ export function BossesPage({ histories }: { histories: HistoriesByCharacter }) {
         </div>
         <span className="nota">{nivel !== null ? `nível ${nivel}` : 'nível por ler'}</span>
       </div>
-      <PaginaPersonagem key={player.id} player={player} nivel={nivel} boosted={boosted} boostedLido={boostedLido} />
+      <PaginaPersonagem key={player.id} player={player} nivel={nivel} boosted={boosted} boostedLido={boostedLido} raros={raros} />
     </>
   );
 }
@@ -92,11 +110,13 @@ function PaginaPersonagem({
   nivel,
   boosted,
   boostedLido,
+  raros,
 }: {
   player: PlayerMeta;
   nivel: number | null;
   boosted: string | null;
   boostedLido: boolean;
+  raros: Raros;
 }) {
   const b = useBosstiary(player.id);
   const [separador, setSeparador] = useState<Separador>('solo');
@@ -119,6 +139,7 @@ function PaginaPersonagem({
   );
   const solo = useMemo(() => rotacaoSolo(catalogo, b.estado, ctx), [b.estado, ctx]);
   const team = useMemo(() => rotacaoTeam(catalogo, b.estado, ctx), [b.estado, ctx]);
+  const listaR = useMemo(() => listaRaros(catalogo, b.estado, raros.leitura, agora), [b.estado, raros.leitura, agora]);
 
   const boostedNoCatalogo = boosted !== null && catalogo.bosses.some((x) => x.nome.toLowerCase() === boosted.toLowerCase());
 
@@ -166,6 +187,7 @@ function PaginaPersonagem({
             [
               ['solo', 'Hoje · solo'],
               ['team', 'Team'],
+              ['raros', 'Raros'],
               ['bosstiary', 'Bosstiary'],
             ] as [Separador, string][]
           ).map(([id, rotulo]) => (
@@ -180,6 +202,8 @@ function PaginaPersonagem({
           <RotacaoSolo blocos={solo.blocos} endgame={solo.endgame} mudar={b.mudar} />
         ) : separador === 'team' ? (
           <RotacaoTeam principais={team.principais} soBosstiary={team.soBosstiary} mudar={b.mudar} />
+        ) : separador === 'raros' ? (
+          <ListaRaros entradas={listaR} leitura={raros.leitura} erro={raros.erro} agora={agora} mudar={b.mudar} />
         ) : (
           <BosstiaryTabela catalogo={catalogo} estado={b.estado} mudar={b.mudar} />
         )}

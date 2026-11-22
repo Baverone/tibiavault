@@ -9,7 +9,7 @@ import { NOME_PATAMAR, textoProgresso } from './texto';
 
 const SEGUNDO_SLOT = 1500;
 
-type FiltroModo = 'todos' | 'solo' | 'team';
+type FiltroModo = 'todos' | 'solo' | 'team' | 'raros';
 
 /**
  * Um número escrito à mão, gravado ao sair do campo (Enter também). Vazio ou
@@ -75,6 +75,7 @@ export function BosstiaryTabela({
     if (categoria !== 'todas' && b.categoria !== categoria) return false;
     if (modo === 'solo' && !b.solo) return false;
     if (modo === 'team' && !b.team) return false;
+    if (modo === 'raros' && !b.raro) return false;
     if (busca && !b.nome.toLowerCase().includes(busca.toLowerCase())) return false;
     if (soPorFazer && proximo(eb.kills, b.categoria) === null) return false;
     return true;
@@ -121,9 +122,10 @@ export function BosstiaryTabela({
           <option value="Nemesis">Nemesis</option>
         </select>
         <select value={modo} onChange={(ev) => setModo(ev.target.value as FiltroModo)} aria-label="Solo ou team">
-          <option value="todos">solo e team</option>
+          <option value="todos">todos</option>
           <option value="solo">só solo</option>
           <option value="team">só team</option>
+          <option value="raros">só raros</option>
         </select>
         <label className="nota">
           <input type="checkbox" checked={soPorFazer} onChange={(ev) => setSoPorFazer(ev.target.checked)} /> só os que
@@ -144,7 +146,8 @@ export function BosstiaryTabela({
                 <span className="bosses-tag">{b.categoria}</span>
                 {b.solo && <span className="bosses-tag">solo</span>}
                 {b.team && <span className="bosses-tag">team</span>}
-                {b.incerto && <span className="bosses-tag" title="há valores por confirmar">~</span>}
+                {b.raro && <span className="bosses-tag">raro</span>}
+                {b.incerto &&<span className="bosses-tag" title="há valores por confirmar">~</span>}
               </div>
               <div className="bosses-linha__prog">
                 <CampoNumero valor={eb.kills} rotulo={`Kills de ${b.nome}`} onGravar={(n) => mudar({ tipo: 'kills', id: b.id, valor: n ?? 0 })} />

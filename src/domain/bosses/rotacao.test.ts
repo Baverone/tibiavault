@@ -146,6 +146,16 @@ test('o boosted sobe para o topo, mesmo que seja de outro dia da semana', () => 
   assert.equal(ids(r).filter((id) => id === 'lloyd').length, 1);
 });
 
+test('team: um raro não entra nas sessões (aparece na lista dos raros)', () => {
+  const comRaro: Catalogo = {
+    ...catalogo,
+    bosses: [...catalogo.bosses, boss('ferumbras', { categoria: 'Nemesis', team: team('t1'), raro: { nomeGuildstats: 'Ferumbras' } })],
+  };
+  const t1 = rotacaoTeam(comRaro, vazio(), ctx()).principais.find((b) => b.bloco.id === 't1');
+  assert.ok(t1);
+  assert.ok(!t1.entradas.some((e) => e.boss.id === 'ferumbras'));
+});
+
 test('team: a sessão com o boosted vem primeiro', () => {
   const r = rotacaoTeam(catalogo, vazio(), ctx({ boosted: 'leiden' }));
   assert.equal(r.soBosstiary[0].bloco.id, 't2');

@@ -1,0 +1,737 @@
+{
+ "lidoEm": "2026-11-22T16:53:11.945Z",
+ "fonte": "https://guildstats.eu/bosses?world=Celesta",
+ "bosses": [
+  {
+   "nome": "Apprentice Sheng",
+   "tipo": null,
+   "previsao": {
+    "tipo": "pct",
+    "valor": 27.78
+   },
+   "ultimoVisto": "2026-11-15",
+   "ontem": 0
+  },
+  {
+   "nome": "Arachir The Ancient One",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 5
+   },
+   "ultimoVisto": "2026-11-21",
+   "ontem": 1
+  },
+  {
+   "nome": "Barbaria",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 7
+   },
+   "ultimoVisto": "2026-11-21",
+   "ontem": 1
+  },
+  {
+   "nome": "Battlemaster Zunzu",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "pct",
+    "valor": 8.36
+   },
+   "ultimoVisto": "2026-11-10",
+   "ontem": 0
+  },
+  {
+   "nome": "Big Boss Trolliver",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 2
+   },
+   "ultimoVisto": "2026-11-21",
+   "ontem": 1
+  },
+  {
+   "nome": "Captain Jones",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 2
+   },
+   "ultimoVisto": "2026-11-18",
+   "ontem": 0
+  },
+  {
+   "nome": "Chizzoron the Distorter",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 5
+   },
+   "ultimoVisto": "2026-11-20",
+   "ontem": 0
+  },
+  {
+   "nome": "Countess Sorrow",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 11
+   },
+   "ultimoVisto": "2026-11-19",
+   "ontem": 0
+  },
+  {
+   "nome": "Dharalion",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 3
+   },
+   "ultimoVisto": "2026-11-19",
+   "ontem": 0
+  },
+  {
+   "nome": "Diblis The Fair",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 2
+   },
+   "ultimoVisto": "2026-11-14",
+   "ontem": 0
+  },
+  {
+   "nome": "Dracola",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "pct",
+    "valor": 7.13
+   },
+   "ultimoVisto": "2026-11-08",
+   "ontem": 0
+  },
+  {
+   "nome": "draptors",
+   "tipo": null,
+   "previsao": {
+    "tipo": "pct",
+    "valor": 21.01
+   },
+   "ultimoVisto": "2026-11-18",
+   "ontem": 0
+  },
+  {
+   "nome": "Dreadmaw",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "pct",
+    "valor": 7.9
+   },
+   "ultimoVisto": "2026-11-11",
+   "ontem": 0
+  },
+  {
+   "nome": "Fernfang",
+   "tipo": null,
+   "previsao": {
+    "tipo": "baixa"
+   },
+   "ultimoVisto": "2026-05-15",
+   "ontem": 0
+  },
+  {
+   "nome": "Feroxa",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 21
+   },
+   "ultimoVisto": "2026-11-13",
+   "ontem": 0
+  },
+  {
+   "nome": "Ferumbras",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 90
+   },
+   "ultimoVisto": "2026-09-12",
+   "ontem": 0
+  },
+  {
+   "nome": "Flamecaller Zazrak",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "pct",
+    "valor": 4.93
+   },
+   "ultimoVisto": "2026-11-18",
+   "ontem": 0
+  },
+  {
+   "nome": "Fleabringer",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "pct",
+    "valor": 20.69
+   },
+   "ultimoVisto": "2026-11-02",
+   "ontem": 0
+  },
+  {
+   "nome": "Foreman Kneebiter",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "pct",
+    "valor": 14.11
+   },
+   "ultimoVisto": "2026-11-13",
+   "ontem": 0
+  },
+  {
+   "nome": "Furyosa",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "baixa"
+   },
+   "ultimoVisto": "2026-07-27",
+   "ontem": 0
+  },
+  {
+   "nome": "Gaz'haragoth",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "pct",
+    "valor": 9.4
+   },
+   "ultimoVisto": "2026-11-03",
+   "ontem": 0
+  },
+  {
+   "nome": "General Murius",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 2
+   },
+   "ultimoVisto": "2026-11-18",
+   "ontem": 0
+  },
+  {
+   "nome": "Ghazbaran",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 156
+   },
+   "ultimoVisto": "2026-11-17",
+   "ontem": 0
+  },
+  {
+   "nome": "Grand Mother Foulscale",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 1
+   },
+   "ultimoVisto": "2026-11-18",
+   "ontem": 0
+  },
+  {
+   "nome": "Grandfather Tridian",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "baixa"
+   },
+   "ultimoVisto": "2026-10-02",
+   "ontem": 0
+  },
+  {
+   "nome": "Gravelord Oshuran",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "baixa"
+   },
+   "ultimoVisto": "2026-08-10",
+   "ontem": 0
+  },
+  {
+   "nome": "Hairman The Huge",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 3
+   },
+   "ultimoVisto": "2026-11-20",
+   "ontem": 0
+  },
+  {
+   "nome": "Hatebreeder",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 4
+   },
+   "ultimoVisto": "2026-11-20",
+   "ontem": 0
+  },
+  {
+   "nome": "High Templar Cobrass",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "pct",
+    "valor": 10.54
+   },
+   "ultimoVisto": "2026-11-16",
+   "ontem": 0
+  },
+  {
+   "nome": "Hirintror",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "pct",
+    "valor": 4.07
+   },
+   "ultimoVisto": "2026-11-14",
+   "ontem": 0
+  },
+  {
+   "nome": "man in the cave",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 4
+   },
+   "ultimoVisto": "2026-11-14",
+   "ontem": 0
+  },
+  {
+   "nome": "Massacre",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 6
+   },
+   "ultimoVisto": "2026-11-14",
+   "ontem": 0
+  },
+  {
+   "nome": "midnight panthers",
+   "tipo": null,
+   "previsao": {
+    "tipo": "pct",
+    "valor": 16.58
+   },
+   "ultimoVisto": "2026-11-13",
+   "ontem": 0
+  },
+  {
+   "nome": "Morgaroth",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 1
+   },
+   "ultimoVisto": "2026-06-08",
+   "ontem": 0
+  },
+  {
+   "nome": "Morshabaal",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "baixa"
+   },
+   "ultimoVisto": "2026-04-13",
+   "ontem": 0
+  },
+  {
+   "nome": "Mr. Punish",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 5
+   },
+   "ultimoVisto": "2026-11-13",
+   "ontem": 0
+  },
+  {
+   "nome": "Munster",
+   "tipo": null,
+   "previsao": {
+    "tipo": "pct",
+    "valor": 13.18
+   },
+   "ultimoVisto": "2026-11-21",
+   "ontem": 1
+  },
+  {
+   "nome": "Ocyakao",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "pct",
+    "valor": 11.64
+   },
+   "ultimoVisto": "2026-11-04",
+   "ontem": 0
+  },
+  {
+   "nome": "Omrafir",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 9
+   },
+   "ultimoVisto": "2026-11-17",
+   "ontem": 0
+  },
+  {
+   "nome": "Orshabaal",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 27
+   },
+   "ultimoVisto": "2026-07-18",
+   "ontem": 0
+  },
+  {
+   "nome": "Owin",
+   "tipo": "Archfoe",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 24
+   },
+   "ultimoVisto": "2026-11-15",
+   "ontem": 0
+  },
+  {
+   "nome": "Rotrender",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "baixa"
+   },
+   "ultimoVisto": null,
+   "ontem": 0
+  },
+  {
+   "nome": "Rottie the Rotworm",
+   "tipo": null,
+   "previsao": {
+    "tipo": "nao",
+    "emDias": null
+   },
+   "ultimoVisto": "2026-11-15",
+   "ontem": 0
+  },
+  {
+   "nome": "Rukor Zad",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "baixa"
+   },
+   "ultimoVisto": "2026-10-26",
+   "ontem": 0
+  },
+  {
+   "nome": "Shlorg",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 8
+   },
+   "ultimoVisto": "2026-11-17",
+   "ontem": 0
+  },
+  {
+   "nome": "Sir Valorcrest",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 2
+   },
+   "ultimoVisto": "2026-11-19",
+   "ontem": 0
+  },
+  {
+   "nome": "Smuggler Baron Silvertoe",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 7
+   },
+   "ultimoVisto": "2026-11-21",
+   "ontem": 1
+  },
+  {
+   "nome": "Teleskor",
+   "tipo": null,
+   "previsao": {
+    "tipo": "baixa"
+   },
+   "ultimoVisto": "2026-11-21",
+   "ontem": 1
+  },
+  {
+   "nome": "The Abomination",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 103
+   },
+   "ultimoVisto": "2026-10-02",
+   "ontem": 0
+  },
+  {
+   "nome": "The Big Bad One",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "pct",
+    "valor": 19.02
+   },
+   "ultimoVisto": "2026-11-14",
+   "ontem": 0
+  },
+  {
+   "nome": "The Blightfather",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "pct",
+    "valor": 19.57
+   },
+   "ultimoVisto": "2026-11-16",
+   "ontem": 0
+  },
+  {
+   "nome": "The Evil Eye",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 1
+   },
+   "ultimoVisto": "2026-11-17",
+   "ontem": 0
+  },
+  {
+   "nome": "The Frog Prince",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 8
+   },
+   "ultimoVisto": "2026-11-18",
+   "ontem": 0
+  },
+  {
+   "nome": "The Handmaiden",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 9
+   },
+   "ultimoVisto": "2026-11-17",
+   "ontem": 0
+  },
+  {
+   "nome": "The Imperor",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 5
+   },
+   "ultimoVisto": "2026-11-13",
+   "ontem": 0
+  },
+  {
+   "nome": "The Old Whopper",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "pct",
+    "valor": 6.78
+   },
+   "ultimoVisto": "2026-11-17",
+   "ontem": 0
+  },
+  {
+   "nome": "The Pale Count",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "pct",
+    "valor": 8.63
+   },
+   "ultimoVisto": "2026-11-04",
+   "ontem": 0
+  },
+  {
+   "nome": "The Plasmother",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 5
+   },
+   "ultimoVisto": "2026-11-13",
+   "ontem": 0
+  },
+  {
+   "nome": "The Voice Of Ruin",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "pct",
+    "valor": 15.98
+   },
+   "ultimoVisto": "2026-11-07",
+   "ontem": 0
+  },
+  {
+   "nome": "The Welter",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 2
+   },
+   "ultimoVisto": "2026-11-08",
+   "ontem": 0
+  },
+  {
+   "nome": "Tyrn",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "pct",
+    "valor": 6.36
+   },
+   "ultimoVisto": "2026-11-14",
+   "ontem": 0
+  },
+  {
+   "nome": "Tzumrah The Dazzler",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 15
+   },
+   "ultimoVisto": "2026-11-17",
+   "ontem": 0
+  },
+  {
+   "nome": "undead cavebears",
+   "tipo": null,
+   "previsao": {
+    "tipo": "pct",
+    "valor": 23.66
+   },
+   "ultimoVisto": "2026-11-21",
+   "ontem": 2
+  },
+  {
+   "nome": "Warlord Ruzad",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "baixa"
+   },
+   "ultimoVisto": "2026-11-10",
+   "ontem": 0
+  },
+  {
+   "nome": "White Pale",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "pct",
+    "valor": 9.23
+   },
+   "ultimoVisto": "2026-11-09",
+   "ontem": 0
+  },
+  {
+   "nome": "Willi Wasp",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 3
+   },
+   "ultimoVisto": "2026-11-20",
+   "ontem": 0
+  },
+  {
+   "nome": "Xenia",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 6
+   },
+   "ultimoVisto": "2026-11-21",
+   "ontem": 1
+  },
+  {
+   "nome": "Yaga The Crone",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "pct",
+    "valor": 8.49
+   },
+   "ultimoVisto": "2026-11-14",
+   "ontem": 0
+  },
+  {
+   "nome": "yetis",
+   "tipo": null,
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 14
+   },
+   "ultimoVisto": "2026-11-18",
+   "ontem": 0
+  },
+  {
+   "nome": "Zarabustor",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "pct",
+    "valor": 19.9
+   },
+   "ultimoVisto": "2026-11-08",
+   "ontem": 0
+  },
+  {
+   "nome": "Zevelon Duskbringer",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 1
+   },
+   "ultimoVisto": "2026-11-17",
+   "ontem": 0
+  },
+  {
+   "nome": "Zomba",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 1
+   },
+   "ultimoVisto": "2026-11-20",
+   "ontem": 0
+  },
+  {
+   "nome": "Zulazza the Corruptor",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "nao",
+    "emDias": 5
+   },
+   "ultimoVisto": "2026-11-20",
+   "ontem": 0
+  },
+  {
+   "nome": "Zushuka",
+   "tipo": "Nemesis",
+   "previsao": {
+    "tipo": "pct",
+    "valor": 14.49
+   },
+   "ultimoVisto": "2026-10-30",
+   "ontem": 0
+  }
+ ]
+}

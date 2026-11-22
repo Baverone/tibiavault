@@ -126,7 +126,8 @@ export function rotacaoSolo(cat: Catalogo, est: EstadoPersonagem, ctx: Contexto)
 export function rotacaoTeam(cat: Catalogo, est: EstadoPersonagem, ctx: Contexto): { principais: BlocoHoje[]; soBosstiary: BlocoHoje[] } {
   const porBloco = new Map<string, Entrada[]>();
   for (const boss of cat.bosses) {
-    if (!boss.team) continue;
+    // Os raros têm a lista deles, com a chance de hoje do GuildStats.
+    if (!boss.team || boss.raro) continue;
     const eb = estadoDe(est, boss.id);
     const marca = marcaSeEntra(boss, eb, 'team');
     if (!marca) continue;

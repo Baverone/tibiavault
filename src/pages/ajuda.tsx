@@ -71,6 +71,11 @@ export const PAGE_AJUDA: Partial<Record<PageId, ReactNode>> = {
         dele.
       </p>
       <p>
+        <b>Os raros.</b> Os bosses de spawn raro que contam para o Bosstiary, pela chance de aparecerem hoje no Celesta
+        (a previsão do GuildStats, lida no PC uma vez por dia depois do server save). São os únicos com «cooldown» na
+        página. O +1 conta como nos outros.
+      </p>
+      <p>
         <b>As marcas.</b> «sempre» = fazer sempre que estiver pronto no jogo; «Bosstiary» = fazer até ao objetivo (Mastery nos
         Archfoe e Nemesis, Prowess nos Bane, por omissão) e depois sai da rota sozinho; «fora» = nunca. A marca é por
         personagem e separada para solo e team; as kills são as mesmas.

@@ -481,6 +481,24 @@
    }
   },
   {
+   "id": "arachir-the-ancient-one",
+   "nome": "Arachir the Ancient One",
+   "area": "Vampire Crypts ().",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Arachir_the_Ancient_One"
+   ],
+   "raro": {
+    "nomeGuildstats": "Arachir The Ancient One"
+   }
+  },
+  {
    "id": "arbaziloth",
    "nome": "Arbaziloth",
    "area": "Azzilon Castle (teleport in Edron)",
@@ -602,6 +620,42 @@
    }
   },
   {
+   "id": "barbaria",
+   "nome": "Barbaria",
+   "area": "Center of Krimhorn's Big Barbarian Camp around",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Barbaria"
+   ],
+   "raro": {
+    "nomeGuildstats": "Barbaria"
+   }
+  },
+  {
+   "id": "battlemaster-zunzu",
+   "nome": "Battlemaster Zunzu",
+   "area": "Zao (Muggy Plains, May Spawn somewhere between the following two coordinates and or ).",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Battlemaster_Zunzu"
+   ],
+   "raro": {
+    "nomeGuildstats": "Battlemaster Zunzu"
+   }
+  },
+  {
    "id": "bibby-bloodbath",
    "nome": "Bibby Bloodbath",
    "area": "North of the Jakundaf Desert",
@@ -625,6 +679,24 @@
     "bloco": "seg",
     "ordem": 11,
     "minutos": 3
+   }
+  },
+  {
+   "id": "big-boss-trolliver",
+   "nome": "Big Boss Trolliver",
+   "area": "Edron Troll Cave, spawns",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Big_Boss_Trolliver"
+   ],
+   "raro": {
+    "nomeGuildstats": "Big Boss Trolliver"
    }
   },
   {
@@ -883,6 +955,24 @@
    }
   },
   {
+   "id": "captain-jones",
+   "nome": "Captain Jones",
+   "area": "Ghostship.",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Captain_Jones"
+   ],
+   "raro": {
+    "nomeGuildstats": "Captain Jones"
+   }
+  },
+  {
    "id": "chagorz",
    "nome": "Chagorz",
    "area": "Gloom Pillars (Blood Vestibule)",
@@ -921,6 +1011,24 @@
     "bloco": "t1",
     "ordem": 2,
     "minutos": 45
+   }
+  },
+  {
+   "id": "chizzoron-the-distorter",
+   "nome": "Chizzoron the Distorter",
+   "area": "Zzaion, most southern tower, 3rd floor.",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Chizzoron_the_Distorter"
+   ],
+   "raro": {
+    "nomeGuildstats": "Chizzoron the Distorter"
    }
   },
   {
@@ -987,6 +1095,24 @@
     "bloco": "t6",
     "ordem": 0,
     "minutos": 15
+   }
+  },
+  {
+   "id": "countess-sorrow",
+   "nome": "Countess Sorrow",
+   "area": "Pits of Inferno - Bazir's Throneroom.",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Countess_Sorrow"
+   ],
+   "raro": {
+    "nomeGuildstats": "Countess Sorrow"
    }
   },
   {
@@ -1151,6 +1277,42 @@
    }
   },
   {
+   "id": "dharalion",
+   "nome": "Dharalion",
+   "area": "Shadowthorn, the Time Ring Quest room.",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Dharalion"
+   ],
+   "raro": {
+    "nomeGuildstats": "Dharalion"
+   }
+  },
+  {
+   "id": "diblis-the-fair",
+   "nome": "Diblis the Fair",
+   "area": "Nargor Undead Cave ().",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Diblis_the_Fair"
+   ],
+   "raro": {
+    "nomeGuildstats": "Diblis The Fair"
+   }
+  },
+  {
    "id": "dipthrah",
    "nome": "Dipthrah",
    "area": "Mountain Tomb",
@@ -1176,6 +1338,24 @@
     "bloco": "sab",
     "ordem": 16,
     "minutos": 3
+   }
+  },
+  {
+   "id": "dracola",
+   "nome": "Dracola",
+   "area": "Pits of Inferno - Ashfalor's Throneroom.",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Dracola"
+   ],
+   "raro": {
+    "nomeGuildstats": "Dracola"
    }
   },
   {
@@ -1217,6 +1397,24 @@
     "bloco": "t4",
     "ordem": 11,
     "minutos": 15
+   }
+  },
+  {
+   "id": "dreadmaw",
+   "nome": "Dreadmaw",
+   "area": "Northen part of Muggy Plains, near the rice fields and .",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Dreadmaw"
+   ],
+   "raro": {
+    "nomeGuildstats": "Dreadmaw"
    }
   },
   {
@@ -1549,6 +1747,24 @@
    }
   },
   {
+   "id": "feroxa",
+   "nome": "Feroxa",
+   "area": "Grimvale cave, behind the teleport, .",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Feroxa"
+   ],
+   "raro": {
+    "nomeGuildstats": "Feroxa"
+   }
+  },
+  {
    "id": "ferumbras",
    "nome": "Ferumbras",
    "area": "Ferumbras' Citadel (raid)",
@@ -1562,7 +1778,8 @@
    "fontes": [
     "https://tibiapal.com/bosstiary",
     "https://tibiawiki.dev/api/creatures/Ferumbras",
-    "https://tibia.fandom.com/wiki/Cyclopedia#Bosstiary"
+    "https://tibia.fandom.com/wiki/Cyclopedia#Bosstiary",
+    "https://tibia.fandom.com/wiki/Ferumbras"
    ],
    "team": {
     "tamanhoMin": 10,
@@ -1573,6 +1790,9 @@
     "bloco": "t13",
     "ordem": 13,
     "minutos": 30
+   },
+   "raro": {
+    "nomeGuildstats": "Ferumbras"
    }
   },
   {
@@ -1600,6 +1820,78 @@
     "bloco": "t7",
     "ordem": 9,
     "minutos": 40
+   }
+  },
+  {
+   "id": "flamecaller-zazrak",
+   "nome": "Flamecaller Zazrak",
+   "area": "Muggy Plains, south of the Temple of Equilibrium (Zao), , and on the mountain north of Chaochai, .",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Flamecaller_Zazrak"
+   ],
+   "raro": {
+    "nomeGuildstats": "Flamecaller Zazrak"
+   }
+  },
+  {
+   "id": "fleabringer",
+   "nome": "Fleabringer",
+   "area": "Steppe of Zao. Can be found in , in , on the surface around and possibly other places. Spawns with 2-5 Insect Swarms.",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Fleabringer"
+   ],
+   "raro": {
+    "nomeGuildstats": "Fleabringer"
+   }
+  },
+  {
+   "id": "foreman-kneebiter",
+   "nome": "Foreman Kneebiter",
+   "area": "Dwarf Mines (Kazordoon), spawns .",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Foreman_Kneebiter"
+   ],
+   "raro": {
+    "nomeGuildstats": "Foreman Kneebiter"
+   }
+  },
+  {
+   "id": "furyosa",
+   "nome": "Furyosa",
+   "area": "Fury Dungeon",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Furyosa"
+   ],
+   "raro": {
+    "nomeGuildstats": "Furyosa"
    }
   },
   {
@@ -1644,7 +1936,8 @@
    "fontes": [
     "https://tibiapal.com/bosstiary",
     "https://tibiawiki.dev/api/creatures/Gaz%27haragoth",
-    "https://tibia.fandom.com/wiki/Cyclopedia#Bosstiary"
+    "https://tibia.fandom.com/wiki/Cyclopedia#Bosstiary",
+    "https://tibia.fandom.com/wiki/Gaz'haragoth"
    ],
    "team": {
     "tamanhoMin": 15,
@@ -1655,6 +1948,45 @@
     "bloco": "t13",
     "ordem": 12,
     "minutos": 30
+   },
+   "raro": {
+    "nomeGuildstats": "Gaz'haragoth"
+   }
+  },
+  {
+   "id": "general-murius",
+   "nome": "General Murius",
+   "area": "Mintwallin, spawns with his army.",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/General_Murius"
+   ],
+   "raro": {
+    "nomeGuildstats": "General Murius"
+   }
+  },
+  {
+   "id": "ghazbaran",
+   "nome": "Ghazbaran",
+   "area": "Formorgar Mines, in the pit with the Juggernaut.",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Ghazbaran"
+   ],
+   "raro": {
+    "nomeGuildstats": "Ghazbaran"
    }
   },
   {
@@ -2186,6 +2518,60 @@
    }
   },
   {
+   "id": "grand-mother-foulscale",
+   "nome": "Grand Mother Foulscale",
+   "area": "Muggy Plains,",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Grand_Mother_Foulscale"
+   ],
+   "raro": {
+    "nomeGuildstats": "Grand Mother Foulscale"
+   }
+  },
+  {
+   "id": "grandfather-tridian",
+   "nome": "Grandfather Tridian",
+   "area": "Third floor (behind the piano) in Cult Cave (Liberty Bay), spawns .",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Grandfather_Tridian"
+   ],
+   "raro": {
+    "nomeGuildstats": "Grandfather Tridian"
+   }
+  },
+  {
+   "id": "gravelord-oshuran",
+   "nome": "Gravelord Oshuran",
+   "area": "First floor of Vampire Crypts (), only as a raid boss.",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Gravelord_Oshuran"
+   ],
+   "raro": {
+    "nomeGuildstats": "Gravelord Oshuran"
+   }
+  },
+  {
    "id": "guard-captain-quaid",
    "nome": "Guard Captain Quaid",
    "area": "Cobra Bastion",
@@ -2214,6 +2600,42 @@
    }
   },
   {
+   "id": "hairman-the-huge",
+   "nome": "Hairman the Huge",
+   "area": "Banuta underground, around .",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Hairman_the_Huge"
+   ],
+   "raro": {
+    "nomeGuildstats": "Hairman The Huge"
+   }
+  },
+  {
+   "id": "hatebreeder",
+   "nome": "Hatebreeder",
+   "area": "Razachai Inner Sanctum, around or .",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Hatebreeder"
+   ],
+   "raro": {
+    "nomeGuildstats": "Hatebreeder"
+   }
+  },
+  {
    "id": "hellgorak",
    "nome": "Hellgorak",
    "area": "The Inquisition dungeons (Battlefields etc.)",
@@ -2237,6 +2659,42 @@
     "bloco": "seg",
     "ordem": 18,
     "minutos": 3
+   }
+  },
+  {
+   "id": "high-templar-cobrass",
+   "nome": "High Templar Cobrass",
+   "area": "Chor, below the center temple, near the Funeral Urn used in The Explorer Society Quest, spawns .",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/High_Templar_Cobrass"
+   ],
+   "raro": {
+    "nomeGuildstats": "High Templar Cobrass"
+   }
+  },
+  {
+   "id": "hirintror",
+   "nome": "Hirintror",
+   "area": "First floor of the Nibelor Ice Cave, around and in the Formorgar Mines, around .",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Hirintror"
+   ],
+   "raro": {
+    "nomeGuildstats": "Hirintror"
    }
   },
   {
@@ -3032,6 +3490,42 @@
    }
   },
   {
+   "id": "man-in-the-cave",
+   "nome": "Man in the Cave",
+   "area": "Inside the Formorgar Glacier, .",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Man_in_the_Cave"
+   ],
+   "raro": {
+    "nomeGuildstats": "man in the cave"
+   }
+  },
+  {
+   "id": "massacre",
+   "nome": "Massacre",
+   "area": "Spawns in Apocalypse's throne room, in the Pits of Inferno.",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Massacre"
+   ],
+   "raro": {
+    "nomeGuildstats": "Massacre"
+   }
+  },
+  {
    "id": "maxxenius",
    "nome": "Maxxenius",
    "area": "The Dream Scar",
@@ -3288,6 +3782,24 @@
    }
   },
   {
+   "id": "morgaroth",
+   "nome": "Morgaroth",
+   "area": "Underground Goroma Volcano.",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Morgaroth"
+   ],
+   "raro": {
+    "nomeGuildstats": "Morgaroth"
+   }
+  },
+  {
    "id": "morguthis",
    "nome": "Morguthis",
    "area": "Tarpit Tomb",
@@ -3329,7 +3841,8 @@
    "fontes": [
     "https://tibiapal.com/bosstiary",
     "https://tibiawiki.dev/api/creatures/Morshabaal",
-    "https://tibia.fandom.com/wiki/Cyclopedia#Bosstiary"
+    "https://tibia.fandom.com/wiki/Cyclopedia#Bosstiary",
+    "https://tibia.fandom.com/wiki/Morshabaal"
    ],
    "team": {
     "tamanhoMin": 15,
@@ -3340,6 +3853,9 @@
     "bloco": "t5",
     "ordem": 5,
     "minutos": 30
+   },
+   "raro": {
+    "nomeGuildstats": "Morshabaal"
    }
   },
   {
@@ -3368,6 +3884,24 @@
     "bloco": "qui",
     "ordem": 6,
     "minutos": 4
+   }
+  },
+  {
+   "id": "mr-punish",
+   "nome": "Mr. Punish",
+   "area": "Pits of Inferno in Tafariel's Throne room.",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Mr._Punish"
+   ],
+   "raro": {
+    "nomeGuildstats": "Mr. Punish"
    }
   },
   {
@@ -3440,6 +3974,24 @@
    }
   },
   {
+   "id": "ocyakao",
+   "nome": "Ocyakao",
+   "area": "Nibelor -",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Ocyakao"
+   ],
+   "raro": {
+    "nomeGuildstats": "Ocyakao"
+   }
+  },
+  {
    "id": "omrafir",
    "nome": "Omrafir",
    "area": "Roshamuul (Prison)",
@@ -3453,7 +4005,8 @@
    "fontes": [
     "https://tibiapal.com/bosstiary",
     "https://tibiawiki.dev/api/creatures/Omrafir",
-    "https://tibia.fandom.com/wiki/Cyclopedia#Bosstiary"
+    "https://tibia.fandom.com/wiki/Cyclopedia#Bosstiary",
+    "https://tibia.fandom.com/wiki/Omrafir"
    ],
    "team": {
     "tamanhoMin": 5,
@@ -3464,6 +4017,9 @@
     "bloco": "t13",
     "ordem": 14,
     "minutos": 20
+   },
+   "raro": {
+    "nomeGuildstats": "Omrafir"
    }
   },
   {
@@ -3492,6 +4048,24 @@
     "bloco": "sab",
     "ordem": 19,
     "minutos": 3
+   }
+  },
+  {
+   "id": "orshabaal",
+   "nome": "Orshabaal",
+   "area": "North of Edron near the Dragon Lair in the stone circle ().",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Orshabaal"
+   ],
+   "raro": {
+    "nomeGuildstats": "Orshabaal"
    }
   },
   {
@@ -3557,6 +4131,24 @@
     "bloco": "dom",
     "ordem": 10,
     "minutos": 3
+   }
+  },
+  {
+   "id": "owin",
+   "nome": "Owin",
+   "area": "On Grimvale, northernmost hut.",
+   "regiao": "",
+   "categoria": "Archfoe",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Owin"
+   ],
+   "raro": {
+    "nomeGuildstats": "Owin"
    }
   },
   {
@@ -4019,6 +4611,27 @@
     "bloco": "t5",
     "ordem": 4,
     "minutos": 30
+   },
+   "raro": {
+    "nomeGuildstats": "Rotrender"
+   }
+  },
+  {
+   "id": "rukor-zad",
+   "nome": "Rukor Zad",
+   "area": "Dark Cathedral, in the room with the Demon Trophies, .",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Rukor_Zad"
+   ],
+   "raro": {
+    "nomeGuildstats": "Rukor Zad"
    }
   },
   {
@@ -4143,6 +4756,24 @@
     "bloco": "dom",
     "ordem": 13,
     "minutos": 3
+   }
+  },
+  {
+   "id": "shlorg",
+   "nome": "Shlorg",
+   "area": "Edron Earth Elemental Cave",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Shlorg"
+   ],
+   "raro": {
+    "nomeGuildstats": "Shlorg"
    }
   },
   {
@@ -4290,6 +4921,24 @@
    }
   },
   {
+   "id": "sir-valorcrest",
+   "nome": "Sir Valorcrest",
+   "area": "Edron Undead Cave ().",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Sir_Valorcrest"
+   ],
+   "raro": {
+    "nomeGuildstats": "Sir Valorcrest"
+   }
+  },
+  {
    "id": "sister-hetai",
    "nome": "Sister Hetai",
    "area": "Kilmaresh - teleport inside the Kilmaresh Catacombs",
@@ -4315,6 +4964,24 @@
     "bloco": "qui",
     "ordem": 1,
     "minutos": 4
+   }
+  },
+  {
+   "id": "smuggler-baron-silvertoe",
+   "nome": "Smuggler Baron Silvertoe",
+   "area": "Tiquanda Bandit Caves -",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Smuggler_Baron_Silvertoe"
+   ],
+   "raro": {
+    "nomeGuildstats": "Smuggler Baron Silvertoe"
    }
   },
   {
@@ -4518,6 +5185,24 @@
    }
   },
   {
+   "id": "the-abomination",
+   "nome": "The Abomination",
+   "area": "The Abomination appears inside his own room under the Ice Islands, . Information on how to get there is explained under Notes above.",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/The_Abomination"
+   ],
+   "raro": {
+    "nomeGuildstats": "The Abomination"
+   }
+  },
+  {
    "id": "the-baron-from-below",
    "nome": "The Baron from Below",
    "area": "Warzone 4 (Gnome Deep Hub)",
@@ -4557,6 +5242,24 @@
    }
   },
   {
+   "id": "the-big-bad-one",
+   "nome": "The Big Bad One",
+   "area": "Edron, spawns somewhere around with 0-2 War Wolves.",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/The_Big_Bad_One"
+   ],
+   "raro": {
+    "nomeGuildstats": "The Big Bad One"
+   }
+  },
+  {
    "id": "the-blazing-rose",
    "nome": "The Blazing Rose",
    "area": "Asura Palace (Secret Library part)",
@@ -4581,6 +5284,24 @@
     "bloco": "sab",
     "ordem": 11,
     "minutos": 3
+   }
+  },
+  {
+   "id": "the-blightfather",
+   "nome": "The Blightfather",
+   "area": "Muggy Plains,",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/The_Blightfather"
+   ],
+   "raro": {
+    "nomeGuildstats": "The Blightfather"
    }
   },
   {
@@ -4808,6 +5529,24 @@
    }
   },
   {
+   "id": "the-evil-eye",
+   "nome": "The Evil Eye",
+   "area": "North East of the Hellgate Library, .",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/The_Evil_Eye"
+   ],
+   "raro": {
+    "nomeGuildstats": "The Evil Eye"
+   }
+  },
+  {
    "id": "the-false-god",
    "nome": "The False God",
    "area": "Minotaur cult hideout near Mintwallin",
@@ -4914,6 +5653,24 @@
    }
   },
   {
+   "id": "the-frog-prince",
+   "nome": "The Frog Prince",
+   "area": "Alatar Lake, spawns",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/The_Frog_Prince"
+   ],
+   "raro": {
+    "nomeGuildstats": "The Frog Prince"
+   }
+  },
+  {
    "id": "the-gravedigger",
    "nome": "The Gravedigger",
    "area": "Lever room in Ankrahmun's desert",
@@ -4950,6 +5707,42 @@
     "bloco": "t13",
     "ordem": 9,
     "minutos": 15
+   }
+  },
+  {
+   "id": "the-handmaiden",
+   "nome": "The Handmaiden",
+   "area": "Pits of Inferno, in Pumin's Throneroom.",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/The_Handmaiden"
+   ],
+   "raro": {
+    "nomeGuildstats": "The Handmaiden"
+   }
+  },
+  {
+   "id": "the-imperor",
+   "nome": "The Imperor",
+   "area": "Pits of Inferno in Infernatil's Throneroom.",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/The_Imperor"
+   ],
+   "raro": {
+    "nomeGuildstats": "The Imperor"
    }
   },
   {
@@ -5194,6 +5987,42 @@
    }
   },
   {
+   "id": "the-old-whopper",
+   "nome": "The Old Whopper",
+   "area": "The Old Whopper spawns before the level 30 door leading to the Behemoth Quest at floor -4 of Cyclopolis, ().",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/The_Old_Whopper"
+   ],
+   "raro": {
+    "nomeGuildstats": "The Old Whopper"
+   }
+  },
+  {
+   "id": "the-pale-count",
+   "nome": "The Pale Count",
+   "area": "During a raid under Drefia, initially . After reaching yellow health it teleports itself with full health to the lower floor and spawns in front of the mirror, ",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/The_Pale_Count"
+   ],
+   "raro": {
+    "nomeGuildstats": "The Pale Count"
+   }
+  },
+  {
    "id": "the-pale-worm",
    "nome": "The Pale Worm",
    "area": "Feaster of Souls",
@@ -5218,6 +6047,24 @@
     "bloco": "t3",
     "ordem": 11,
     "minutos": 25
+   }
+  },
+  {
+   "id": "the-plasmother",
+   "nome": "The Plasmother",
+   "area": "Pits of Inferno - Verminor's Throneroom.",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/The_Plasmother"
+   ],
+   "raro": {
+    "nomeGuildstats": "The Plasmother"
    }
   },
   {
@@ -5572,6 +6419,42 @@
    }
   },
   {
+   "id": "the-voice-of-ruin",
+   "nome": "The Voice of Ruin",
+   "area": "Corruption Hole. One spawn point is near the eye, , and the other spawn point is with the Ghastly Dragons, .",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/The_Voice_of_Ruin"
+   ],
+   "raro": {
+    "nomeGuildstats": "The Voice Of Ruin"
+   }
+  },
+  {
+   "id": "the-welter",
+   "nome": "The Welter",
+   "area": "Hydra Mountain, large spawn, .",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/The_Welter"
+   ],
+   "raro": {
+    "nomeGuildstats": "The Welter"
+   }
+  },
+  {
    "id": "the-winter-bloom",
    "nome": "The Winter Bloom",
    "area": "Asura Palace (Tiquanda)",
@@ -5690,6 +6573,42 @@
     "bloco": "dom",
     "ordem": 4,
     "minutos": 3
+   }
+  },
+  {
+   "id": "tyrn",
+   "nome": "Tyrn",
+   "area": "Second floor of Drefia Wyrm Lair () and Vandura Wyrm Cave ().",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Tyrn"
+   ],
+   "raro": {
+    "nomeGuildstats": "Tyrn"
+   }
+  },
+  {
+   "id": "tzumrah-the-dazzler",
+   "nome": "Tzumrah the Dazzler",
+   "area": "Forbidden Temple, near the altar of the last floor .",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Tzumrah_the_Dazzler"
+   ],
+   "raro": {
+    "nomeGuildstats": "Tzumrah The Dazzler"
    }
   },
   {
@@ -5951,6 +6870,60 @@
    }
   },
   {
+   "id": "warlord-ruzad",
+   "nome": "Warlord Ruzad",
+   "area": "Orc Fortress, in the tower near Orc Powder Quest Room, .",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Warlord_Ruzad"
+   ],
+   "raro": {
+    "nomeGuildstats": "Warlord Ruzad"
+   }
+  },
+  {
+   "id": "white-pale",
+   "nome": "White Pale",
+   "area": "Edron Rotworm Cave (), Darashia Rotworm Caves (), Vandura Rotworm Cave().",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/White_Pale"
+   ],
+   "raro": {
+    "nomeGuildstats": "White Pale"
+   }
+  },
+  {
+   "id": "willi-wasp",
+   "nome": "Willi Wasp",
+   "area": "North of Carlin.",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Willi_Wasp"
+   ],
+   "raro": {
+    "nomeGuildstats": "Willi Wasp"
+   }
+  },
+  {
    "id": "world-devourer",
    "nome": "World Devourer",
    "area": "Heart of Destruction",
@@ -6005,6 +6978,24 @@
    }
   },
   {
+   "id": "xenia",
+   "nome": "Xenia",
+   "area": "Venore Amazon Camp, or the room below.",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Xenia"
+   ],
+   "raro": {
+    "nomeGuildstats": "Xenia"
+   }
+  },
+  {
    "id": "xogixath",
    "nome": "Xogixath",
    "area": "Kilmaresh - under the Kilmaresh Nykri Delta",
@@ -6030,6 +7021,24 @@
     "bloco": "qui",
     "ordem": 5,
     "minutos": 4
+   }
+  },
+  {
+   "id": "yaga-the-crone",
+   "nome": "Yaga the Crone",
+   "area": "Four levels underground, on the way to Blood Herb Quest, .",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Yaga_the_Crone"
+   ],
+   "raro": {
+    "nomeGuildstats": "Yaga The Crone"
    }
   },
   {
@@ -6100,6 +7109,60 @@
    }
   },
   {
+   "id": "zarabustor",
+   "nome": "Zarabustor",
+   "area": "Demona, in the room Northeast of the pentagram room, .",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Zarabustor"
+   ],
+   "raro": {
+    "nomeGuildstats": "Zarabustor"
+   }
+  },
+  {
+   "id": "zevelon-duskbringer",
+   "nome": "Zevelon Duskbringer",
+   "area": "Hellgate, small graveyard .",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Zevelon_Duskbringer"
+   ],
+   "raro": {
+    "nomeGuildstats": "Zevelon Duskbringer"
+   }
+  },
+  {
+   "id": "zomba",
+   "nome": "Zomba",
+   "area": "West of Darashia (during raids).",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Zomba"
+   ],
+   "raro": {
+    "nomeGuildstats": "Zomba"
+   }
+  },
+  {
    "id": "zugurosh",
    "nome": "Zugurosh",
    "area": "The Inquisition dungeons (Battlefields etc.)",
@@ -6123,6 +7186,42 @@
     "bloco": "seg",
     "ordem": 13,
     "minutos": 3
+   }
+  },
+  {
+   "id": "zulazza-the-corruptor",
+   "nome": "Zulazza the Corruptor",
+   "area": "Zzaion (Zao) most southern tower, top floor.",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Zulazza_the_Corruptor"
+   ],
+   "raro": {
+    "nomeGuildstats": "Zulazza the Corruptor"
+   }
+  },
+  {
+   "id": "zushuka",
+   "nome": "Zushuka",
+   "area": "Ice Witch Temple (bottom floor)",
+   "regiao": "",
+   "categoria": "Nemesis",
+   "cooldownH": null,
+   "acesso": "",
+   "loot": "",
+   "notas": "Spawn raro: a chance de hoje vem do GuildStats.",
+   "incerto": false,
+   "fontes": [
+    "https://tibia.fandom.com/wiki/Zushuka"
+   ],
+   "raro": {
+    "nomeGuildstats": "Zushuka"
    }
   }
  ]

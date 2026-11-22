@@ -58,6 +58,8 @@ export interface Boss {
   fontes: string[];
   solo?: ModoSolo;
   team?: ModoTeam;
+  /** Boss de spawn raro seguido pelo GuildStats (22/11/2026): o nome lá, para casar com a previsão do dia. */
+  raro?: { nomeGuildstats: string };
 }
 
 export interface Catalogo {

@@ -15,10 +15,29 @@ const porNome = (nome: string): Boss => {
   return boss;
 };
 
-test('ids únicos e cada boss tem solo ou team', () => {
+test('ids únicos e cada boss tem solo, team ou é raro', () => {
   const ids = catalogo.bosses.map((b) => b.id);
   assert.equal(new Set(ids).size, ids.length);
-  for (const b of catalogo.bosses) assert.ok(b.solo || b.team, b.nome);
+  for (const b of catalogo.bosses) assert.ok(b.solo || b.team || b.raro, b.nome);
+});
+
+// 22/11/2026: os bosses raros que o GuildStats segue no Celesta, com a classe
+// do Bosstiary da TibiaWiki (data/bosses-fontes/raros.json).
+test('os raros do Bosstiary entram no catálogo, com o nome do GuildStats', () => {
+  const raros = catalogo.bosses.filter((b) => b.raro);
+  assert.ok(raros.length >= 60, `só ${raros.length} raros`);
+  const dharalion = porNome('Dharalion');
+  assert.equal(dharalion.raro?.nomeGuildstats, 'Dharalion');
+  assert.equal(dharalion.categoria, 'Nemesis');
+  assert.match(dharalion.area, /Shadowthorn/);
+  assert.equal(dharalion.solo, undefined);
+  // Nome da wiki com o do GuildStats ao lado.
+  assert.equal(porNome('Arachir the Ancient One').raro?.nomeGuildstats, 'Arachir The Ancient One');
+  // Um raro que já vinha da pesquisa de team fica o mesmo boss, marcado raro.
+  assert.ok(porNome('Ferumbras').team);
+  assert.equal(porNome('Ferumbras').raro?.nomeGuildstats, 'Ferumbras');
+  // Os que não contam para o Bosstiary ficam de fora.
+  for (const nome of ['Munster', 'Teleskor', 'Draptor', 'yetis']) assert.ok(!catalogo.bosses.some((b) => b.nome === nome), nome);
 });
 
 test('cada bloco usado existe e as categorias são as três', () => {
