@@ -78,6 +78,26 @@ dentro e fora dos eventos. Desenho:
   Exercise se quer gastar e a calculadora diz o skill com que se fica (sem
   evento e com Double Skill), em vez do nível objetivo.
 
+## Bosses e Bosstiary (22/11/2026)
+
+Página «Bosses» (`#bosses`): a rota de bosses de hoje, solo e team, e o Bosstiary de cada personagem.
+Pedido do André: bosses solo que dropam bom equipamento, bosses só para o Bosstiary, e uma rotação
+de team à parte, tudo interativo no site. Desenho em
+`docs/superpowers/specs/2026-11-22-bosses-design.md`, plano em `docs/superpowers/plans/2026-11-22-bosses.md`.
+
+- **O catálogo** (fixo): `src/data/bosses/catalogo.json`, gerado por
+  `node scripts/bosses/gerarCatalogo.mjs` a partir das pesquisas em `data/bosses-fontes/` (solo e team,
+  22/11/2026) e dos blocos da rota em `scripts/bosses/blocos.mjs`. Um boss sem bloco faz o gerador
+  falhar com o nome. Para acrescentar bosses (um update novo): juntá-los à fonte, dar-lhes um bloco,
+  regenerar, `npm test`.
+- **O estado** de cada personagem: `data/bosstiary/<royal-paladin|exalted-monk>.json`, gravado pelo
+  browser na API de conteúdos do GitHub com a mesma chave dos skills (`storage/githubContents.ts`, que
+  passou a ser comum). Só guarda kills, última kill e o que ele mudou à mão; as alterações aplicam-se
+  como diferenças, em fila, 2 s depois do último clique.
+- **O boosted** vem da TibiaData (`storage/boostedBoss.ts`); uma kill nele conta 3.
+- **Estimativas marcadas:** os níveis solo (quase todos os do Monk) e os tempos não têm fonte; aparecem
+  com «~». As regras do Bosstiary (kills e pontos) estão confirmadas; o bónus de loot é a fórmula de 2022.
+
 ## Como correr o projeto
 
 ```bash
