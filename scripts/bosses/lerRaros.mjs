@@ -14,8 +14,8 @@
 //
 // `semFicha` são raros que o GuildStats segue e que data/bosses-fontes/raros.json
 // ainda não tem: correr scripts/bosses/fontesRaros.mjs e gerar o catálogo.
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
-import { pathToFileURL } from 'node:url';
+import { mkdirSync, readFileSync, realpathSync, renameSync, writeFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { juntarLeitura, lerTabelaRaros, normalizarLinhas } from './guildstatsRaros.mjs';
 
 export const FICHEIRO = 'data/bosses-raros/celesta.json';
@@ -55,7 +55,18 @@ export function executar({ html, linhas, raiz = new URL('../../', import.meta.ur
   };
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+// Chamado directamente? Compara-se pelo caminho verdadeiro: o PC corre o
+// tibiavault pela junção C:\Users\Catarina\tibiavault e o Node dá ao módulo o
+// caminho resolvido (22/11/2026: sem isto saía com 0 sem fazer nada).
+const chamadoDirecto = (() => {
+  try {
+    return Boolean(process.argv[1]) && realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+})();
+
+if (chamadoDirecto) {
   try {
     const [a, b] = process.argv.slice(2);
     if (!a) throw new Error('uso: node scripts/bosses/lerRaros.mjs <página.html> | --linhas <linhas.json>');

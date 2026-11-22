@@ -4,10 +4,11 @@
 // quando as previsões mudam.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, existsSync, symlinkSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { executar } from './lerRaros.mjs';
 import { CRUAS } from './fixtures/cruas.mjs';
 
@@ -47,6 +48,17 @@ test('as linhas do Chrome (--linhas) gravam o mesmo que a página inteira', () =
   assert.equal(readFileSync(ficheiro(b.dir), 'utf8'), readFileSync(ficheiro(a.dir), 'utf8'));
   // linhas que não são uma lista rebentam
   assert.throws(() => executar({ linhas: { x: 1 }, raiz: b.url, agora, minimo: 3 }), /lista/);
+});
+
+// 22/11/2026: o PC corre o tibiavault pela junção C:\Users\Catarina\tibiavault,
+// e o Node dá ao módulo o caminho verdadeiro. A comparação com o argv[1] falhava
+// e o comando saía com 0 sem fazer nada (a 1.ª corrida da tibia-raros-chrome).
+test('o comando corre também chamado por uma junção (ou atalho) para o repositório', () => {
+  const link = join(mkdtempSync(join(tmpdir(), 'juncao-')), 'tv');
+  symlinkSync(fileURLToPath(new URL('../../', import.meta.url)), link, 'junction');
+  const r = spawnSync(process.execPath, [join(link, 'scripts', 'bosses', 'lerRaros.mjs')], { encoding: 'utf8' });
+  assert.equal(r.status, 1);
+  assert.match(r.stdout, /"estado":"falhou".*uso:/);
 });
 
 test('poucas linhas (página cortada ou mudada) rebentam sem tocar no ficheiro', () => {

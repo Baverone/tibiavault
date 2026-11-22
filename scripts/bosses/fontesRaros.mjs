@@ -9,8 +9,8 @@
 // Escreve data/bosses-fontes/raros.json. Os que não têm classe do Bosstiary
 // (bosses de Rookgaard, criaturas de raid como os yetis) ficam lá com
 // `categoria: null`, e o gerador do catálogo deixa-os de fora.
-import { readFileSync, writeFileSync } from 'node:fs';
-import { pathToFileURL } from 'node:url';
+import { readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 const CATEGORIAS = new Set(['Bane', 'Archfoe', 'Nemesis']);
 const PEQUENAS = new Set(['the', 'of', 'in', 'a', 'an', 'and', 'on', 'from']);
@@ -88,7 +88,16 @@ async function principal() {
   console.log(JSON.stringify({ raros: fichas.length, bosstiary: fichas.filter((f) => f.categoria).length }));
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+// pelo caminho verdadeiro: o tibiavault também se corre pela junção C:\Users\Catarina\tibiavault
+const chamadoDirecto = (() => {
+  try {
+    return Boolean(process.argv[1]) && realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+})();
+
+if (chamadoDirecto) {
   principal().catch((e) => {
     console.error(e.message);
     process.exit(1);
