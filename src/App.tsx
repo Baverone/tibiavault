@@ -8,6 +8,7 @@ import { HomePage } from './pages/HomePage';
 import { CharacterPage } from './pages/CharacterPage';
 import { MundoPage } from './pages/MundoPage';
 import { PartilhaPage } from './pages/PartilhaPage';
+import { BossesPage } from './pages/BossesPage';
 import { StaminaCalculator } from './components/stamina/StaminaCalculator';
 import { ArrowsCalculator } from './components/arrows/ArrowsCalculator';
 import { PAGE_AJUDA } from './pages/ajuda';
@@ -62,6 +63,8 @@ function App() {
     content = <StaminaCalculator />;
   } else if (page === 'flechas') {
     content = <ArrowsCalculator />;
+  } else if (page === 'bosses') {
+    content = <BossesPage histories={histories} />;
   } else {
     content = <MundoPage />;
   }

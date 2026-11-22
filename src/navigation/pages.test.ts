@@ -37,7 +37,7 @@ test('cada página aparece uma vez e só uma na barra lateral', () => {
 
 test('as secções saem pela ordem da lista, sem se repetirem', () => {
   const nomes = sections().map((section) => section.name);
-  assert.deepEqual(nomes, ['', 'Personagens', 'Hunt', 'Tibia']);
+  assert.deepEqual(nomes, ['', 'Personagens', 'Hunt', 'Bosses', 'Tibia']);
 });
 
 test('nenhuma página fica sem rótulo nem sem ícone', () => {

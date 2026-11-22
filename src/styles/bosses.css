@@ -1,0 +1,192 @@
+/* Bosses e Bosstiary (22/11/2026). Segue o vocabulário da identidade comum
+   (tokens.css): cartões, .seg, .btn, .nota. */
+
+.bosses-topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin-bottom: 14px;
+}
+
+.bosses-estado {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 16px;
+  align-items: center;
+}
+
+.bosses-gravacao {
+  font-size: 12px;
+  color: var(--ok);
+}
+.bosses-gravacao.pendente,
+.bosses-gravacao.a-gravar {
+  color: var(--warn);
+}
+.bosses-gravacao.falhou,
+.bosses-gravacao.sem-chave {
+  color: var(--err);
+}
+
+.bosses-bloco {
+  margin-top: 16px;
+}
+.bosses-bloco h3,
+.bosses-bloco summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  font-family: var(--font-hd);
+  font-size: 14px;
+  margin: 0 0 6px;
+  cursor: default;
+}
+.bosses-bloco summary {
+  cursor: pointer;
+  color: var(--ink2);
+}
+.bosses-bloco__n {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent-hi);
+  font-size: 12px;
+}
+.bosses-bloco ul,
+.bosses-tabela {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.bosses-linha {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) auto;
+  gap: 6px 12px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--card2);
+}
+.bosses-linha + .bosses-linha {
+  margin-top: 6px;
+}
+.bosses-linha.em-cooldown {
+  opacity: 0.5;
+}
+.bosses-linha.boosted {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+}
+.bosses-linha__nome {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  align-items: center;
+  min-width: 0;
+}
+.bosses-linha__prog {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+}
+.bosses-linha__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+}
+
+.bosses-tag {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--line2);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.bosses-tag.boosted {
+  color: var(--accent-hi);
+  border-color: var(--accent-line);
+}
+.bosses-tag.warn {
+  color: var(--warn);
+}
+
+.bosses-marca,
+.bosses-num,
+.bosses-filtros input[type='search'],
+.bosses-filtros select {
+  background: var(--card3);
+  color: var(--ink);
+  border: 1px solid var(--line2);
+  border-radius: 8px;
+  padding: 4px 6px;
+  font: inherit;
+  font-size: 12px;
+}
+.bosses-num {
+  width: 72px;
+}
+
+.bosses-acesso {
+  font-size: 12px;
+  color: var(--warn);
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.bosses-resumo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+}
+.bosses-resumo > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background: var(--card3);
+  border: 1px solid var(--line2);
+  border-radius: var(--r);
+}
+.bosses-resumo__l {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 0.11em;
+}
+.bosses-resumo b {
+  font-family: var(--font-hd);
+  font-size: 17px;
+}
+
+.bosses-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin: 12px 0;
+}
+
+@media (max-width: 720px) {
+  .bosses-linha {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .bosses-linha__acoes {
+    justify-content: flex-start;
+  }
+}

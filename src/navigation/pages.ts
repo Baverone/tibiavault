@@ -29,6 +29,7 @@ export type PageId =
   | 'partilha'
   | 'stamina'
   | 'flechas'
+  | 'bosses'
   | 'mundo';
 
 export interface PageMeta {
@@ -88,6 +89,15 @@ export const PAGES: PageMeta[] = [
     note: 'quantas gastas por minuto',
     icon: 'flecha',
     subtitle: 'Quantas flechas por minuto gastaste numa caçada, e a tabela de totais para as taxas mais comuns.',
+  },
+  {
+    // 22/11/2026: a rota de bosses de hoje e o Bosstiary de cada personagem.
+    id: 'bosses',
+    section: 'Bosses',
+    label: 'Bosses',
+    note: 'rotação e Bosstiary',
+    icon: 'mapa',
+    subtitle: 'A rota de bosses de hoje, solo e team, e o Bosstiary de cada personagem.',
   },
   {
     id: 'mundo',
