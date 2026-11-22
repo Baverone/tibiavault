@@ -33,10 +33,37 @@ function lerPrevisao(celula, emDias) {
   return pct ? { tipo: 'pct', valor: Number(pct[1]) } : null;
 }
 
+const txt = (v) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim() : '');
+
 /**
- * As linhas da tabela que têm previsão (as outras são bosses sem spawn
- * aleatório). Rebenta se a tabela ou as colunas não estiverem lá: o layout
- * mudou, ou veio a página do desafio do Cloudflare.
+ * As linhas em texto, tal como a página as mostra ({nome, tipo, possibilidade,
+ * emDias, ultimoVisto, ontem}), convertidas. Vêm do HTML (lerTabelaRaros) ou do
+ * JavaScript que a tarefa tibia-raros-chrome corre na página. Só ficam as que
+ * têm previsão (as outras são bosses sem spawn aleatório).
+ */
+export function normalizarLinhas(cruas) {
+  const bosses = [];
+  for (const c of Array.isArray(cruas) ? cruas : []) {
+    if (typeof c !== 'object' || c === null) continue;
+    const nome = txt(c.nome);
+    const previsao = lerPrevisao(txt(c.possibilidade), txt(c.emDias));
+    if (!nome || !previsao) continue;
+    const visto = txt(c.ultimoVisto);
+    const ontem = Number.parseInt(txt(c.ontem).replace(/,/g, ''), 10);
+    bosses.push({
+      nome,
+      tipo: txt(c.tipo) || null,
+      previsao,
+      ultimoVisto: /^\d{4}-\d{2}-\d{2}$/.test(visto) ? visto : null,
+      ontem: Number.isFinite(ontem) ? ontem : 0,
+    });
+  }
+  return bosses.sort((a, b) => a.nome.localeCompare(b.nome, 'en'));
+}
+
+/**
+ * As linhas da tabela que têm previsão. Rebenta se a tabela ou as colunas não
+ * estiverem lá: o layout mudou, ou veio a página do desafio do Cloudflare.
  */
 export function lerTabelaRaros(html) {
   const $ = cheerio.load(html);
@@ -49,26 +76,21 @@ export function lerTabelaRaros(html) {
     if (i < 0) throw new Error(`falta a coluna «${titulo}» (o layout pode ter mudado)`);
     indice[chave] = i;
   }
-  const bosses = [];
-  tabela.find('tbody tr').each((_, tr) => {
+  const cruas = tabela.find('tbody tr').toArray().map((tr) => {
     const td = $(tr).find('td').toArray().map((c) => texto($, c));
-    const nome = td[indice.nome];
-    const previsao = lerPrevisao(td[indice.previsao] ?? '', td[indice.emDias] ?? '');
-    if (!nome || !previsao) return;
-    const visto = td[indice.ultimoVisto] ?? '';
-    const ontem = Number.parseInt((td[indice.ontem] ?? '').replace(/,/g, ''), 10);
-    // O tipo vem num tooltip ao lado das imagens: o alt da primeira imagem.
-    const tipo = $(tr).find('td').eq(indice.tipo).find('img').first().attr('alt')?.trim() || null;
-    bosses.push({
-      nome,
-      tipo,
-      previsao,
-      ultimoVisto: /^\d{4}-\d{2}-\d{2}$/.test(visto) ? visto : null,
-      ontem: Number.isFinite(ontem) ? ontem : 0,
-    });
+    return {
+      nome: td[indice.nome],
+      // O tipo vem num tooltip ao lado das imagens: o alt da primeira imagem.
+      tipo: $(tr).find('td').eq(indice.tipo).find('img').first().attr('alt') ?? '',
+      possibilidade: td[indice.previsao],
+      emDias: td[indice.emDias],
+      ultimoVisto: td[indice.ultimoVisto],
+      ontem: td[indice.ontem],
+    };
   });
+  const bosses = normalizarLinhas(cruas);
   if (bosses.length === 0) throw new Error('nenhuma linha com previsão (o layout pode ter mudado)');
-  return bosses.sort((a, b) => a.nome.localeCompare(b.nome, 'en'));
+  return bosses;
 }
 
 /**

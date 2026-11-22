@@ -1,6 +1,7 @@
 // Junta uma leitura das previsões dos bosses raros do Celesta (22/11/2026):
 //
 //   node scripts/bosses/lerRaros.mjs <página guardada do GuildStats.html>
+//   node scripts/bosses/lerRaros.mjs --linhas <linhas.json>   (as da tibia-raros-chrome)
 //
 // A página (https://guildstats.eu/bosses?world=Celesta) é lida no Chrome do
 // André: o GuildStats NUNCA se pede por fetch, headless ou com cabeçalhos
@@ -15,7 +16,7 @@
 // ainda não tem: correr scripts/bosses/fontesRaros.mjs e gerar o catálogo.
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
-import { juntarLeitura, lerTabelaRaros } from './guildstatsRaros.mjs';
+import { juntarLeitura, lerTabelaRaros, normalizarLinhas } from './guildstatsRaros.mjs';
 
 export const FICHEIRO = 'data/bosses-raros/celesta.json';
 /** A 22/11/2026 vinham 74; muito menos do que isto é a página cortada ou mudada. */
@@ -29,8 +30,10 @@ function lerJson(url) {
   }
 }
 
-export function executar({ html, raiz = new URL('../../', import.meta.url), agora = new Date(), minimo = MINIMO }) {
-  const bosses = lerTabelaRaros(html);
+/** `html` (a página guardada) ou `linhas` (o texto que o JavaScript da tibia-raros-chrome tira da página). */
+export function executar({ html, linhas, raiz = new URL('../../', import.meta.url), agora = new Date(), minimo = MINIMO }) {
+  if (linhas !== undefined && !Array.isArray(linhas)) throw new Error('as linhas não são uma lista');
+  const bosses = linhas !== undefined ? normalizarLinhas(linhas) : lerTabelaRaros(html);
   if (bosses.length < minimo) throw new Error(`só ${bosses.length} bosses com previsão (esperava ${minimo}+): a página veio cortada ou mudou`);
 
   const destino = new URL(FICHEIRO, raiz);
@@ -54,9 +57,10 @@ export function executar({ html, raiz = new URL('../../', import.meta.url), agor
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
-    const caminho = process.argv[2];
-    if (!caminho) throw new Error('falta a página guardada: node scripts/bosses/lerRaros.mjs <ficheiro.html>');
-    console.log(JSON.stringify(executar({ html: readFileSync(caminho, 'utf8') })));
+    const [a, b] = process.argv.slice(2);
+    if (!a) throw new Error('uso: node scripts/bosses/lerRaros.mjs <página.html> | --linhas <linhas.json>');
+    const entrada = a === '--linhas' ? { linhas: JSON.parse(readFileSync(b, 'utf8')) } : { html: readFileSync(a, 'utf8') };
+    console.log(JSON.stringify(executar(entrada)));
   } catch (e) {
     console.log(JSON.stringify({ estado: 'falhou', erro: e.message, ficheiro: FICHEIRO }));
     process.exit(1);

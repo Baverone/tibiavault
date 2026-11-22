@@ -9,6 +9,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { executar } from './lerRaros.mjs';
+import { CRUAS } from './fixtures/cruas.mjs';
 
 const HTML = readFileSync(new URL('./fixtures/guildstats-raros.html', import.meta.url), 'utf8');
 
@@ -34,6 +35,18 @@ test('a primeira leitura grava; a mesma outra vez não mexe no ficheiro', () => 
   assert.equal(r2.estado, 'igual');
   assert.equal(r2.lidoEm, '2026-11-22T10:10:00.000Z');
   assert.equal(readFileSync(ficheiro(dir), 'utf8'), gravado);
+});
+
+test('as linhas do Chrome (--linhas) gravam o mesmo que a página inteira', () => {
+  const a = raiz();
+  const b = raiz();
+  const agora = new Date('2026-11-22T11:10:00Z');
+  executar({ html: HTML, raiz: a.url, agora, minimo: 3 });
+  const r = executar({ linhas: CRUAS, raiz: b.url, agora, minimo: 3 });
+  assert.equal(r.estado, 'atualizado');
+  assert.equal(readFileSync(ficheiro(b.dir), 'utf8'), readFileSync(ficheiro(a.dir), 'utf8'));
+  // linhas que não são uma lista rebentam
+  assert.throws(() => executar({ linhas: { x: 1 }, raiz: b.url, agora, minimo: 3 }), /lista/);
 });
 
 test('poucas linhas (página cortada ou mudada) rebentam sem tocar no ficheiro', () => {

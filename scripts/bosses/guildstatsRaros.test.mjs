@@ -3,7 +3,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { lerTabelaRaros, juntarLeitura } from './guildstatsRaros.mjs';
+import { lerTabelaRaros, juntarLeitura, normalizarLinhas } from './guildstatsRaros.mjs';
+import { CRUAS } from './fixtures/cruas.mjs';
 
 const HTML = readFileSync(new URL('./fixtures/guildstats-raros.html', import.meta.url), 'utf8');
 
@@ -14,6 +15,24 @@ test('lê só as linhas com previsão, com a chance, a janela e o último dia vi
     { nome: "Gaz'haragoth", tipo: 'Nemesis', previsao: { tipo: 'pct', valor: 9.4 }, ultimoVisto: '2026-11-03', ontem: 0 },
     { nome: 'Morshabaal', tipo: 'Nemesis', previsao: { tipo: 'baixa' }, ultimoVisto: '2026-04-13', ontem: 0 },
   ]);
+});
+
+// As linhas em texto que o JavaScript tira da página no Chrome do André (tarefa
+// tibia-raros-chrome do ai-pc) dão o mesmo que o HTML.
+test('as linhas em texto do Chrome dão o mesmo que o HTML', () => {
+  assert.deepEqual(normalizarLinhas(CRUAS), lerTabelaRaros(HTML));
+});
+
+test('normalizarLinhas: sem nome, sem previsão ou lixo saem; tipo vazio fica null', () => {
+  const r = normalizarLinhas([
+    { nome: '', possibilidade: 'Low' },
+    { nome: 'A', possibilidade: 'talvez' },
+    { nome: 'B', tipo: '', possibilidade: '1,234%', emDias: '', ultimoVisto: '-', ontem: '1,002' },
+    null,
+  ]);
+  assert.deepEqual(r, []);
+  const r2 = normalizarLinhas([{ nome: 'B', tipo: '', possibilidade: '12.5%', ultimoVisto: '-', ontem: '1,002' }]);
+  assert.deepEqual(r2, [{ nome: 'B', tipo: null, previsao: { tipo: 'pct', valor: 12.5 }, ultimoVisto: null, ontem: 1002 }]);
 });
 
 test('«-» no último dia visto dá null', () => {
