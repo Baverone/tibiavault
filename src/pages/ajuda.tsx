@@ -71,6 +71,10 @@ export const PAGE_AJUDA: Partial<Record<PageId, ReactNode>> = {
         dele.
       </p>
       <p>
+        <b>Os dois personagens.</b> O Baverone e o Bluey aparecem lado a lado (no telemóvel, um por baixo do outro), cada
+        um com o seu Bosstiary. O separador de cima muda os dois ao mesmo tempo.
+      </p>
+      <p>
         <b>Os raros.</b> Os bosses de spawn raro que contam para o Bosstiary, pela chance de aparecerem hoje no Celesta
         (a previsão do GuildStats, lida no PC uma vez por dia depois do server save). São os únicos com «cooldown» na
         página. O +1 conta como nos outros.
